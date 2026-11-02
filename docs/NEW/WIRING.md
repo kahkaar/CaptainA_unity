@@ -1,0 +1,122 @@
+# UI Wiring
+
+How screens connect to their UI, and how to add a new one. Wiring is done in code wherever
+possible.
+
+> **Status: planned.** This describes the intended design. It is not implemented yet, and
+> it will be checked against the code when implementation finishes.
+
+## Rules
+
+| Need                   | Do this                                                              |
+| ---------------------- | -------------------------------------------------------------------- |
+| Child object or component | `Find<T>("Path/To/Child")` or `FindObject("Path/To/Child")` in `Awake` |
+| Button click           | `ButtonWiring.Replace(button, Handler)` once, in `Awake`             |
+| Localized text         | `new LocalizedString(table, key)`                                    |
+| Another screen         | Ask `Navigator` by type. Never hold a reference to a screen.         |
+| Screen layer           | Override the layer property                                          |
+| Popup with no logic    | `ModalScreen.Attach(popupGO, dismissible)` from the owning screen    |
+| Durations and constants | Constants in code                                                   |
+
+`Find<T>` and `FindObject` are `AppScreen` helpers built on `transform.Find`, which also
+finds inactive children. Paths are relative to the screen root.
+
+**Wire buttons in `Awake`, not `OnEnable`.** `OnEnable` runs every time a screen reopens,
+and a repeated `AddListener` makes one tap run its handler several times.
+
+`ButtonWiring.Replace` also switches off any Inspector `OnClick` entries while the app runs,
+so a migrated button can't fire twice and its entries don't have to be cleared by hand.
+
+## What stays in the Inspector
+
+- Script components on screen roots and on the tab bar
+- Prefab references, such as `ListItemPanel` and `ListDetailPanel`
+- Layout and visual values on UI components
+
+`NetworkManager` needs nothing assigned, because it contains no UI.
+
+## Renaming and moving
+
+| Change                                | Effect                               |
+| ------------------------------------- | ------------------------------------ |
+| Move a whole screen in the hierarchy  | Safe: its paths are relative         |
+| Rename or move a child inside a screen | Breaks its path, so update the string |
+| Rename a tab button                   | Breaks `TabBar`, which finds it by name, and its icon lookup |
+
+A broken path logs an error naming the screen and the path. `Awake` only runs the first
+time a screen opens, so the error appears when that screen is first opened.
+
+## Hierarchy
+
+Sibling order sets draw order, so this order keeps tabs below overlays and modals.
+
+```text
+Manager            AudioManager, NetworkManager, NotificationManager
+Canvas
+├── Screens        tab roots and pushed screens
+├── Navigation     TabBar, with the new-feature dot as a child of its tab
+├── Overlays       Detail, Phoneme, Info
+├── Modals         all modals
+└── Notifications
+```
+
+`Navigator`, `ModalHost`, the shared dim, and each screen's nested Canvas are all created
+from code, so they do not appear in the scene.
+
+## Naming
+
+- Full-screen view classes end in `Screen`, and popups end in `Modal`. "Panel" is only for
+  sections inside a screen.
+- Abbreviations stay in capitals: `ASATaskScreen`, not `AsaTaskScreen`.
+- Do not name a class `Screen`, because it would shadow `UnityEngine.Screen`.
+- During the migration, new files go in `Assets/Scripts/NewScripts/`, and all use the
+  `SaySuomi.Navigation` namespace. A single namespace matters while old classes exist: a
+  file-level `using` loses to a global class of the same name, so the old `NetworkManager`
+  would be picked silently.
+
+## Adding a screen
+
+1. Create the GameObject under `Screens` or `Overlays`, and leave it inactive.
+2. Add a class and attach it to the root:
+
+   ```csharp
+   namespace SaySuomi.Navigation
+   {
+       public class ExampleScreen : AppScreen
+       {
+           // Omit this for the default Screen layer.
+           protected override ScreenLayer Layer => ScreenLayer.Overlay;
+
+           TextMeshProUGUI titleText;
+
+           protected override void Awake()
+           {
+               base.Awake();
+               titleText = Find<TextMeshProUGUI>("Content/TitleText");
+               ButtonWiring.Replace(Find<Button>("BackButton"), () => Navigator.GetManager().Back());
+           }
+
+           public void Show(string title)
+           {
+               titleText.text = title;
+           }
+       }
+   }
+   ```
+
+3. Open it from the caller:
+
+   ```csharp
+   Navigator.GetManager().Push<ExampleScreen>().Show("Hello");
+   ```
+
+4. Add it to [Screens](SCREENS.md).
+
+There is no Escape handling or registration to add. `Navigator` finds the screen and
+handles back.
+
+## Stopping work when a screen closes
+
+Put cleanup in `OnDisable`, which runs on every way of leaving a screen, including tab
+changes. Any screen that records audio must cancel the recording there. If a back press
+should do something other than close the screen, override `HandleBack` and return true.
