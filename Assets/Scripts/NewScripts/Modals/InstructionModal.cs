@@ -15,10 +15,8 @@ namespace SaySuomi.Navigation
         string prefsKey;
         int saveInt;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             messageText = Find<TextMeshProUGUI>("TextPanel/MessageText");
             ButtonWiring.Replace(Find<Button>("TextPanel/OkButton"), OnOkClicked);
         }

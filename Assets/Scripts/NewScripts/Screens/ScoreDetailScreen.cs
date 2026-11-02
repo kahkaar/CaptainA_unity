@@ -29,10 +29,8 @@ namespace SaySuomi.Navigation
 
         List<GameObject> listScrollItems = new List<GameObject>(); // To store item from scroll list and delete after inactive
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             resultPanelGO = FindObject("ResultPanel");
             sampleButtonGO = FindObject("ResultPanel/SampleButton");
             replayButtonGO = FindObject("ResultPanel/ReplayButton");

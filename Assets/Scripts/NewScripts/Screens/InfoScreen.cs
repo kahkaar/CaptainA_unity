@@ -6,10 +6,8 @@ namespace SaySuomi.Navigation
     {
         public override ScreenLayer Layer => ScreenLayer.Overlay;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             ButtonWiring.Replace(Find<Button>("AboutTextBG/BackButton"), () => Navigator.GetManager().Back());
             ButtonWiring.Replace(
                 Find<Button>("AboutTextBG/SecretButton"),

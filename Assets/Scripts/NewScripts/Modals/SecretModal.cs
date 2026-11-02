@@ -8,10 +8,8 @@ namespace SaySuomi.Navigation
     {
         TextMeshProUGUI secretTextTMP;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             secretTextTMP = Find<TextMeshProUGUI>("SurveyBox/Text (TMP)/secretInput/Text Area/Text");
             ButtonWiring.Replace(Find<Button>("SurveyBox/Panel/Ok"), OnYesButtonClick);
             ButtonWiring.Replace(Find<Button>("SurveyBox/Panel/Later"), () => Navigator.GetManager().Back());

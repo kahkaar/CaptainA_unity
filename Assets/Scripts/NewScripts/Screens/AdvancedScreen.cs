@@ -33,10 +33,8 @@ namespace SaySuomi.Navigation
         ToggleGroup ageOptions;
         ToggleGroup selfAssessmentOptions;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             acceptButton = Find<Button>("ConsentPopUp/PopupPanel/AcceptButton");
             consentReadToggle = Find<Toggle>("ConsentPopUp/PopupPanel/ConsentToggle");
             sendButton = Find<Button>(BackgroundContent + "SendButton");

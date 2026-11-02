@@ -199,10 +199,8 @@ namespace SaySuomi.Navigation
 
         string guid;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             deleteWarningText = new LocalizedString(Table, 34375829905408);
             deleteLoadingText = new LocalizedString(Table, 34784963289088);
             deleteConfirmedNotice = new LocalizedString(Table, 35377484226560);

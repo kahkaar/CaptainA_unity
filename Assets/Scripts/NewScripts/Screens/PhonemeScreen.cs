@@ -19,10 +19,8 @@ namespace SaySuomi.Navigation
 
         SOPhonemeHelper phonemeSO;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             explainText = Find<TextMeshProUGUI>("ExplainPanel/ExplainText");
             frontMouth1 = Find<Image>("FrontPanel/FrontMouth");
             frontMouth2 = Find<Image>("FrontPanel/FrontMouth/FrontMouth2");

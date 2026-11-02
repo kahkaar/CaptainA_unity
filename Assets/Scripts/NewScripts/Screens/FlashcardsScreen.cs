@@ -30,10 +30,8 @@ namespace SaySuomi.Navigation
         private bool pointerDown;
         private float pointerDownTimer;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             foreach (Transform deck in FindObject(ContentPath).transform)
             {
                 if (Const.FLASH_CARD_DICT.ContainsKey(deck.name))

@@ -23,6 +23,7 @@ and animation. Code lives under `Assets/Scripts/NewScripts/` in the `Navigation`
 | `TabBar`            | Tab buttons, icons and the new-feature dot. Follows `TabChanged`.      |
 | `ErrorBanner`       | Shows and hides the drop-down error messages.                          |
 | `ButtonWiring`      | Connects buttons in code and switches off their Inspector entries.     |
+| `ScreenBackButton`  | Adds a back button to screens that have none. See [Back](#back).       |
 
 ## Layers
 
@@ -123,6 +124,11 @@ task it covers.
 
 `Application.Quit` does nothing in the Editor, so exiting has to be tested on a device.
 
+iPhones have no back key, so every screen needs a visible way back. A screen with no back
+control of its own overrides `ShowsBackButton` to return true. At launch, `Navigator` adds a copy
+of the task screen's back button to the top-left of its header, which calls `Back`. The flashcard
+session and NumberGame use this.
+
 ## Tabs
 
 `SelectTab` clears the stack, then shows the chosen tab root. Returning to a tab therefore
@@ -141,12 +147,9 @@ presented:
   below that modal. The dim blocks input to everything beneath it, including the tab bar.
 - It runs the modal open and close animations.
 
-`ModalScreen.Attach` lifts a popup from the screen that owns it in the scene to the top of the
-root Canvas, keeping its position. Only there can it draw above the tab bar. Two things follow:
-
-- A popup still appears under its owner in the Editor, but not while the app runs.
-- A screen must find anything it needs inside a popup by path before calling `Attach`, or use
-  the returned modal's `Find` afterwards.
+The first time a popup opens, it lifts from the screen that owns it in the scene to the top of
+the root Canvas, keeping its position. Only there can it draw above the tab bar. So a popup
+appears under its owner in the Editor, but not while the app runs after it first opens.
 
 `ModalScreen.OnBack` runs whenever back closes a popup, including from its own back button if
 that calls `Navigator.Back`. It is the place to reset a form or record a decline, so every way
@@ -161,8 +164,12 @@ shows an error, so back can leave a failed request but not one in progress.
 ## Startup and scenes
 
 `Navigator` creates itself with `[RuntimeInitializeOnLoadMethod]`, as `UserEventManager`
-does, and finds every `AppScreen` in the scene, including inactive ones. It then hides the
-other tab roots and shows Freestyle with no animation.
+does, and finds every `AppScreen` in the scene, including inactive ones. It calls `Bind` on each
+one, then hides the other tab roots and shows Freestyle with no animation.
+
+Because of this, a broken path appears in the Console in every Play session, even for a screen
+that is never opened. If a screen's `Bind` fails, the rest are still set up and all failures are
+logged together, and the app still opens.
 
 Leave tab roots other than Freestyle inactive in the scene. `Navigator` runs after scene
 objects are enabled, so an active root's `OnEnable` would already have run. For Advanced,

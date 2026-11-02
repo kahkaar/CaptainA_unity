@@ -15,6 +15,7 @@ How the app moves from the old panels to the new navigation system.
 | 4: Flashcards, NumberGame | Done  | Done       | Passed                          |
 | 5: ASA flow            | Done     | Done       | Passed                          |
 | Freestyle code wiring  | Done     | None       | Not run                         |
+| Launch binding, shared back button | Done | None | Not run                         |
 | 6: Update the documentation | Done | –         | –                               |
 | 7: Cutover             | Waiting for go-ahead | – | –                            |
 
@@ -46,7 +47,7 @@ off its Inspector `OnClick` entries while the app runs, so they don't need clear
 
 Opening a `Screen` layer entry hides the tab root, which would also hide its children, so pushed
 screens are siblings of the tab roots. `Navigator` logs an error naming any that aren't. Popups
-stay under their owners in the scene, because `ModalScreen.Attach` lifts them while the app runs.
+stay under their owners in the scene, because each lifts to the top the first time it opens.
 The order is in [Wiring](WIRING.md#hierarchy).
 
 Two kinds of object are no longer used and can be deleted to tidy up: `Manager/PopUpManager`,
@@ -150,6 +151,8 @@ See [Network responses](NAVIGATION.md#network-responses).
 - **Tab bar:** can no longer be tapped through a modal.
 - **First-run popup on Freestyle:** should appear at cold start. Today it appears to be
   hidden by `PopUpManager.Start`.
+- **Back button:** the flashcard session and NumberGame now show one, in the top-left of their
+  headers. They had none, which left iPhone users only the tab bar.
 - **Recording:** leaving Freestyle, a flashcard session or NumberGame cancels any recording,
   matching what `ASAPanel.OnDisable` already does.
 - **Finished decks:** a long press that leaves nothing to study no longer opens the session.
@@ -181,7 +184,7 @@ This happens only on explicit go-ahead:
 1. Restore the real values in `Secret.cs`, which may still point at the fake server. Run the
    [backend checks](#checks-waiting-on-the-backend) against the real server, and test on an Android
    device, including back, recording, transitions and exiting the app.
-2. Make `TESTING_SCENE` the build scene, or port it to `MainScene`.
+2. Make `TESTING_SCENE` the build scene.
 3. Delete the old scripts and move the contents of `NewScripts` as needed. Remove the
    `PopUpManager` lines from `Navigator.Awake` at the same time.
 4. Merge `docs/NEW/` with `docs/`, including replacing `docs/USER_BEHAVIOUR.md` with its

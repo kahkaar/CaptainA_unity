@@ -19,11 +19,15 @@ namespace SaySuomi.Navigation
     public abstract class AppScreen : MonoBehaviour
     {
         bool prepared;
+        bool bound;
         Vector2 homePosition;
 
         public virtual ScreenLayer Layer => ScreenLayer.Screen;
 
         public virtual bool IsTabRoot => false;
+
+        /// <summary>True adds a back button in the header, for a screen with none of its own.</summary>
+        public virtual bool ShowsBackButton => false;
 
         /// <summary>Return true to consume a back press rather than closing this screen.</summary>
         public virtual bool HandleBack() => false;
@@ -37,6 +41,25 @@ namespace SaySuomi.Navigation
         protected virtual void Awake()
         {
             Prepare();
+            EnsureBound();
+        }
+
+        /// <summary>
+        /// Finds this screen's objects and wires its buttons. Navigator calls this for every
+        /// screen at launch, inactive ones included, so a broken path is reported in every Play
+        /// session rather than when that screen is first opened.
+        /// </summary>
+        protected virtual void Bind() { }
+
+        internal void EnsureBound()
+        {
+            if (bound)
+            {
+                return;
+            }
+
+            bound = true;
+            Bind();
         }
 
         /// <summary>

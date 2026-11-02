@@ -21,10 +21,8 @@ namespace SaySuomi.Navigation
 
         LocalizedTextHelper profileErrorHelper;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             errorPopupGO = FindObject("ErrorPopup");
             loadingIconGO = FindObject("LoadingPopUpProfile/LoadingIcon");
             profileLoadingBackButtonGO = FindObject("LoadingPopUpProfile/BackButton");

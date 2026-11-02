@@ -80,10 +80,8 @@ namespace SaySuomi.Navigation
 
         private AudioClip recording;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             recordButtonGO = FindObject("RecordButton");
             pauseButtonGO = FindObject("PauseButton");
             sendButtonGO = FindObject("SendButton");

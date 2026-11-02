@@ -12,10 +12,8 @@ namespace SaySuomi.Navigation
 
         Transform icon;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             icon = FindObject("LoadingIcon").transform;
         }
 

@@ -7,13 +7,14 @@ possible.
 
 | Need                   | Do this                                                              |
 | ---------------------- | -------------------------------------------------------------------- |
-| Child object or component | `Find<T>("Path/To/Child")` or `FindObject("Path/To/Child")` in `Awake` |
-| Button click           | `ButtonWiring.Replace(button, Handler)` once, in `Awake`             |
+| Child object or component | `Find<T>("Path/To/Child")` or `FindObject("Path/To/Child")` in `Bind` |
+| Button click           | `ButtonWiring.Replace(button, Handler)` once, in `Bind`              |
+| Back control           | Your own button calling `Navigator.Back`, or override `ShowsBackButton` to get the shared one |
 | Localized text         | `new LocalizedString(table, key)`                                    |
 | Another screen         | Ask `Navigator` by type. Never hold a reference to a screen.         |
 | Screen layer           | Override `Layer`                                                     |
 | Object outside the screen | `Navigator.FindInCanvas(this, "ObjectName")`, for a shared popup  |
-| Popup with no logic    | `ModalScreen.Attach(popupGO, dismissible)` from the owning screen, after any `Find` inside it |
+| Popup with no logic    | `ModalScreen.Attach(popupGO, dismissible)` from the owning screen    |
 | Popup waiting on the server | `ModalScreen.Attach<LoadingModal>(popupGO, false)`, which spins its `LoadingIcon` |
 | Reset on closing a popup | `modal.OnBack`, so every way out behaves the same                  |
 | Drop-down error message | `ErrorBanner.Show` and `ErrorBanner.Hide`                           |
@@ -23,8 +24,12 @@ possible.
 finds inactive children. Paths are relative to the screen root, and a modal's own `Find` works
 after `Attach` has lifted it.
 
-**Wire buttons in `Awake`, not `OnEnable`.** `OnEnable` runs every time a screen reopens,
-and a repeated `AddListener` makes one tap run its handler several times.
+**Wire buttons in `Bind`, not `OnEnable`.** `OnEnable` runs every time a screen reopens, and a
+repeated `AddListener` makes one tap run its handler several times.
+
+`Navigator` calls `Bind` once for every screen at launch, while most are inactive. Only find
+objects and connect events there. Anything that depends on the screen being open belongs in
+`OnEnable`.
 
 `ButtonWiring.Replace` also switches off any Inspector `OnClick` entries while the app runs,
 so a migrated button can't fire twice and its entries don't have to be cleared by hand.
@@ -47,8 +52,8 @@ so a migrated button can't fire twice and its entries don't have to be cleared b
 | Rename or move a child inside a screen | Breaks its path, so update the string |
 | Rename a tab button                   | Breaks `TabBar`, which finds it by name, and its icon lookup |
 
-A broken path logs an error naming the screen and the path. `Awake` only runs the first
-time a screen opens, so the error appears when that screen is first opened.
+A broken path logs an error naming the screen and the path. `Bind` runs for every screen at
+launch, so the error appears in every Play session, even if that screen is never opened.
 
 ## Hierarchy
 
@@ -71,7 +76,7 @@ up by name. Only the classes on them were renamed.
 
 `Navigator`, `ModalHost`, the shared dim, and each screen's nested Canvas are all created
 from code, so they do not appear in the scene. Popups owned by a screen stay under it in the
-scene, and `ModalScreen.Attach` lifts them to the top of the Canvas while the app runs.
+scene, and each lifts to the top of the Canvas the first time it opens.
 
 ## Naming
 
@@ -103,9 +108,8 @@ scene, and `ModalScreen.Attach` lifts them to the top of the Canvas while the ap
 
            TextMeshProUGUI titleText;
 
-           protected override void Awake()
+           protected override void Bind()
            {
-               base.Awake();
                titleText = Find<TextMeshProUGUI>("Content/TitleText");
                ButtonWiring.Replace(Find<Button>("BackButton"), () => Navigator.GetManager().Back());
            }

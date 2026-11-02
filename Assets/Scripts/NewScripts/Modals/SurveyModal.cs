@@ -5,10 +5,8 @@ namespace SaySuomi.Navigation
 {
     public class SurveyModal : ModalScreen
     {
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             ButtonWiring.Replace(Find<Button>("SurveyBox/Panel/Ok"), OnYesButtonClick);
             ButtonWiring.Replace(Find<Button>("SurveyBox/Panel/Later"), () => Navigator.GetManager().Back());
         }

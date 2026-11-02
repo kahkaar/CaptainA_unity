@@ -124,10 +124,8 @@ namespace SaySuomi.Navigation
 
         private int currentPopupOpen = -1;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             networkManager = NetworkManager.GetManager();
 
             answerOffTopicNotice = new LocalizedString(Table, 4093949075456);

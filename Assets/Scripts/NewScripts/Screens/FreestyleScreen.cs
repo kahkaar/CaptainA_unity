@@ -57,20 +57,8 @@ namespace SaySuomi.Navigation
         private float currentTime = 2.0f;
         private string transcript;
 
-        /// <summary>
-        /// Awake is called when the script instance is being loaded. This is used to initialize any variables or game state
-        /// before the game starts. Awake is called only once during the lifetime of the script instance.
-        ///
-        /// In this method, we set up listeners for the input field's onSelect and onDeselect events. These listeners will
-        /// trigger the OnInputTextFocus and OnInputTextUnfocus methods respectively when the input field gains or loses focus.
-        ///
-        /// Awake is called before any Start methods, making it a good place to set up references and initialize variables
-        /// that other scripts might depend on during their Start method.
-        /// </summary>
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             topPanelGO = FindObject("TopPanel");
             topPanelBigGO = FindObject("TopPanelBig");
             topPanelSmallGO = FindObject("TopPanelSmall");

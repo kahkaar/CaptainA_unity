@@ -82,6 +82,9 @@ namespace SaySuomi.Navigation
                 oldPopUpManager.enabled = false;
             }
 
+            BindAllScreens();
+            AddBackButtons();
+
             foreach (AppScreen screen in found)
             {
                 if (screen.IsTabRoot && screen != home)
@@ -99,6 +102,40 @@ namespace SaySuomi.Navigation
             // scene, in which case that already ran before this object existed.
             home.gameObject.SetActive(false);
             home.gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// Sets up every screen now, so all broken paths show up in the Console at launch. One
+        /// failing does not stop the others, so they are all reported together, and the app
+        /// still opens for whatever else needs testing.
+        /// </summary>
+        void BindAllScreens()
+        {
+            foreach (AppScreen screen in screens.Values)
+            {
+                try
+                {
+                    screen.EnsureBound();
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogError($"Navigator: could not set up {screen.GetType().Name}.", screen);
+                    Debug.LogException(exception, screen);
+                }
+            }
+        }
+
+        void AddBackButtons()
+        {
+            GameObject template = Get<ASATaskScreen>().FindObject("BackButton");
+
+            foreach (AppScreen screen in screens.Values)
+            {
+                if (screen.ShowsBackButton)
+                {
+                    ScreenBackButton.AddTo(screen, template);
+                }
+            }
         }
 
         void OnDestroy()
@@ -241,6 +278,13 @@ namespace SaySuomi.Navigation
             if (stack.Contains(modal))
             {
                 return;
+            }
+
+            // Before Prepare, which records where a transition should return it to.
+            if (!modal.Lifted)
+            {
+                modal.Lifted = true;
+                modal.LiftToCanvas();
             }
 
             modal.Prepare();

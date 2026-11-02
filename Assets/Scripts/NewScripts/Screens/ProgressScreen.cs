@@ -16,10 +16,8 @@ namespace SaySuomi.Navigation
 
         List<GameObject> listItems = new List<GameObject>(); // To store item from scroll list and delete after inactive
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             content = FindObject("Scroll View/Viewport/Content");
             ButtonWiring.Replace(Find<Button>("InfoButton"), () => Navigator.GetManager().Push<InfoScreen>());
         }

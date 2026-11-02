@@ -10,6 +10,8 @@ namespace SaySuomi.Navigation
 {
     public class NumberGameScreen : AppScreen
     {
+        public override bool ShowsBackButton => true;
+
         GameObject recordButtonGO;
         GameObject progressBarGO;
         NGTaskType taskType = NGTaskType.EASY;
@@ -28,10 +30,8 @@ namespace SaySuomi.Navigation
 
         private string number = "999";
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             recordButtonGO = FindObject("RecordButton");
             progressBarGO = FindObject("ProgressBar");
             easyToggle = Find<Toggle>("TaskTypePanel/DifficultToggleGroup/EasyToggle");

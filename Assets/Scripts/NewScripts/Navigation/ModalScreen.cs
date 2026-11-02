@@ -11,6 +11,8 @@ namespace SaySuomi.Navigation
     {
         public override ScreenLayer Layer => ScreenLayer.Overlay;
 
+        internal bool Lifted { get; set; }
+
         /// <summary>False ignores back, such as for a loading popup waiting on the server.</summary>
         public bool Dismissible { get; set; } = true;
 
@@ -31,11 +33,7 @@ namespace SaySuomi.Navigation
             return Attach<ModalScreen>(popup, dismissible);
         }
 
-        /// <summary>
-        /// Adds T to a popup and lifts it out of the screen that owns it, to the top of the root
-        /// Canvas. Only there can it and the shared dim draw above the tab bar. It keeps its
-        /// position on screen. Find anything the owner needs by path before calling this.
-        /// </summary>
+        /// <summary>Adds T to a popup, and sets it up.</summary>
         public static T Attach<T>(GameObject popup, bool dismissible = true)
             where T : ModalScreen
         {
@@ -44,9 +42,22 @@ namespace SaySuomi.Navigation
                 modal = popup.AddComponent<T>();
             }
 
-            popup.transform.SetParent(popup.transform.root, true);
             modal.Dismissible = dismissible;
+            modal.EnsureBound();
             return modal;
+        }
+
+        /// <summary>
+        /// Moves the popup out of the screen that owns it, to the top of the root Canvas. Only
+        /// there can it and the shared dim draw above the tab bar. It keeps its position on
+        /// screen.
+        ///
+        /// Done when it first opens rather than at launch. Keeping its position relies on its
+        /// parent's size, and an object that has never been active may not have the right one.
+        /// </summary>
+        internal void LiftToCanvas()
+        {
+            transform.SetParent(transform.root, true);
         }
     }
 }

@@ -23,6 +23,8 @@ namespace SaySuomi.Navigation
     /// </summary>
     public class FlashcardSessionScreen : AppScreen
     {
+        public override bool ShowsBackButton => true;
+
         TMPro.TextMeshProUGUI frontCardText; // Front card
         TMPro.TextMeshProUGUI backCardText; // Back card
         TMPro.TextMeshProUGUI etymoText; // Etymology card
@@ -54,10 +56,8 @@ namespace SaySuomi.Navigation
         AudioClip replayClip;
         AudioClip sampleClip;
 
-        protected override void Awake()
+        protected override void Bind()
         {
-            base.Awake();
-
             frontCardText = Find<TMPro.TextMeshProUGUI>("FlashCardText/FrontCardText");
             backCardText = Find<TMPro.TextMeshProUGUI>("FlashCardText/BackCardText");
             etymoText = Find<TMPro.TextMeshProUGUI>("FlashCardText/Etymology");
@@ -383,7 +383,7 @@ namespace SaySuomi.Navigation
         *   I'm not sure Anki algorithm use 0 to 3 or 0 to 5, but I think it's 0 to 3.
         *   I used [0,3,4,5] in CaptainA because the formular is based on SuperMemo 2 algorithm.
         *
-        *   The quality is set per button in Awake.
+        *   The quality is set per button in Bind.
         */
         {
             (float newInterval, float newEaseFactor) = cardManager.GetCarNewIntervalEase(
