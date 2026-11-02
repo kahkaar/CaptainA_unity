@@ -6,159 +6,87 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.UI;
-using UnityEngine.Serialization;
 
 namespace SaySuomi.Navigation
 {
-    public class ASAProfileScreen : MonoBehaviour
+    public class ASAProfileScreen : AppScreen
     {
-        [SerializeField]
+        const string Content = "Viewport/Content/";
+
+        static readonly Guid Table = new Guid("850ceabc4262bb1acb39b8a91b2fcf93");
+
         GameObject levelBarGO;
 
-        [SerializeField]
         private TextMeshProUGUI levelText;
 
-        [SerializeField]
         private TextMeshProUGUI performanceText;
 
-        [SerializeField]
         private TextMeshProUGUI rankText;
 
-        [SerializeField]
         private TextMeshProUGUI positionText;
 
-        [SerializeField]
-        GameObject profileBackButtonGO;
-
-        [SerializeField]
-        GameObject profilePanelGO;
-
-        [SerializeField]
-        GameObject settingsButtonGO;
-
-        [SerializeField]
-        GameObject settingsBackButtonGO;
-
-        [SerializeField]
-        GameObject settingsPopupGO;
-
-        [SerializeField]
-        GameObject dimPanelGO;
-
-        [SerializeField]
-        GameObject copyGuidButtonGO;
+        ModalScreen settingsModal;
+        ModalScreen deleteConfirmModal;
+        ModalScreen feedbackModal;
 
         // Data deletion, run from the app so nobody has to service requests by hand.
-        [SerializeField]
-        GameObject deleteDataButtonGO;
-
-        [SerializeField]
-        GameObject deleteConfirmPopupGO;
-
-        [SerializeField]
         GameObject deleteConfirmButtonGO;
 
-        [SerializeField]
         GameObject deleteCancelButtonGO;
 
-        [SerializeField]
         TextMeshProUGUI deleteStatusText;
 
-        [SerializeField]
         private LocalizedString deleteWarningText;
 
-        [SerializeField]
         private LocalizedString deleteLoadingText;
 
-        [SerializeField]
         private LocalizedString deleteConfirmedNotice;
 
-        [SerializeField]
         private LocalizedString deleteReceivedNotice;
 
         private LocalizedTextHelper deleteStatusHelper;
 
         // The cancel button doubles as "OK" once the deletion has run, because by then
         // there is nothing left to cancel.
-        [SerializeField]
         TextMeshProUGUI deleteCancelLabel;
 
-        [SerializeField]
         TextMeshProUGUI deleteOkLabel;
 
-        // Closed along with the profile after a deletion: the task list is where the guid was
-        // reachable from, and there is no account behind it any more.
-        [SerializeField]
-        GameObject taskPanelGO;
-
-        [SerializeField]
         GameObject feedbackButtonGO;
 
-        [SerializeField]
-        GameObject feedbackPopUpGO;
-
-        [SerializeField]
-        GameObject feedbackBackButtonGO;
-
-        [SerializeField]
-        GameObject feedbackSendButtonGO;
-
-        [SerializeField]
-        GameObject loadingPopUpProfile;
-
-        [SerializeField]
         GameObject performanceInfo;
 
-        [SerializeField]
         GameObject rankInfo;
 
-        [SerializeField]
         GameObject revertLevelButtonGO;
 
-        [SerializeField]
         GameObject advanceLevelButtonGO;
 
-        [SerializeField]
         GameObject insufficientDataNoticeGO;
 
-        [SerializeField]
         GameObject levelTextGO;
 
-        [SerializeField]
         GameObject levelDescriptionTextGO;
 
-        [SerializeField]
         private TextMeshProUGUI levelDescriptionText;
 
-        [SerializeField]
         private LocalizedString levelDescriptionA1;
 
-        [SerializeField]
         private LocalizedString levelDescriptionA2;
 
-        [SerializeField]
         private LocalizedString levelDescriptionB1;
 
-        [SerializeField]
         private LocalizedString levelDescriptionB2;
 
-        [SerializeField]
         private LocalizedString levelDescriptionC1Plus;
 
         private LocalizedTextHelper levelDescriptionHelper;
 
-        [SerializeField]
         GameObject errorPopupGO;
 
-        [SerializeField]
         TMP_InputField comparisonFeedbackTextGO;
 
-        [SerializeField]
         TextMeshProUGUI insufficientDataNotice;
-
-        [SerializeField]
-        [FormerlySerializedAs("FeedbackPanel")]
-        private ASAResultsScreen ASAResultsScreen;
 
         [System.Serializable]
         public class Stats
@@ -187,34 +115,24 @@ namespace SaySuomi.Navigation
             public string status;
         }
 
-        [SerializeField]
         private LocalizedString rankPercentText;
 
-        [SerializeField]
         private LocalizedString rankPositionText;
 
-        [SerializeField]
         private LocalizedString topRankText;
 
-        [SerializeField]
         private LocalizedString rankFirstText;
 
-        [SerializeField]
         private LocalizedString noRankNotice;
 
-        [SerializeField]
         private LocalizedString noPositionNotice;
 
-        [SerializeField]
         private LocalizedString insufficientTasksNotice;
 
-        [SerializeField]
         private LocalizedString cohortSizeNotice;
 
-        [SerializeField]
         private LocalizedString rankUnavailableNotice;
 
-        [SerializeField]
         private LocalizedString rankUnavailableGeneralNotice;
 
         private LocalizedTextHelper rankPercentHelper;
@@ -275,16 +193,110 @@ namespace SaySuomi.Navigation
             public int cohort_size;
         }
 
-        public TMP_Text guidTextGO;
+        TMP_Text guidTextGO;
 
-        public ToggleGroup comparisonRatingOptions;
+        ToggleGroup comparisonRatingOptions;
 
-        public string guid;
+        string guid;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            deleteWarningText = new LocalizedString(Table, 34375829905408);
+            deleteLoadingText = new LocalizedString(Table, 34784963289088);
+            deleteConfirmedNotice = new LocalizedString(Table, 35377484226560);
+            deleteReceivedNotice = new LocalizedString(Table, 36367994281984);
+            levelDescriptionA1 = new LocalizedString(Table, 531886071808);
+            levelDescriptionA2 = new LocalizedString(Table, 8894137065472);
+            levelDescriptionB1 = new LocalizedString(Table, 13267697229824);
+            levelDescriptionB2 = new LocalizedString(Table, 13450052984832);
+            levelDescriptionC1Plus = new LocalizedString(Table, 13467077664768);
+            rankPercentText = new LocalizedString(Table, 16883006922752);
+            rankPositionText = new LocalizedString(Table, 17416568528896);
+            topRankText = new LocalizedString(Table, 19380538793984);
+            rankFirstText = new LocalizedString(Table, 5902470477864960);
+            noRankNotice = new LocalizedString(Table, 19467973255168);
+            noPositionNotice = new LocalizedString(Table, 19548101238784);
+            insufficientTasksNotice = new LocalizedString(Table, 14536994283520);
+            cohortSizeNotice = new LocalizedString(Table, 20111354322944);
+            rankUnavailableNotice = new LocalizedString(Table, 20288265871360);
+            rankUnavailableGeneralNotice = new LocalizedString(Table, 20790462472192);
+
+            levelBarGO = FindObject(Content + "LevelBar");
+            levelText = Find<TextMeshProUGUI>(Content + "LevelText");
+            performanceText = Find<TextMeshProUGUI>(Content + "Performance/PerformanceText");
+            rankText = Find<TextMeshProUGUI>(Content + "GlobalRank/RankText");
+            positionText = Find<TextMeshProUGUI>(Content + "GlobalRank/PositionText");
+            deleteConfirmButtonGO = FindObject("DeleteConfirmPopup/DeleteConfirmButton");
+            deleteCancelButtonGO = FindObject("DeleteConfirmPopup/DeleteCancelButton");
+            deleteStatusText = Find<TextMeshProUGUI>("DeleteConfirmPopup/StatusText");
+            deleteCancelLabel = Find<TextMeshProUGUI>("DeleteConfirmPopup/DeleteCancelButton/CancelLabel");
+            deleteOkLabel = Find<TextMeshProUGUI>("DeleteConfirmPopup/DeleteCancelButton/OkLabel");
+            feedbackButtonGO = FindObject(Content + "FeedbackButton");
+            performanceInfo = FindObject(Content + "Performance");
+            rankInfo = FindObject(Content + "GlobalRank");
+            revertLevelButtonGO = FindObject(Content + "RevertLevel");
+            advanceLevelButtonGO = FindObject(Content + "AdvanceLevel");
+            insufficientDataNoticeGO = FindObject(Content + "InsufficientDataNotice");
+            levelTextGO = FindObject(Content + "LevelText");
+            levelDescriptionTextGO = FindObject(Content + "DescriptionText");
+            levelDescriptionText = Find<TextMeshProUGUI>(Content + "DescriptionText");
+            errorPopupGO = FindObject("ErrorPopup");
+            comparisonFeedbackTextGO = Find<TMP_InputField>("FeedbackPopUp/ComparisonFeedbackTextField");
+            insufficientDataNotice = Find<TextMeshProUGUI>(Content + "InsufficientDataNotice/InsufficientDataText");
+            guidTextGO = Find<TMP_Text>("SettingsPopup/GuidText");
+            comparisonRatingOptions = Find<ToggleGroup>("FeedbackPopUp/ComparisonRatingGroup");
+
+            Navigator navigator = Navigator.GetManager();
+
+            ButtonWiring.Replace(Find<Button>(Content + "ProfileBackButton"), () => navigator.Back());
+            ButtonWiring.Replace(Find<Button>("SettingsButton"), () => navigator.Open(settingsModal));
+            ButtonWiring.Replace(Find<Button>("SettingsPopup/SettingsBackButton"), () => navigator.Back());
+            ButtonWiring.Replace(
+                Find<Button>("SettingsPopup/GuidCopyButton"),
+                () => GUIUtility.systemCopyBuffer = guid
+            );
+            ButtonWiring.Replace(Find<Button>("SettingsPopup/DeleteDataButton"), OpenDeleteConfirm);
+            ButtonWiring.Replace(deleteCancelButtonGO.GetComponent<Button>(), () => navigator.Back());
+            ButtonWiring.Replace(deleteConfirmButtonGO.GetComponent<Button>(), DeleteData);
+            ButtonWiring.Replace(feedbackButtonGO.GetComponent<Button>(), () => navigator.Open(feedbackModal));
+            ButtonWiring.Replace(Find<Button>("FeedbackPopUp/FeedbackBackButton"), () => navigator.Back());
+            ButtonWiring.Replace(Find<Button>("FeedbackPopUp/FeedbackSendButton"), SendFeedback);
+            ButtonWiring.Replace(advanceLevelButtonGO.GetComponent<Button>(), () => ChangeLevel(1));
+            ButtonWiring.Replace(revertLevelButtonGO.GetComponent<Button>(), () => ChangeLevel(-1));
+
+            settingsModal = ModalScreen.Attach(FindObject("SettingsPopup"));
+            deleteConfirmModal = ModalScreen.Attach(FindObject("DeleteConfirmPopup"));
+            feedbackModal = ModalScreen.Attach(FindObject("FeedbackPopUp"));
+
+            // Cancelled, this returns to the settings popup underneath. Deleted, there is no
+            // account left to show a profile or a guid for, so everything closes back to
+            // Advanced rather than returning to numbers that no longer belong to anyone.
+            deleteConfirmModal.OnBack = () =>
+            {
+                if (!string.IsNullOrEmpty(PlayerPrefs.GetString("UserGuid", "")))
+                {
+                    return false;
+                }
+
+                navigator.PopToRoot();
+                return true;
+            };
+
+            feedbackModal.OnBack = () =>
+            {
+                comparisonRatingOptions.SetAllTogglesOff();
+                comparisonFeedbackTextGO.text = "";
+                ErrorBanner.Hide(errorPopupGO);
+                return false;
+            };
+        }
 
         void OnEnable()
         {
             // Stops animated dropdown error message from appearing
-            StopErrorAnimation();
+            ErrorBanner.Hide(errorPopupGO);
 
             // Set proper game objects active and establish button behavior
             levelBarGO.SetActive(true);
@@ -295,230 +307,105 @@ namespace SaySuomi.Navigation
             feedbackButtonGO.SetActive(true);
             insufficientDataNoticeGO.SetActive(false);
 
-            ButtonUtils.Rewire(profileBackButtonGO, LeaveProfile);
-
-            settingsPopupGO.SetActive(false);
-            dimPanelGO.SetActive(false);
-
             guid = PlayerPrefs.GetString("UserGuid");
             guidTextGO.text = guid;
+        }
 
-            ButtonUtils.Rewire(
-                settingsButtonGO,
-                () =>
-                {
-                    settingsPopupGO.SetActive(true);
-                    dimPanelGO.SetActive(true);
-                }
+        void SendFeedback()
+        {
+            var helpful = comparisonRatingOptions.ActiveToggles().FirstOrDefault();
+            string comment_helpful = comparisonFeedbackTextGO.text;
+
+            // Show and error popup if user tries to send feeback without choosing any of the emojis
+            if (helpful == null)
+            {
+                ErrorBanner.Show(errorPopupGO);
+                return;
+            }
+
+            // Send feedback to server
+            StartCoroutine(
+                NetworkManager
+                    .GetManager()
+                    .ServerPost_feedback(
+                        POSTType.USER_ASA_FEEDBACK,
+                        "comparison_ui",
+                        helpful.name,
+                        comment_helpful
+                    )
             );
 
-            ButtonUtils.Rewire(
-                settingsBackButtonGO,
-                () =>
-                {
-                    settingsPopupGO.SetActive(false);
-                    dimPanelGO.SetActive(false);
-                }
-            );
+            // OnBack resets the form.
+            Navigator.GetManager().Back();
+        }
 
-            ButtonUtils.Rewire(copyGuidButtonGO, () => GUIUtility.systemCopyBuffer = guid);
-
-            SetUpDeleteData();
-            SetUpLevelChange();
-
-            ButtonUtils.Rewire(
-                feedbackButtonGO,
-                () =>
-                {
-                    feedbackPopUpGO.SetActive(true);
-                    dimPanelGO.SetActive(true);
-                }
-            );
-
-            ButtonUtils.Rewire(
-                feedbackBackButtonGO,
-                () =>
-                {
-                    comparisonRatingOptions.SetAllTogglesOff();
-                    comparisonFeedbackTextGO.text = "";
-                    feedbackPopUpGO.SetActive(false);
-                    dimPanelGO.SetActive(false);
-                    errorPopupGO.SetActive(false);
-                }
-            );
-
-            ButtonUtils.Rewire(
-                feedbackSendButtonGO,
-                () =>
-                {
-                    var helpful = comparisonRatingOptions.ActiveToggles().FirstOrDefault();
-                    string comment_helpful = comparisonFeedbackTextGO.text;
-
-                    // Show and error popup if user tries to send feeback without choosing any of the emojis
-                    if (helpful == null)
-                    {
-                        Animator anim = errorPopupGO.GetComponent<Animator>();
-
-                        errorPopupGO.SetActive(true);
-
-                        anim.enabled = true;
-
-                        anim.Play("Error Popup Animation");
-
-                        return;
-                    }
-                    // Send feedback to server
-                    StartCoroutine(
-                        NetworkManager
-                            .GetManager()
-                            .ServerPost_feedback(
-                                POSTType.USER_ASA_FEEDBACK,
-                                "comparison_ui",
-                                helpful.name,
-                                comment_helpful
-                            )
-                    );
-                    // Reset feedback form when done
-                    comparisonRatingOptions.SetAllTogglesOff();
-                    comparisonFeedbackTextGO.text = "";
-                    feedbackPopUpGO.SetActive(false);
-                    dimPanelGO.SetActive(false);
-                    errorPopupGO.SetActive(false);
-                }
-            );
+        // The popup is reused, and the previous run may have left it in its finished state with
+        // the confirm button hidden, so reset it every time.
+        void OpenDeleteConfirm()
+        {
+            deleteStatusHelper ??= new LocalizedTextHelper(deleteStatusText);
+            deleteStatusHelper.SetText(deleteWarningText);
+            deleteConfirmButtonGO.SetActive(true);
+            SetDeleteButtonsInteractable(true);
+            deleteCancelLabel.gameObject.SetActive(true);
+            deleteOkLabel.gameObject.SetActive(false);
+            Navigator.GetManager().Open(deleteConfirmModal);
         }
 
         /// <summary>
-        /// Wires the delete-my-data flow: red button in settings, then a confirmation the user
-        /// has to pass before anything is sent.
-        ///
         /// The deletion itself lives in NetworkManager.ServerPost_deleteUser, which clears the
         /// local data whatever the server says, and records whether the server confirmed the
         /// erase. Both outcomes are shown honestly here.
         /// </summary>
-        private void SetUpDeleteData()
+        void DeleteData()
         {
-            if (deleteDataButtonGO == null || deleteConfirmPopupGO == null)
-            {
-                return;
-            }
+            // Both buttons go dead for the duration, and back with them: a second tap would fire
+            // a second deletion for a guid the first one is already removing.
+            SetDeleteButtonsInteractable(false);
+            deleteConfirmModal.Dismissible = false;
+            deleteStatusHelper.SetText(deleteLoadingText);
 
-            deleteConfirmPopupGO.SetActive(false);
-
-            ButtonUtils.Rewire(
-                deleteDataButtonGO,
-                () =>
-                {
-                    // Reset every time: the popup is reused, and the previous run may have
-                    // left it in its finished state with the confirm button hidden.
-                    deleteStatusHelper ??= new LocalizedTextHelper(deleteStatusText);
-                    deleteStatusHelper.SetText(deleteWarningText);
-                    deleteConfirmButtonGO.SetActive(true);
-                    SetDeleteButtonsInteractable(true);
-                    deleteCancelLabel.gameObject.SetActive(true);
-                    deleteOkLabel.gameObject.SetActive(false);
-                    deleteConfirmPopupGO.SetActive(true);
-                    dimPanelGO.SetActive(true);
-                }
-            );
-
-            ButtonUtils.Rewire(
-                deleteCancelButtonGO,
-                () =>
-                {
-                    deleteConfirmPopupGO.SetActive(false);
-
-                    bool accountGone = string.IsNullOrEmpty(PlayerPrefs.GetString("UserGuid", ""));
-
-                    if (!accountGone)
+            StartCoroutine(
+                NetworkManager
+                    .GetManager()
+                    .ServerPost_deleteUser(serverConfirmed =>
                     {
-                        // Cancelled. This returns to the settings popup, which is still open
-                        // underneath - so the dim stays on. Turning it off here left the popup
-                        // sitting on an undimmed screen.
-                        return;
-                    }
+                        NetworkManager network = NetworkManager.GetManager();
 
-                    // Deleted. There is no account left to show a profile or a guid for, so
-                    // everything closes back to the task list rather than returning to numbers
-                    // that no longer belong to anyone.
-                    settingsPopupGO.SetActive(false);
-                    profilePanelGO.SetActive(false);
+                        if (network.DataConfirmedDeleted)
+                        {
+                            deleteStatusHelper.SetText(deleteConfirmedNotice);
+                        }
+                        else if (serverConfirmed)
+                        {
+                            deleteStatusHelper.SetText(deleteReceivedNotice);
+                        }
+                        else
+                        {
+                            // Same wording as a server-acknowledged request. The local
+                            // data really is gone, and the guid is queued in
+                            // PendingDeleteGuid and retried on every launch until the
+                            // server takes it - so from the user's side the outcome is
+                            // the same and the difference is ours to resolve, not
+                            // theirs to worry about. The console still carries the
+                            // real failure for us; see DeleteUserOnServer.
+                            deleteStatusHelper.SetText(deleteReceivedNotice);
+                        }
 
-                    if (taskPanelGO != null)
-                    {
-                        taskPanelGO.SetActive(false);
-                    }
-
-                    dimPanelGO.SetActive(false);
-                }
-            );
-
-            ButtonUtils.Rewire(
-                deleteConfirmButtonGO,
-                () =>
-                {
-                    // Both buttons go dead for the duration: a second tap would fire a second
-                    // deletion for a guid the first one is already removing.
-                    SetDeleteButtonsInteractable(false);
-                    deleteStatusHelper.SetText(deleteLoadingText);
-
-                    StartCoroutine(
-                        NetworkManager
-                            .GetManager()
-                            .ServerPost_deleteUser(serverConfirmed =>
-                            {
-                                NetworkManager network = NetworkManager.GetManager();
-
-                                if (network.DataConfirmedDeleted)
-                                {
-                                    deleteStatusHelper.SetText(deleteConfirmedNotice);
-                                }
-                                else if (serverConfirmed)
-                                {
-                                    deleteStatusHelper.SetText(deleteReceivedNotice);
-                                }
-                                else
-                                {
-                                    // Same wording as a server-acknowledged request. The local
-                                    // data really is gone, and the guid is queued in
-                                    // PendingDeleteGuid and retried on every launch until the
-                                    // server takes it - so from the user's side the outcome is
-                                    // the same and the difference is ours to resolve, not
-                                    // theirs to worry about. The console still carries the
-                                    // real failure for us; see DeleteUserOnServer.
-                                    deleteStatusHelper.SetText(deleteReceivedNotice);
-                                }
-
-                                // Nothing left to confirm; the cancel button becomes the way out.
-                                deleteConfirmButtonGO.SetActive(false);
-                                SetDeleteButtonsInteractable(true);
-                                deleteCancelLabel.gameObject.SetActive(false);
-                                deleteOkLabel.gameObject.SetActive(true);
-                            })
-                    );
-                }
+                        // Nothing left to confirm; the cancel button becomes the way out.
+                        deleteConfirmButtonGO.SetActive(false);
+                        SetDeleteButtonsInteractable(true);
+                        deleteConfirmModal.Dismissible = true;
+                        deleteCancelLabel.gameObject.SetActive(false);
+                        deleteOkLabel.gameObject.SetActive(true);
+                    })
             );
         }
 
         private void SetDeleteButtonsInteractable(bool interactable)
         {
-            if (deleteConfirmButtonGO != null)
-            {
-                deleteConfirmButtonGO.GetComponent<Button>().interactable = interactable;
-            }
-
-            if (deleteCancelButtonGO != null)
-            {
-                deleteCancelButtonGO.GetComponent<Button>().interactable = interactable;
-            }
-        }
-
-        public void StopErrorAnimation()
-        {
-            // Stops the drop-down error message animation
-            Animator anim = errorPopupGO.GetComponent<Animator>();
-            anim.enabled = false;
-            errorPopupGO.SetActive(false);
+            deleteConfirmButtonGO.GetComponent<Button>().interactable = interactable;
+            deleteCancelButtonGO.GetComponent<Button>().interactable = interactable;
         }
 
         /// <summary>
@@ -753,17 +640,6 @@ namespace SaySuomi.Navigation
         }
 
         /// <summary>
-        /// Wires Advance and Revert. Neither had a handler before - the Button components
-        /// carry an empty persistent call from the Inspector and nothing else - so tapping
-        /// them has never done anything.
-        /// </summary>
-        private void SetUpLevelChange()
-        {
-            ButtonUtils.Rewire(advanceLevelButtonGO, () => ChangeLevel(1));
-            ButtonUtils.Rewire(revertLevelButtonGO, () => ChangeLevel(-1));
-        }
-
-        /// <summary>
         /// Moves the user one step along Const.ASA_LEVELS and reloads the profile.
         /// </summary>
         /// <param name="step">+1 to advance, -1 to revert.</param>
@@ -800,7 +676,7 @@ namespace SaySuomi.Navigation
             SetLevelButtonsInteractable(false);
 
             NetworkManager network = NetworkManager.GetManager();
-            ASATaskListScreen taskList = taskPanelGO.GetComponent<ASATaskListScreen>();
+            ASATaskListScreen taskList = Navigator.GetManager().Get<ASATaskListScreen>();
 
             // With no endpoint configured nothing is sent, so there is no progress to show.
             bool willSend = network.CanSetLevel;
@@ -837,30 +713,6 @@ namespace SaySuomi.Navigation
                     }
                 )
             );
-        }
-
-        private void LeaveProfile()
-        {
-            profilePanelGO.SetActive(false);
-            loadingPopUpProfile.SetActive(false);
-        }
-
-        /// <summary>
-        /// Back does what the visible back control does. The dim means one of this screen's
-        /// popups is open, and those have their own buttons. Temporary: goes in Stage 5.
-        /// </summary>
-        public void OnBackPressed()
-        {
-            if (loadingPopUpProfile.activeSelf)
-            {
-                taskPanelGO.GetComponent<ASATaskListScreen>().OnBackPressed();
-                return;
-            }
-
-            if (!dimPanelGO.activeSelf)
-            {
-                LeaveProfile();
-            }
         }
 
         /// <summary>

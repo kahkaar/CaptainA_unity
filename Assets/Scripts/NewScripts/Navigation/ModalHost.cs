@@ -9,7 +9,8 @@ namespace SaySuomi.Navigation
     /// </summary>
     internal sealed class ModalHost : MonoBehaviour
     {
-        const float DimAlpha = 0.5f;
+        static readonly Color DimColor = new Color(0.2901961f, 0.3137255f, 0.37254903f);
+        const float DimAlpha = 0.19607843f;
 
         Image dim;
         TransitionRunner transition;
@@ -27,6 +28,9 @@ namespace SaySuomi.Navigation
         public void Show(ModalScreen modal)
         {
             bool dimAlreadyShowing = dim != null && dim.gameObject.activeSelf;
+
+            // The newest modal is always on top, whichever screen owned it in the scene.
+            modal.transform.SetAsLastSibling();
             PlaceDimBelow(modal);
 
             System.Action<float> animate = ScreenTransitions.Modal(modal, opening: true);
@@ -112,7 +116,7 @@ namespace SaySuomi.Navigation
         {
             if (dim != null)
             {
-                dim.color = new Color(0f, 0f, 0f, alpha);
+                dim.color = new Color(DimColor.r, DimColor.g, DimColor.b, alpha);
             }
         }
 

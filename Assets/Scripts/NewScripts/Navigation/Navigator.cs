@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -10,9 +9,6 @@ namespace SaySuomi.Navigation
     /// The single owner of navigation: the current tab, the stack above it, and back.
     /// See docs/NEW/NAVIGATION.md.
     /// </summary>
-    // Runs before other scripts, so an old screen's Escape handler has not yet closed it when
-    // LegacyBackHandlerOpen looks. Otherwise one press would close the screen and then act again.
-    [DefaultExecutionOrder(-100)]
     public sealed class Navigator : MonoBehaviour
     {
         const string InstructionPanelName = "PopUpPanel";
@@ -25,20 +21,11 @@ namespace SaySuomi.Navigation
         TransitionRunner transition;
         ModalHost modalHost;
         AppScreen home;
-        MonoBehaviour[] legacyBackHandlers;
-        int handledBackFrame = -1;
 
         /// <summary>Raised after the new tab is active, so its OnEnable has already run.</summary>
         public event Action<AppScreen> TabChanged;
 
         public AppScreen CurrentTab { get; private set; }
-
-        /// <summary>
-        /// True when this frame's Escape already closed something here. Screens that still read
-        /// Escape themselves check this, so one press cannot also close them. Temporary, like
-        /// ILegacyBackHandler.
-        /// </summary>
-        public bool HandledBackThisFrame => handledBackFrame == Time.frameCount;
 
         AppScreen Top => stack.Count > 0 ? stack[stack.Count - 1] : CurrentTab;
 
@@ -77,10 +64,6 @@ namespace SaySuomi.Navigation
             {
                 screens[screen.GetType()] = screen;
             }
-
-            legacyBackHandlers = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None)
-                .Where(behaviour => behaviour is ILegacyBackHandler)
-                .ToArray();
 
             home = Get<FreestyleScreen>();
 
@@ -136,15 +119,8 @@ namespace SaySuomi.Navigation
         void Update()
         {
             Keyboard keyboard = Keyboard.current;
-            if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame)
+            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             {
-                return;
-            }
-
-            // Anything on the stack is in front of an old screen, so it takes the press first.
-            if (stack.Count > 0 || !LegacyBackHandlerOpen())
-            {
-                handledBackFrame = Time.frameCount;
                 Back();
             }
         }
@@ -174,6 +150,12 @@ namespace SaySuomi.Navigation
 
             Debug.LogError($"Navigator: no {typeof(T).Name} in the scene.");
             return null;
+        }
+
+        /// <summary>True when the screen is on the stack, or is the current tab.</summary>
+        public bool IsOpen(AppScreen screen)
+        {
+            return screen == CurrentTab || stack.Contains(screen);
         }
 
         /// <summary>Opens a screen. Returns it, active, so the caller can give it data.</summary>
@@ -273,6 +255,13 @@ namespace SaySuomi.Navigation
             FinishTransition();
 
             AppScreen top = Top;
+
+            // First, so a popup waiting on the server does not reset its form on a back press.
+            if (top is ModalScreen modal && !modal.Dismissible)
+            {
+                return;
+            }
+
             if (top.HandleBack())
             {
                 return;
@@ -280,11 +269,7 @@ namespace SaySuomi.Navigation
 
             if (stack.Count > 0)
             {
-                if (!(top is ModalScreen modal) || modal.Dismissible)
-                {
-                    PopTop();
-                }
-
+                PopTop();
                 return;
             }
 
@@ -330,13 +315,7 @@ namespace SaySuomi.Navigation
             PopDownTo(0);
         }
 
-        /// <summary>
-        /// Shows a tab root, clearing the stack.
-        ///
-        /// Selecting the current tab re-runs its lifecycle, because Advanced closes its
-        /// unmigrated sub-screens in OnEnable. After Stage 5 this becomes a no-op on the tab's
-        /// root.
-        /// </summary>
+        /// <summary>Shows a tab root, clearing the stack.</summary>
         public void SelectTab(AppScreen tabRoot)
         {
             FinishTransition();
@@ -347,7 +326,7 @@ namespace SaySuomi.Navigation
             AppScreen previous = CurrentTab;
             if (previous == tabRoot)
             {
-                tabRoot.gameObject.SetActive(false);
+                // Hidden if the stack had a Screen layer entry, and left alone if not.
                 tabRoot.gameObject.SetActive(true);
                 TabChanged?.Invoke(tabRoot);
                 return;
@@ -371,19 +350,6 @@ namespace SaySuomi.Navigation
                     Deactivate(previous);
                 }
             );
-        }
-
-        bool LegacyBackHandlerOpen()
-        {
-            foreach (MonoBehaviour handler in legacyBackHandlers)
-            {
-                if (handler != null && handler.isActiveAndEnabled)
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         void FinishTransition()
@@ -416,6 +382,14 @@ namespace SaySuomi.Navigation
             AppScreen top = stack[stack.Count - 1];
             stack.RemoveAt(stack.Count - 1);
 
+            // Before revealing, because the screen revealed may open a modal in OnEnable, and
+            // this must still slide the screen rather than that modal.
+            AppScreen below = Top;
+
+            // Needed even when the top entry hid nothing, because PopDownTo may have just closed
+            // a Screen layer entry from the middle of the stack.
+            RevealVisibleEntries();
+
             if (top is ModalScreen modal)
             {
                 modalHost.Hide(modal, Top as ModalScreen);
@@ -434,8 +408,6 @@ namespace SaySuomi.Navigation
                 return;
             }
 
-            AppScreen below = Top;
-            RevealVisibleEntries();
             below.Group.blocksRaycasts = false;
 
             transition.Play(

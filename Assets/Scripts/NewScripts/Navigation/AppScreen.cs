@@ -92,7 +92,7 @@ namespace SaySuomi.Navigation
         }
 
         /// <summary>Finds a child by a path relative to this screen, including inactive ones.</summary>
-        protected GameObject FindObject(string path)
+        public GameObject FindObject(string path)
         {
             Transform child = transform.Find(path);
             if (child == null)
@@ -105,7 +105,7 @@ namespace SaySuomi.Navigation
         }
 
         /// <summary>Finds a component on a child by a path relative to this screen.</summary>
-        protected T Find<T>(string path)
+        public T Find<T>(string path)
             where T : Component
         {
             GameObject child = FindObject(path);

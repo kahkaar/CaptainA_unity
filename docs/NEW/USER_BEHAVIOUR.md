@@ -6,7 +6,7 @@ and sends it to the server. Server contract: dta-server `docs/USER_EVENTS.md` an
 
 Status: first draft. The system is in `Assets/Scripts/UserBehaviour/` but is not yet
 called from the ASA screens (see [Wiring](#wiring)). This copy describes the wiring for the
-planned [navigation system](NAVIGATION.md), and replaces `docs/USER_BEHAVIOUR.md` at cutover.
+new [navigation system](NAVIGATION.md), and replaces `docs/USER_BEHAVIOUR.md` at cutover.
 
 ## How it works
 
@@ -98,10 +98,10 @@ To add an event: copy the closest struct in `UserEventModels.cs`, change `Name`,
 
 Not done yet. Where the calls belong:
 
-- **Start:** `AdvancedScreen.OnASAButtonClicked` → `StartSession()`. Also after onboarding
+- **Start:** `AdvancedScreen.ProceedToASA` → `StartSession()`. Also after onboarding
   succeeds in `AdvancedScreen.GetUserInput`: a first-time learner has no guid at the tap.
-- **End:** leaving the assessment → `EndSession()`: `ASATaskListScreen.HandleBack` and
-  `Navigator.TabChanged` (another tab). Not `AdvancedScreen.OnDisable`: that screen is also
+- **End:** leaving the assessment → `EndSession()`: a `HandleBack` override on
+  `ASATaskListScreen`, and `Navigator.TabChanged` (another tab). Not `AdvancedScreen.OnDisable`: that screen is also
   disabled while the task list covers it. Closing the app is automatic.
   `NetworkManager.ClearLocalASAData` → `Forget()`.
 - **Task list / profile:** open in `OnEnable`, close in `OnDisable`. The task list is now

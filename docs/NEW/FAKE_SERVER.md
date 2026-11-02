@@ -30,6 +30,9 @@ release.
 
 To go back to a real backend, restore your real values in `Secret.cs`.
 
+To test a first launch, use **Tools > Delete All PlayerPrefs** in the Editor. Fake server users
+are separate: restarting the server forgets them.
+
 ## Testing scenarios
 
 Change behaviour while the app runs by opening a URL in a browser. The response shows the

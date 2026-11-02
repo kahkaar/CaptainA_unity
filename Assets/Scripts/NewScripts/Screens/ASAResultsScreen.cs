@@ -3,66 +3,31 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Analytics;
 using UnityEngine.Localization;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace SaySuomi.Navigation
 {
-    public class ASAResultsScreen : MonoBehaviour
+    public class ASAResultsScreen : AppScreen
     {
+        const string Content = "ScrollView/Viewport/Content/";
+
+        // The "ASAPanel Labels"-style table holding this screen's text.
+        static readonly System.Guid Table = new System.Guid("db69d3d55aef5df5fa3b2c531d1f5502");
+
         NetworkManager networkManager;
 
-        [SerializeField]
-        GameObject feedbackPanelGO;
-
-        [SerializeField]
-        GameObject ASAPanelGO;
-
-        [SerializeField]
-        GameObject newTaskButtonGO;
-
-        [SerializeField]
-        GameObject proficiencyButtonGO;
-
-        [SerializeField]
-        GameObject pronunciationButtonGO;
-
-        [SerializeField]
-        GameObject rangeButtonGO;
-
-        [SerializeField]
-        GameObject accuracyButtonGO;
-
-        [SerializeField]
-        GameObject fluencyButtonGO;
-
-        [SerializeField]
-        GameObject popupPanelGO;
-
-        [SerializeField]
-        GameObject dimPanelGO;
-
-        [SerializeField]
-        GameObject popupBackButtonGO;
+        ModalScreen popupModal;
+        ModalScreen infoModal;
+        ModalScreen feedbackModal;
 
         // Shown above the score rows when the server's relevance check flagged the recording,
-        // for both off_topic and partial. Both fields are optional: left unassigned, the panel
-        // behaves as it did before rather than throwing on a result screen.
-        //
-        // FormerlySerializedAs keeps the existing Inspector wiring after the rename from
-        // offTopicWarning*, which happened when partial started using the same notice.
-        [SerializeField]
-        [FormerlySerializedAs("offTopicWarningGO")]
+        // for both off_topic and partial.
         GameObject relevanceWarningGO;
 
-        [SerializeField]
-        [FormerlySerializedAs("offTopicWarningText")]
         TextMeshProUGUI relevanceWarningText;
 
-        [SerializeField]
         private LocalizedString answerOffTopicNotice;
 
-        [SerializeField]
         private LocalizedString answerPartialNotice;
 
         private LocalizedTextHelper relevanceWarningHelper;
@@ -71,10 +36,8 @@ namespace SaySuomi.Navigation
         // seeing even on a good result: it is the only way a learner can tell a low score
         // apart from a misheard word, and it is what makes an off_topic verdict checkable
         // rather than something they have to take on trust.
-        [SerializeField]
         TextMeshProUGUI transcriptText;
 
-        [SerializeField]
         private LocalizedString emptyTranscriptNotice;
 
         private LocalizedTextHelper transcriptNoticeHelper;
@@ -82,7 +45,6 @@ namespace SaySuomi.Navigation
         // Hidden while a relevance notice is showing. The two occupy the same band, and the
         // notice is the more urgent of the two - InfoText explains how to read the scores,
         // which matters less than being told the scores may not mean what they appear to.
-        [SerializeField]
         GameObject infoTextGO;
 
         // The ScrollRect's Content, and the transcript box inside it. Both are resized at
@@ -97,10 +59,8 @@ namespace SaySuomi.Navigation
         // with a region the learner could not scroll away from. Cull Transparent Mesh must
         // stay off too: a culled mesh reports depth -1 and GraphicRaycaster skips those, which
         // would quietly undo the fix.
-        [SerializeField]
         RectTransform scrollContent;
 
-        [SerializeField]
         RectTransform transcriptGroup;
 
         // Geometry of the transcript box, matching how it is built in the prefab.
@@ -110,51 +70,19 @@ namespace SaySuomi.Navigation
         const float CONTENT_TAIL = 40f; // breathing room under the box
         const float MIN_CONTENT_HEIGHT = 1620f; // never shrink below the fixed layout above
 
-        [SerializeField]
         FeedbackRow proficiencyScore;
 
-        [SerializeField]
         FeedbackRow pronunciationScore;
 
-        [SerializeField]
         FeedbackRow rangeScore;
 
-        [SerializeField]
         FeedbackRow accuracyScore;
 
-        [SerializeField]
         FeedbackRow fluencyScore;
 
-        [SerializeField]
-        GameObject replayButtonGO;
+        ToggleGroup accuracyRatingOptions;
 
-        [SerializeField]
-        GameObject sendButtonGO;
-
-        [SerializeField]
-        GameObject infoButtonGO;
-
-        [SerializeField]
-        GameObject infoPopupGO;
-
-        [SerializeField]
-        GameObject infoBackButtonGO;
-
-        [SerializeField]
-        GameObject feedbackButtonGO;
-
-        [SerializeField]
-        GameObject feedbackPopUpGO;
-
-        [SerializeField]
-        GameObject feedbackBackButtonGO;
-
-        [SerializeField]
-        GameObject feedbackSendButtonGO;
-
-        public ToggleGroup accuracyRatingOptions;
-
-        public ToggleGroup understandingRatingOptions;
+        ToggleGroup understandingRatingOptions;
 
         // Post each emoji on tap rather than waiting for Send. Built once and kept: they
         // remember what the server already has, which is what stops Send re-posting an answer
@@ -162,47 +90,32 @@ namespace SaySuomi.Navigation
         private FeedbackAutoSend accuracyFeedback;
         private FeedbackAutoSend understandingFeedback;
 
-        [SerializeField]
         TMP_InputField accuracyFeedbackTextGO;
 
-        [SerializeField]
         TMP_InputField understandingFeedbackTextGO;
 
-        [SerializeField]
         GameObject proficiencyTitleGO;
 
-        [SerializeField]
         GameObject pronunciationTitleGO;
 
-        [SerializeField]
         GameObject rangeTitleGO;
 
-        [SerializeField]
         GameObject accuracyTitleGO;
 
-        [SerializeField]
         GameObject fluencyTitleGO;
 
-        [SerializeField]
-        GameObject TaskPanelGO;
-
-        [SerializeField]
         GameObject errorPopupGO;
 
-        [System.Serializable]
         public class PopupAttributes
         {
             public LocalizedString titleText;
             public LocalizedString popupText;
         }
 
-        [SerializeField]
         private PopupAttributes[] panels;
 
-        [SerializeField]
         private TextMeshProUGUI titleTextGO;
 
-        [SerializeField]
         private TextMeshProUGUI popupTextGO;
 
         private LocalizedTextHelper popupTitleTextHelper;
@@ -210,6 +123,172 @@ namespace SaySuomi.Navigation
         private LocalizedTextHelper popupTextHelper;
 
         private int currentPopupOpen = -1;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            networkManager = NetworkManager.GetManager();
+
+            answerOffTopicNotice = new LocalizedString(Table, 4093949075456);
+            answerPartialNotice = new LocalizedString(Table, 4361424035840);
+
+            // Unassigned in the scene when this moved to code, so a blank transcript shows
+            // nothing. An entry needs adding to the table to give it wording.
+            emptyTranscriptNotice = new LocalizedString();
+
+            panels = new[]
+            {
+                Popup(669878673408, 6343601774592),
+                Popup(2876388761600, 6757755740160),
+                Popup(2907997036544, 6846674984960),
+                Popup(2925197877248, 6874936205312),
+                Popup(2951772987392, 6939780145152),
+            };
+
+            relevanceWarningGO = FindObject(Content + "RelevanceWarning");
+            relevanceWarningText = Find<TextMeshProUGUI>(Content + "RelevanceWarning/WarningText");
+            transcriptText = Find<TextMeshProUGUI>(Content + "TranscriptGroup/TranscriptText");
+            infoTextGO = FindObject(Content + "InfoText");
+            scrollContent = Find<RectTransform>("ScrollView/Viewport/Content");
+            transcriptGroup = Find<RectTransform>(Content + "TranscriptGroup");
+            proficiencyScore = Find<FeedbackRow>(Content + "ScoreGroup/ScoreRow1");
+            pronunciationScore = Find<FeedbackRow>(Content + "ScoreGroup/ScoreRow2");
+            rangeScore = Find<FeedbackRow>(Content + "ScoreGroup/ScoreRow3");
+            accuracyScore = Find<FeedbackRow>(Content + "ScoreGroup/ScoreRow4");
+            fluencyScore = Find<FeedbackRow>(Content + "ScoreGroup/ScoreRow5");
+            accuracyRatingOptions = Find<ToggleGroup>("FeedbackPopUp/AccuracyRatingGroup");
+            understandingRatingOptions = Find<ToggleGroup>("FeedbackPopUp/UnderstandRatingGroup");
+            accuracyFeedbackTextGO = Find<TMP_InputField>("FeedbackPopUp/AccuracyFeedbackTextField");
+            understandingFeedbackTextGO = Find<TMP_InputField>("FeedbackPopUp/UnderstandFeedbackTextField");
+            proficiencyTitleGO = FindObject(Content + "TitleGroup/ProficiencyText");
+            pronunciationTitleGO = FindObject(Content + "TitleGroup/PronunciationText");
+            rangeTitleGO = FindObject(Content + "TitleGroup/RangeText");
+            accuracyTitleGO = FindObject(Content + "TitleGroup/AccuracyText");
+            fluencyTitleGO = FindObject(Content + "TitleGroup/FluencyText");
+            errorPopupGO = FindObject("FeedbackPopUp/ErrorPopup");
+            titleTextGO = Find<TextMeshProUGUI>("PopupPanel/PopupTitle");
+            popupTextGO = Find<TextMeshProUGUI>("PopupPanel/PopupText");
+
+            Navigator navigator = Navigator.GetManager();
+
+            ButtonWiring.Replace(Find<Button>(Content + "NewTaskButton"), () => navigator.PopTo<ASATaskListScreen>());
+            ButtonWiring.Replace(Find<Button>(Content + "ProficiencyButton"), () => OpenPopup(0));
+            ButtonWiring.Replace(Find<Button>(Content + "PronunciationButton"), () => OpenPopup(1));
+            ButtonWiring.Replace(Find<Button>(Content + "RangeButton"), () => OpenPopup(2));
+            ButtonWiring.Replace(Find<Button>(Content + "AccuracyButton"), () => OpenPopup(3));
+            ButtonWiring.Replace(Find<Button>(Content + "FluencyButton"), () => OpenPopup(4));
+            ButtonWiring.Replace(Find<Button>("PopupPanel/PopupBackButton"), () => navigator.Back());
+            ButtonWiring.Replace(Find<Button>("InfoButton"), () => navigator.Open(infoModal));
+            ButtonWiring.Replace(Find<Button>("InfoPopup/InfoBackButton"), () => navigator.Back());
+            ButtonWiring.Replace(Find<Button>(Content + "FeedbackButton"), OpenFeedback);
+            ButtonWiring.Replace(Find<Button>("FeedbackPopUp/FeedbackBackButton"), () => navigator.Back());
+            ButtonWiring.Replace(Find<Button>("FeedbackPopUp/FeedbackSendButton"), SendFeedback);
+
+            popupModal = ModalScreen.Attach(FindObject("PopupPanel"));
+            infoModal = ModalScreen.Attach(FindObject("InfoPopup"));
+            feedbackModal = ModalScreen.Attach(FindObject("FeedbackPopUp"));
+
+            // Reset feedback form and go back
+            feedbackModal.OnBack = () =>
+            {
+                accuracyRatingOptions.SetAllTogglesOff();
+                accuracyFeedbackTextGO.text = "";
+                understandingRatingOptions.SetAllTogglesOff();
+                understandingFeedbackTextGO.text = "";
+                ErrorBanner.Hide(errorPopupGO);
+                return false;
+            };
+
+            // Both emoji rows now post the moment one is tapped, so a learner who answers and
+            // then closes the popup without pressing Send is still counted. Send keeps working
+            // and carries the typed comment - see SendFeedback.
+            accuracyFeedback = new FeedbackAutoSend(networkManager, "result_accuracy");
+            understandingFeedback = new FeedbackAutoSend(networkManager, "result_understanding");
+
+            accuracyFeedback.Attach(accuracyRatingOptions, () => accuracyFeedbackTextGO.text);
+            understandingFeedback.Attach(
+                understandingRatingOptions,
+                () => understandingFeedbackTextGO.text
+            );
+
+            accuracyFeedback.AttachComment(accuracyFeedbackTextGO, accuracyRatingOptions);
+            understandingFeedback.AttachComment(
+                understandingFeedbackTextGO,
+                understandingRatingOptions
+            );
+        }
+
+        static PopupAttributes Popup(long titleKey, long textKey)
+        {
+            return new PopupAttributes
+            {
+                titleText = new LocalizedString(Table, titleKey),
+                popupText = new LocalizedString(Table, textKey),
+            };
+        }
+
+        /// <summary>Back leaves the results for the task list, the same as New Task.</summary>
+        public override bool HandleBack()
+        {
+            Navigator.GetManager().PopTo<ASATaskListScreen>();
+            return true;
+        }
+
+        void OpenPopup(int popupOpen)
+        {
+            DisplayPopup(popupOpen);
+            Navigator.GetManager().Open(popupModal);
+        }
+
+        void OpenFeedback()
+        {
+            Navigator.GetManager().Open(feedbackModal);
+            ErrorBanner.Hide(errorPopupGO);
+        }
+
+        void SendFeedback()
+        {
+            // Get values from feedback form
+            var accuracy = accuracyRatingOptions.ActiveToggles().FirstOrDefault();
+            var understanding = understandingRatingOptions.ActiveToggles().FirstOrDefault();
+            string comment_accuracy = accuracyFeedbackTextGO.text;
+            string comment_understanding = understandingFeedbackTextGO.text;
+
+            bool hasAccuracy = accuracy != null;
+            bool hasUnderstanding = understanding != null;
+            bool hasCommentAccuracy = !string.IsNullOrEmpty(comment_accuracy);
+            bool hasCommentUnderstanding = !string.IsNullOrEmpty(comment_understanding);
+
+            // Only proceed if correct fields are filled, error drop-down otherwise
+            bool isValid =
+                (hasAccuracy && hasUnderstanding)
+                || (hasAccuracy && !hasCommentUnderstanding)
+                || (hasUnderstanding && !hasCommentAccuracy);
+
+            if (!isValid)
+            {
+                ErrorBanner.Show(errorPopupGO);
+                return;
+            }
+
+            // Send given feedbacks to server.
+            //
+            // Usually a no-op for the rating itself, which posted when it was tapped.
+            // What this still carries is the comment, typed after the emoji was
+            // chosen, and any tap made before the assessment id existed.
+            if (accuracy != null)
+            {
+                accuracyFeedback.Send(accuracy.name, comment_accuracy);
+            }
+            if (understanding != null)
+            {
+                understandingFeedback.Send(understanding.name, comment_understanding);
+            }
+
+            // OnBack resets the form.
+            Navigator.GetManager().Back();
+        }
 
         public void DisplayPopup(int popupOpen)
         {
@@ -255,18 +334,8 @@ namespace SaySuomi.Navigation
             anim.enabled = false;
         }
 
-        public void StopErrorAnimation()
-        {
-            // Stop the drop-down error message animation
-            Animator anim = errorPopupGO.GetComponent<Animator>();
-            anim.enabled = false;
-            errorPopupGO.SetActive(false);
-        }
-
         void OnEnable()
         {
-            networkManager = NetworkManager.GetManager();
-
             // Clear last result's notice before anything else runs. The real call is ~200
             // lines below, after the button wiring and the score read, and anything that
             // throws in between would leave the previous warning on screen - so a learner who
@@ -274,201 +343,17 @@ namespace SaySuomi.Navigation
             // Passing null means "no result yet", which resolves to hidden.
             ShowRelevanceWarning(null);
 
-            // Both emoji rows now post the moment one is tapped, so a learner who answers and
-            // then closes the popup without pressing Send is still counted. Send keeps working
-            // and carries the typed comment - see the feedbackSendButtonGO handler below.
-            accuracyFeedback ??= new FeedbackAutoSend(this, "result_accuracy");
-            understandingFeedback ??= new FeedbackAutoSend(this, "result_understanding");
-
-            accuracyFeedback.Attach(accuracyRatingOptions, () => accuracyFeedbackTextGO.text);
-            understandingFeedback.Attach(
-                understandingRatingOptions,
-                () => understandingFeedbackTextGO.text
-            );
-
-            accuracyFeedback.AttachComment(accuracyFeedbackTextGO, accuracyRatingOptions);
-            understandingFeedback.AttachComment(
-                understandingFeedbackTextGO,
-                understandingRatingOptions
-            );
-
             // Reset all title animations at enable
             ResetTextSizeInTitleAnimation();
             StopTitleAnimation();
 
-            // Set proper game objects active and establish button behavior
-            newTaskButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    feedbackPanelGO.SetActive(false);
-                    replayButtonGO.SetActive(false);
-                    sendButtonGO.SetActive(false);
-                    TaskPanelGO.SetActive(true);
-                });
-
-            proficiencyButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    DisplayPopup(0);
-                    popupPanelGO.SetActive(true);
-                    dimPanelGO.SetActive(true);
-                });
-
-            pronunciationButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    DisplayPopup(1);
-                    popupPanelGO.SetActive(true);
-                    dimPanelGO.SetActive(true);
-                });
-
-            rangeButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    DisplayPopup(2);
-                    popupPanelGO.SetActive(true);
-                    dimPanelGO.SetActive(true);
-                });
-
-            accuracyButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    DisplayPopup(3);
-                    popupPanelGO.SetActive(true);
-                    dimPanelGO.SetActive(true);
-                });
-
-            fluencyButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    DisplayPopup(4);
-                    popupPanelGO.SetActive(true);
-                    dimPanelGO.SetActive(true);
-                });
-
-            popupBackButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    popupPanelGO.SetActive(false);
-                    dimPanelGO.SetActive(false);
-                });
-
-            infoButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    infoPopupGO.SetActive(true);
-                    dimPanelGO.SetActive(true);
-                });
-
-            feedbackButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    feedbackPopUpGO.SetActive(true);
-                    dimPanelGO.SetActive(true);
-                    StopErrorAnimation();
-                });
-
-            feedbackBackButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    // Reset feedback form and go back
-                    accuracyRatingOptions.SetAllTogglesOff();
-                    accuracyFeedbackTextGO.text = "";
-                    understandingRatingOptions.SetAllTogglesOff();
-                    understandingFeedbackTextGO.text = "";
-                    feedbackPopUpGO.SetActive(false);
-                    dimPanelGO.SetActive(false);
-                });
-
-            feedbackSendButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    // Get values from feedback form
-                    var accuracy = accuracyRatingOptions.ActiveToggles().FirstOrDefault();
-                    var understanding = understandingRatingOptions.ActiveToggles().FirstOrDefault();
-                    string comment_accuracy = accuracyFeedbackTextGO.text;
-                    string comment_understanding = understandingFeedbackTextGO.text;
-
-                    bool hasAccuracy = accuracy != null;
-                    bool hasUnderstanding = understanding != null;
-                    bool hasCommentAccuracy = !string.IsNullOrEmpty(comment_accuracy);
-                    bool hasCommentUnderstanding = !string.IsNullOrEmpty(comment_understanding);
-
-                    // Only proceed if correct fields are filled, error drop-down otherwise
-                    bool isValid =
-                        (hasAccuracy && hasUnderstanding)
-                        || (hasAccuracy && !hasCommentUnderstanding)
-                        || (hasUnderstanding && !hasCommentAccuracy);
-
-                    if (!isValid)
-                    {
-                        Animator anim = errorPopupGO.GetComponent<Animator>();
-
-                        errorPopupGO.SetActive(true);
-
-                        anim.enabled = true;
-
-                        anim.Play("Error Popup Animation");
-
-                        return;
-                    }
-
-                    // Send given feedbacks to server.
-                    //
-                    // Usually a no-op for the rating itself, which posted when it was tapped.
-                    // What this still carries is the comment, typed after the emoji was
-                    // chosen, and any tap made before the assessment id existed.
-                    if (accuracy != null)
-                    {
-                        accuracyFeedback.Send(accuracy.name, comment_accuracy);
-                    }
-                    if (understanding != null)
-                    {
-                        understandingFeedback.Send(understanding.name, comment_understanding);
-                    }
-
-                    // Reset feedback forms when done
-                    accuracyRatingOptions.SetAllTogglesOff();
-                    accuracyFeedbackTextGO.text = "";
-                    understandingRatingOptions.SetAllTogglesOff();
-                    understandingFeedbackTextGO.text = "";
-                    feedbackPopUpGO.SetActive(false);
-                    dimPanelGO.SetActive(false);
-                });
-
             if (PlayerPrefs.GetInt("InfoPopupSeen", 0) == 0)
             {
                 // Show good to know -pop up if not seen before
-                infoPopupGO.SetActive(true);
-                dimPanelGO.SetActive(true);
+                Navigator.GetManager().Open(infoModal);
                 PlayerPrefs.SetInt("InfoPopupSeen", 1);
                 PlayerPrefs.Save();
             }
-            else
-            {
-                infoPopupGO.SetActive(false);
-                dimPanelGO.SetActive(false);
-            }
-
-            infoBackButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() =>
-                {
-                    ASAPanelGO.SetActive(true);
-                    infoPopupGO.SetActive(false);
-                    dimPanelGO.SetActive(false);
-                });
 
             // Get scores from the server
             NetworkManager.ASRResultASA result = networkManager.asrResultASA;
@@ -707,19 +592,6 @@ namespace SaySuomi.Navigation
             popupTextHelper?.ClearText();
             relevanceWarningHelper?.ClearText();
             transcriptNoticeHelper?.ClearText();
-
-            newTaskButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            proficiencyButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            pronunciationButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            rangeButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            accuracyButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            fluencyButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            popupBackButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            infoButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            infoBackButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            feedbackButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            feedbackBackButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            feedbackSendButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
         }
     }
 }

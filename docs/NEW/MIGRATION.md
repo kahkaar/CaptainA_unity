@@ -2,18 +2,21 @@
 
 How the app moves from the old panels to the new navigation system.
 
-> **Status: in progress.** Stages 1 to 4 are complete and have passed in Unity, with server
-> paths tested against the fake server only. `MainScene` and the original scripts stay untouched
-> until cutover.
+> **Status: ready for final checks.** Stages 1 to 5 have passed in Unity, with server paths
+> tested against the fake server only. `MainScene` and the original scripts stay untouched until
+> cutover.
 
-| Stage                  | Code     | Scene work                         | Play mode check |
-| ---------------------- | -------- | ---------------------------------- | --------------- |
-| 0: Documentation       | Done     | –                                  | –               |
-| 1: Move scripts        | Done     | Done                               | Passed, against the fake server |
-| 2: Core and tabs       | Done     | Done                               | Passed          |
-| 3: Overlays and modals | Done     | None required                      | Passed          |
-| 4: Flashcards, NumberGame | Done  | Done                               | Passed          |
-| 5: ASA flow            | Not started | Sub-screens must leave their tab roots | –        |
+| Stage                  | Code     | Scene work | Play mode check                 |
+| ---------------------- | -------- | ---------- | ------------------------------- |
+| 0: Documentation       | Done     | –          | –                               |
+| 1: Move scripts        | Done     | Done       | Passed, against the fake server |
+| 2: Core and tabs       | Done     | Done       | Passed                          |
+| 3: Overlays and modals | Done     | None       | Passed                          |
+| 4: Flashcards, NumberGame | Done  | Done       | Passed                          |
+| 5: ASA flow            | Done     | Done       | Passed                          |
+| Freestyle code wiring  | Done     | None       | Not run                         |
+| 6: Update the documentation | Done | –         | –                               |
+| 7: Cutover             | Waiting for go-ahead | – | –                            |
 
 ## Approach
 
@@ -39,27 +42,15 @@ flowchart TD
 Each stage ends with a Play mode check. When a button migrates, `ButtonWiring.Replace` turns
 off its Inspector `OnClick` entries while the app runs, so they don't need clearing by hand.
 
-## Inspector fields still to move
-
-`FreestyleScreen` and `AdvancedScreen` became `AppScreen`s in Stage 2 but still use their
-Inspector fields. `AdvancedScreen` moves to code with the ASA flow in Stage 5. `FreestyleScreen`
-has no stage of its own yet, so it needs a pass before cutover.
-
 ## Hierarchy
 
-Stages 1 to 3 work with the current hierarchy, because tab roots, overlays and app-wide modals
-are already siblings under the root Canvas. Its name doesn't matter to the code.
+Opening a `Screen` layer entry hides the tab root, which would also hide its children, so pushed
+screens are siblings of the tab roots. `Navigator` logs an error naming any that aren't. Popups
+stay under their owners in the scene, because `ModalScreen.Attach` lifts them while the app runs.
+The order is in [Wiring](WIRING.md#hierarchy).
 
-`Manager/PopUpManager` can be deleted from the scene. `Navigator` disables it at launch, so
-this is only tidying.
-
-Stages 4 and 5 need more. Opening a `Screen` layer entry hides the tab root, which would also
-hide its children, so those screens must become siblings of the tab roots. `Navigator` logs an
-error naming any screen that hasn't moved.
-
-For Stage 4, make `CardDeckPanel/SuperMemoPanel` and `AdvancePanel/NumberGamePanel` direct
-children of the root Canvas, placed before `NavigationBar` so the tab bar draws on top. Stage 5
-does the same for the ASA screens.
+Two kinds of object are no longer used and can be deleted to tidy up: `Manager/PopUpManager`,
+which `Navigator` disables at launch, and the five old `DimPanel` objects.
 
 ## Stage 1 scene update
 
@@ -74,10 +65,10 @@ one-off script rewrites two things in the scene file, which preserves every Insp
 Commit `TESTING_SCENE` first, because it is untracked and the rewrite could not otherwise
 be undone.
 
-Fields named after their own type, such as `ASAPanel ASAPanel`, would lose their scene
-value when renamed, so the copies carry `[FormerlySerializedAs]` until those fields are
-removed in later stages. `m_EditorClassIdentifier` values are left alone: scripts are
-matched by GUID, and Unity rewrites these values when it saves the scene.
+Fields named after their own type, such as `ASAPanel ASAPanel`, would have lost their scene
+value when renamed, so the copies carried `[FormerlySerializedAs]` until those fields moved to
+code. `m_EditorClassIdentifier` values are left alone: scripts are matched by GUID, and Unity
+rewrites these values when it saves the scene.
 
 ## Checks waiting on the backend
 
@@ -134,9 +125,7 @@ over that work. The new supporting classes are:
 | `ServerNotices`      | Localized request text, defined in code from the same table entries |
 | `BackgroundFormData` | Moved out of `AdvancedScreen` so `NetworkManager` needs no screen type |
 
-The screens reuse the references they already had to these popups, so nothing new needs
-assigning. `ASATaskScreen` finds the popup's `Title` by path. See
-[Network responses](NAVIGATION.md#network-responses).
+See [Network responses](NAVIGATION.md#network-responses).
 
 ## Behaviour changes
 
@@ -144,13 +133,18 @@ assigning. `ASATaskScreen` finds the popup's `Title` by path. See
 - **Tab roots:** back goes to Freestyle, then exits the app. Today it does nothing.
 - **New Task:** the old task screen no longer stays active under the task list. As a
   result, `ASATaskScreen.OnEnable` now runs for each task.
-- **Back in the ASA flow:** on the task list and profile, back now matches the on-screen back
-  control, and waits for popups and requests in progress.
-- **Back on results:** will return to the task list after Stage 5. Until then it does nothing,
-  as it does today.
-- **Consent and Background popups:** can be closed with back. Consent behaves like Refuse.
-- **Re-tapping a tab** on its root will do nothing after Stage 5. Until then it re-runs the
-  screen's lifecycle, as it does today.
+- **Back in the ASA flow:** back now works on the task list and profile, and closes their
+  popups. It waits for requests in progress.
+- **Back on results:** returns to the task list. It is ignored today.
+- **Back while recording a task:** stops the recording, and the next press leaves. Today the
+  press does nothing.
+- **Popups:** draw above the tab bar with one shared dim. The profile's loading popup, which
+  appeared to draw behind the profile during a level change, now draws above it.
+- **Error banners on the task list:** sit about 75 units lower, matching the profile's.
+- **Spinner:** rotates during a level change, because it now lives on the loading popup.
+- **Consent and Background popups:** can be closed with back, except while the form is sending.
+  Consent behaves like Refuse.
+- **Re-tapping a tab** on its root does nothing. Today it re-runs the panel's lifecycle.
 - **Hidden screens:** a screen below a `Screen` layer entry is now disabled, so its
   `OnEnable` runs again on return. Today `CardDeckPanel` and others stay active.
 - **Tab bar:** can no longer be tapped through a modal.
@@ -168,11 +162,25 @@ assigning. `ASATaskScreen` finds the popup's `Title` by path. See
 - **Number game failure:** reports through its callback and logs an error, instead of throwing
   inside the coroutine. The learner sees the same message.
 
+## Known gaps carried over
+
+These match the old code and were left as they were:
+
+- **`emptyTranscriptNotice`:** has no table entry, so a blank transcript shows nothing. It needs an
+  entry adding to the table to give it wording.
+- **Onboarding gate:** consent missing with the form marked complete has no branch, so the ASA
+  button does nothing in that state.
+- **Instruction popup:** one reusable popup with no queue, so the last caller wins.
+- **User behaviour events:** still not called from the screens. See
+  [the wiring notes](USER_BEHAVIOUR.md#wiring).
+
 ## Cutover
 
 This happens only on explicit go-ahead:
 
-1. Test on an Android device, including back, recording and transitions.
+1. Restore the real values in `Secret.cs`, which may still point at the fake server. Run the
+   [backend checks](#checks-waiting-on-the-backend) against the real server, and test on an Android
+   device, including back, recording, transitions and exiting the app.
 2. Make `TESTING_SCENE` the build scene, or port it to `MainScene`.
 3. Delete the old scripts and move the contents of `NewScripts` as needed. Remove the
    `PopUpManager` lines from `Navigator.Awake` at the same time.

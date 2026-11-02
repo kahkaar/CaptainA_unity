@@ -3,9 +3,6 @@
 How screens connect to their UI, and how to add a new one. Wiring is done in code wherever
 possible.
 
-> **Status: planned.** This describes the intended design. It is not implemented yet, and
-> it will be checked against the code when implementation finishes.
-
 ## Rules
 
 | Need                   | Do this                                                              |
@@ -14,12 +11,17 @@ possible.
 | Button click           | `ButtonWiring.Replace(button, Handler)` once, in `Awake`             |
 | Localized text         | `new LocalizedString(table, key)`                                    |
 | Another screen         | Ask `Navigator` by type. Never hold a reference to a screen.         |
-| Screen layer           | Override the layer property                                          |
-| Popup with no logic    | `ModalScreen.Attach(popupGO, dismissible)` from the owning screen    |
+| Screen layer           | Override `Layer`                                                     |
+| Object outside the screen | `Navigator.FindInCanvas(this, "ObjectName")`, for a shared popup  |
+| Popup with no logic    | `ModalScreen.Attach(popupGO, dismissible)` from the owning screen, after any `Find` inside it |
+| Popup waiting on the server | `ModalScreen.Attach<LoadingModal>(popupGO, false)`, which spins its `LoadingIcon` |
+| Reset on closing a popup | `modal.OnBack`, so every way out behaves the same                  |
+| Drop-down error message | `ErrorBanner.Show` and `ErrorBanner.Hide`                           |
 | Durations and constants | Constants in code                                                   |
 
-`Find<T>` and `FindObject` are `AppScreen` helpers built on `transform.Find`, which also
-finds inactive children. Paths are relative to the screen root.
+`Find<T>` and `FindObject` are `AppScreen` methods built on `transform.Find`, which also
+finds inactive children. Paths are relative to the screen root, and a modal's own `Find` works
+after `Attach` has lifted it.
 
 **Wire buttons in `Awake`, not `OnEnable`.** `OnEnable` runs every time a screen reopens,
 and a repeated `AddListener` makes one tap run its handler several times.
@@ -31,6 +33,8 @@ so a migrated button can't fire twice and its entries don't have to be cleared b
 
 - Script components on screen roots and on the tab bar
 - Prefab references, such as `ListItemPanel` and `ListDetailPanel`
+- `ASATaskScreen.tasks`, because it holds sprites
+- `AudioManager.recordNotif`, because it is an audio clip
 - Layout and visual values on UI components
 
 `NetworkManager` needs nothing assigned, because it contains no UI.
@@ -48,20 +52,26 @@ time a screen opens, so the error appears when that screen is first opened.
 
 ## Hierarchy
 
-Sibling order sets draw order, so this order keeps tabs below overlays and modals.
+Sibling order sets draw order, so this order keeps tabs below overlays and modals. Everything
+is a direct child of the root Canvas, in this order:
 
 ```text
-Manager            AudioManager, NetworkManager, NotificationManager
 Canvas
-├── Screens        tab roots and pushed screens
-├── Navigation     TabBar, with the new-feature dot as a child of its tab
-├── Overlays       Detail, Phoneme, Info
-├── Modals         all modals
-└── Notifications
+├── Tab roots          MainPanel, CardDeckPanel, AdvancePanel, ProfilePanel
+├── Pushed screens     TaskPanel, ASAPanel, FeedbackPanel, ASAProfilePanel,
+│                      SuperMemoPanel, NumberGamePanel
+├── NavigationBar      TabBar
+├── NewFeatureBadgeGO
+├── Overlays           DetailScorePanel, PhonemePanel, InfoPanel
+└── Modals             PopUpPanel, SurveyPopUpPanel, SecretPopUpPanel
 ```
 
+Scene objects keep their old names, because `TabBar`, `Find` paths and `FindInCanvas` look them
+up by name. Only the classes on them were renamed.
+
 `Navigator`, `ModalHost`, the shared dim, and each screen's nested Canvas are all created
-from code, so they do not appear in the scene.
+from code, so they do not appear in the scene. Popups owned by a screen stay under it in the
+scene, and `ModalScreen.Attach` lifts them to the top of the Canvas while the app runs.
 
 ## Naming
 
@@ -76,16 +86,20 @@ from code, so they do not appear in the scene.
 
 ## Adding a screen
 
-1. Create the GameObject under `Screens` or `Overlays`, and leave it inactive.
+1. Create the GameObject as a direct child of the Canvas, and leave it inactive. Place it before
+   `NavigationBar` for a `Screen` layer entry, or after it for an overlay.
 2. Add a class and attach it to the root:
 
    ```csharp
+   using TMPro;
+   using UnityEngine.UI;
+
    namespace SaySuomi.Navigation
    {
        public class ExampleScreen : AppScreen
        {
            // Omit this for the default Screen layer.
-           protected override ScreenLayer Layer => ScreenLayer.Overlay;
+           public override ScreenLayer Layer => ScreenLayer.Overlay;
 
            TextMeshProUGUI titleText;
 

@@ -8,76 +8,47 @@ namespace SaySuomi.Navigation
     {
         public override bool IsTabRoot => true;
 
-        [SerializeField]
         GameObject topPanelGO;
 
-        [SerializeField]
         GameObject topPanelBigGO;
 
-        [SerializeField]
         GameObject topPanelSmallGO;
 
-        [SerializeField]
         GameObject dropShadowLGO;
 
-        [SerializeField]
         GameObject dropShadowBGO;
 
-        [SerializeField]
         GameObject dropShadowRGO;
 
-        [SerializeField]
         GameObject textInputPanelGO;
 
-        [SerializeField]
         GameObject debugTextGO;
 
-        [SerializeField]
         GameObject startButtonGO;
 
-        [SerializeField]
         GameObject againButtonGO;
 
-        [SerializeField]
         TMPro.TMP_InputField inputText;
 
-        [SerializeField]
         GameObject stopButtonPanelGO;
 
-        [SerializeField]
         GameObject stopButtonPanelBackgroundGO;
 
-        [SerializeField]
         GameObject stopButtonGO;
 
-        [SerializeField]
         GameObject waitIconGO;
 
-        [SerializeField]
         GameObject recordButtonGO;
-
-        [SerializeField]
-        GameObject inputTransGO;
-
-        [SerializeField]
-        GameObject errorTextGO;
-
-        [SerializeField]
-        GameObject resultPanelGO;
 
         // There are two functions for hiding the buttons when user try new words
         // 1. When users first open the app, the buttons are hidden: SetUpStartUI()
         // 2. Hide the buttons when the user focus on the input text: SetupFocusTextUI()
-        [SerializeField]
         GameObject replayButtonGO;
 
-        [SerializeField]
         GameObject sampleButtonGO; // Play sample audio
 
-        [SerializeField]
         GameObject detailButtonGO; // Display detail feedback
 
-        [SerializeField]
         GameObject illustrationGO; // Illustration
 
         AudioClip sampleClip;
@@ -99,6 +70,27 @@ namespace SaySuomi.Navigation
         protected override void Awake()
         {
             base.Awake();
+
+            topPanelGO = FindObject("TopPanel");
+            topPanelBigGO = FindObject("TopPanelBig");
+            topPanelSmallGO = FindObject("TopPanelSmall");
+            dropShadowLGO = FindObject("DropShadowL");
+            dropShadowBGO = FindObject("DropShadowB");
+            dropShadowRGO = FindObject("DropShadowR");
+            textInputPanelGO = FindObject("TextInputPanel");
+            debugTextGO = FindObject("DebugText");
+            startButtonGO = FindObject("TextInputPanel/ButtonPanel/StartButton");
+            againButtonGO = FindObject("TextInputPanel/ButtonPanel/AgainButton");
+            inputText = Find<TMPro.TMP_InputField>("TextInputPanel/InputText");
+            stopButtonPanelGO = FindObject("StopButtonPanel");
+            stopButtonPanelBackgroundGO = FindObject("SopButtonPanelBackground");
+            stopButtonGO = FindObject("StopButtonGO");
+            waitIconGO = FindObject("WaitIconGO");
+            recordButtonGO = FindObject("RecordButton");
+            replayButtonGO = FindObject("TextInputPanel/ButtonPanel/ReplayButton");
+            sampleButtonGO = FindObject("TextInputPanel/ButtonPanel/SampleButton");
+            detailButtonGO = FindObject("TextInputPanel/ButtonPanel/DetailButton");
+            illustrationGO = FindObject("Illustration");
 
             // This is for testing purposes
             // PlayerPrefs.SetInt("BackgroundFormCompleted", 0);

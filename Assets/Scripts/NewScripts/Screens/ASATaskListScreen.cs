@@ -2,213 +2,106 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Serialization;
 
 namespace SaySuomi.Navigation
 {
-    public class ASATaskListScreen : MonoBehaviour
+    public class ASATaskListScreen : AppScreen
     {
-        [SerializeField]
-        GameObject advancePanelGO;
+        const string OverallPopUp = "OverallFeedbackPopUp/";
 
-        [SerializeField]
-        GameObject taskPanelGO;
-
-        [SerializeField]
-        GameObject ASAPanelGO;
-
-        [SerializeField]
-        GameObject backButtonGO;
-
-        [SerializeField]
-        GameObject task1ButtonGO;
-
-        [SerializeField]
-        GameObject task2ButtonGO;
-
-        [SerializeField]
-        GameObject task3ButtonGO;
-
-        [SerializeField]
-        GameObject task4ButtonGO;
-
-        [SerializeField]
-        GameObject task5ButtonGO;
-
-        [SerializeField]
-        [FormerlySerializedAs("ASAPanel")]
-        ASATaskScreen ASATaskScreen;
-
-        [SerializeField]
-        GameObject dimPanelGO;
-
-        [SerializeField]
-        GameObject profileButtonGO;
-
-        [SerializeField]
-        GameObject profilePanelGO;
-
-        [SerializeField]
-        GameObject loadingIconGO;
-
-        [SerializeField]
-        GameObject profileLoadingBackButtonGO;
-
-        [SerializeField]
-        GameObject profileLoadingErrorTextGO;
-
-        [SerializeField]
-        GameObject loadingPopUpGO;
-
-        [SerializeField]
         GameObject errorPopupGO;
+        GameObject loadingIconGO;
+        GameObject profileLoadingBackButtonGO;
+        GameObject profileLoadingErrorTextGO;
+        TMP_InputField overallFeedbackTextGO;
+        ToggleGroup overallRatingOptions;
 
-        [SerializeField]
-        GameObject overallFeedbackPopUpGO;
+        LoadingModal profileLoadingModal;
+        ModalScreen overallFeedbackModal;
 
-        [SerializeField]
-        GameObject feedbackSendButtonGO;
+        LocalizedTextHelper profileErrorHelper;
 
-        [SerializeField]
-        public TMP_InputField overallFeedbackTextGO;
-
-        [SerializeField]
-        GameObject feedbackBackButtonGO;
-
-        public bool isLoading = false;
-
-        private LocalizedTextHelper profileErrorHelper;
-
-        public ToggleGroup overallRatingOptions;
-
-        public void StopErrorAnimation()
+        protected override void Awake()
         {
-            Animator anim = errorPopupGO.GetComponent<Animator>();
-            anim.enabled = false;
-            errorPopupGO.SetActive(false);
-        }
+            base.Awake();
 
-        void OnEnable()
-        {
-            // New Task leaves the finished task running behind this list, where it would take
-            // the next back press for itself with nothing visible happening.
-            ASAPanelGO.SetActive(false);
+            errorPopupGO = FindObject("ErrorPopup");
+            loadingIconGO = FindObject("LoadingPopUpProfile/LoadingIcon");
+            profileLoadingBackButtonGO = FindObject("LoadingPopUpProfile/BackButton");
+            profileLoadingErrorTextGO = FindObject("LoadingPopUpProfile/ErrorText");
+            overallFeedbackTextGO = Find<TMP_InputField>(OverallPopUp + "OverallFeedbackTextField");
+            overallRatingOptions = Find<ToggleGroup>(OverallPopUp + "OverallRatingGroup");
 
-            // Stops animated dropdown error message from appearing
-            StopErrorAnimation();
+            Navigator navigator = Navigator.GetManager();
 
-            isLoading = false;
-            Debug.Log(PlayerPrefs.GetInt("TasksSent"));
-            // Ask general feedback if number of completed tasks so far is a multiple of 5
-            OverallFeedback();
+            ButtonWiring.Replace(Find<Button>("BackButton"), () => navigator.Back());
+            ButtonWiring.Replace(Find<Button>("Task1"), () => OpenTask(0));
+            ButtonWiring.Replace(Find<Button>("Task2"), () => OpenTask(1));
+            ButtonWiring.Replace(Find<Button>("Task3"), () => OpenTask(2));
+            ButtonWiring.Replace(Find<Button>("Task4"), () => OpenTask(3));
+            ButtonWiring.Replace(Find<Button>("Task5"), () => OpenTask(4));
+            ButtonWiring.Replace(Find<Button>("ProfileButton"), LoadProfile);
+            ButtonWiring.Replace(Find<Button>("LoadingPopUpProfile/BackButton"), () => navigator.Back());
+            ButtonWiring.Replace(Find<Button>(OverallPopUp + "FeedbackSendButton"), SendOverallFeedback);
+            ButtonWiring.Replace(Find<Button>(OverallPopUp + "FeedbackBackButton"), () => navigator.Back());
 
-            // Set proper game objects active and establish button behavior.
-            //
-            // Every button goes through ButtonUtils.Rewire, which clears the previous
-            // listener before adding this one. OnEnable runs on every reopen, so plain
-            // AddListener stacked: three of these used to be cleared by hand at the top of
-            // this method and the rest were not, which held only because the rest happen to be
-            // idempotent. Rewire makes that hold by construction instead of by luck.
-            ButtonUtils.Rewire(backButtonGO, LeaveToAdvanced);
-
-            ButtonUtils.Rewire(task1ButtonGO, () => OpenTask(0));
-            ButtonUtils.Rewire(task2ButtonGO, () => OpenTask(1));
-            ButtonUtils.Rewire(task3ButtonGO, () => OpenTask(2));
-            ButtonUtils.Rewire(task4ButtonGO, () => OpenTask(3));
-            ButtonUtils.Rewire(task5ButtonGO, () => OpenTask(4));
-
-            ButtonUtils.Rewire(profileButtonGO, LoadProfile);
-
-            ButtonUtils.Rewire(profileLoadingBackButtonGO, () => OnProfileLoadingBackButtonClicked());
-
-            ButtonUtils.Rewire(
-                feedbackSendButtonGO,
-                () =>
-                {
-                    var overallRating = overallRatingOptions.ActiveToggles().FirstOrDefault();
-                    string comment_overall = overallFeedbackTextGO.text;
-                    // Show drop-down error animation if attempting to send feedback without selecting an emoji
-                    if (overallRating == null)
-                    {
-                        Animator anim = errorPopupGO.GetComponent<Animator>();
-
-                        errorPopupGO.SetActive(true);
-
-                        anim.enabled = true;
-
-                        anim.Play("Error Popup Animation");
-
-                        return;
-                    }
-                    // Send feedback to server
-                    StartCoroutine(
-                        NetworkManager
-                            .GetManager()
-                            .ServerPost_feedback(
-                                POSTType.USER_ASA_FEEDBACK,
-                                "overall_experience",
-                                overallRating.name,
-                                comment_overall
-                            )
-                    );
-                    // Reset feedback form when done
-                    MarkOverallFeedbackAsked();
-                    overallRatingOptions.SetAllTogglesOff();
-                    overallFeedbackTextGO.text = "";
-                    overallFeedbackPopUpGO.SetActive(false);
-                    dimPanelGO.SetActive(false);
-                    errorPopupGO.SetActive(false);
-                }
+            profileLoadingModal = ModalScreen.Attach<LoadingModal>(
+                FindObject("LoadingPopUpProfile"),
+                dismissible: false
             );
 
-            ButtonUtils.Rewire(feedbackBackButtonGO, DeclineOverallFeedback);
-        }
+            overallFeedbackModal = ModalScreen.Attach(FindObject("OverallFeedbackPopUp"));
 
-        private void LeaveToAdvanced()
-        {
-            advancePanelGO.SetActive(true);
-            taskPanelGO.SetActive(false);
-        }
-
-        private void DeclineOverallFeedback()
-        {
             // Declining restarts the count, exactly as answering does. It used to only
             // hide the window and write nothing, so every return to the task list
             // reopened it and the only ways out were sending feedback or completing
             // another task.
-            MarkOverallFeedbackAsked();
-
-            overallRatingOptions.SetAllTogglesOff();
-            overallFeedbackTextGO.text = "";
-            overallFeedbackPopUpGO.SetActive(false);
-            dimPanelGO.SetActive(false);
-            errorPopupGO.SetActive(false);
+            overallFeedbackModal.OnBack = () =>
+            {
+                MarkOverallFeedbackAsked();
+                overallRatingOptions.SetAllTogglesOff();
+                overallFeedbackTextGO.text = "";
+                ErrorBanner.Hide(errorPopupGO);
+                return false;
+            };
         }
 
-        /// <summary>
-        /// Back does what the visible back control does, and nothing when there is none: the
-        /// loading popup only offers Back once its request has failed. Temporary: goes in
-        /// Stage 5, when these join the stack.
-        /// </summary>
-        public void OnBackPressed()
+        void OnEnable()
         {
-            if (loadingPopUpGO.activeSelf)
-            {
-                if (profileLoadingBackButtonGO.activeSelf)
-                {
-                    OnProfileLoadingBackButtonClicked();
-                }
+            // Stops animated dropdown error message from appearing
+            ErrorBanner.Hide(errorPopupGO);
 
+            Debug.Log(PlayerPrefs.GetInt("TasksSent"));
+            // Ask general feedback if number of completed tasks so far is a multiple of 5
+            OverallFeedback();
+        }
+
+        void SendOverallFeedback()
+        {
+            var overallRating = overallRatingOptions.ActiveToggles().FirstOrDefault();
+            string comment_overall = overallFeedbackTextGO.text;
+
+            // Show drop-down error animation if attempting to send feedback without selecting an emoji
+            if (overallRating == null)
+            {
+                ErrorBanner.Show(errorPopupGO);
                 return;
             }
 
-            if (overallFeedbackPopUpGO.activeSelf)
-            {
-                DeclineOverallFeedback();
-                return;
-            }
+            // Send feedback to server
+            StartCoroutine(
+                NetworkManager
+                    .GetManager()
+                    .ServerPost_feedback(
+                        POSTType.USER_ASA_FEEDBACK,
+                        "overall_experience",
+                        overallRating.name,
+                        comment_overall
+                    )
+            );
 
-            LeaveToAdvanced();
+            // OnBack resets the form and records that the learner was asked.
+            Navigator.GetManager().Back();
         }
 
         /// <summary>
@@ -221,7 +114,7 @@ namespace SaySuomi.Navigation
         /// Saved immediately - a decision lost to the app being killed is a learner who gets
         /// asked again anyway, which is the behaviour this exists to stop.
         /// </summary>
-        private void MarkOverallFeedbackAsked()
+        void MarkOverallFeedbackAsked()
         {
             PlayerPrefs.SetInt(
                 Const.PREF_OVERALL_FEEDBACK_ASKED_AT,
@@ -231,65 +124,66 @@ namespace SaySuomi.Navigation
         }
 
         // The five task buttons differ only by index.
-        private void OpenTask(int taskIndex)
+        void OpenTask(int taskIndex)
         {
-            ASATaskScreen.DisplayTask(taskIndex);
-            ASAPanelGO.SetActive(true);
-            taskPanelGO.SetActive(false);
-        }
-
-        public void OnProfileLoadingBackButtonClicked()
-        {
-            loadingPopUpGO.SetActive(false);
-            dimPanelGO.SetActive(false);
+            Navigator.GetManager().Push<ASATaskScreen>().DisplayTask(taskIndex);
         }
 
         /// <summary>
         /// Fetches the profile behind the loading popup, then opens it. Also used by
-        /// ASAProfileScreen to reload after a level change.
+        /// ASAProfileScreen to reload after a level change, when it is already open.
+        ///
+        /// Runs on NetworkManager, because this screen is hidden during that reload and a
+        /// disabled object cannot run a coroutine. The modal stops the learner leaving while
+        /// it waits, so nothing can be closed underneath the response.
         /// </summary>
         public void LoadProfile()
         {
             ShowProfileLoading();
 
-            StartCoroutine(
-                NetworkManager
-                    .GetManager()
-                    .ServerPost_profile(
-                        POSTType.ASA_PROFILE,
-                        json =>
+            NetworkManager network = NetworkManager.GetManager();
+
+            network.StartCoroutine(
+                network.ServerPost_profile(
+                    POSTType.ASA_PROFILE,
+                    json =>
+                    {
+                        if (json == null)
                         {
-                            if (json == null)
-                            {
-                                ShowProfileError();
-                                return;
-                            }
-
-                            loadingPopUpGO.SetActive(false);
-                            profilePanelGO.SetActive(true);
-                            dimPanelGO.SetActive(false);
-                            isLoading = false;
-
-                            profilePanelGO.GetComponent<ASAProfileScreen>().ShowStats(json);
+                            ShowProfileError();
+                            return;
                         }
-                    )
+
+                        Navigator navigator = Navigator.GetManager();
+
+                        profileLoadingModal.Dismissible = true;
+                        navigator.Back();
+
+                        ASAProfileScreen profile = navigator.Get<ASAProfileScreen>();
+                        if (!navigator.IsOpen(profile))
+                        {
+                            navigator.Push<ASAProfileScreen>();
+                        }
+
+                        profile.ShowStats(json);
+                    }
+                )
             );
         }
 
         public void ShowProfileLoading()
         {
-            loadingPopUpGO.SetActive(true);
+            profileLoadingModal.Dismissible = false;
             loadingIconGO.SetActive(true);
             profileLoadingErrorTextGO.SetActive(false);
             profileLoadingBackButtonGO.SetActive(false);
-            dimPanelGO.SetActive(true);
-            isLoading = true;
+            Navigator.GetManager().Open(profileLoadingModal);
         }
 
         /// <summary>Shows the last failed request on the loading popup, with its back button.</summary>
         public void ShowProfileError()
         {
-            isLoading = false;
+            profileLoadingModal.Dismissible = true;
             loadingIconGO.SetActive(false);
             profileLoadingErrorTextGO.SetActive(true);
             profileLoadingBackButtonGO.SetActive(true);
@@ -305,7 +199,7 @@ namespace SaySuomi.Navigation
             profileErrorHelper?.ClearText();
         }
 
-        public void OverallFeedback()
+        void OverallFeedback()
         {
             // Ask for overall feedback once Const.ASA_OVERALL_FEEDBACK_EVERY tasks have been
             // completed since the last time we asked.
@@ -320,30 +214,8 @@ namespace SaySuomi.Navigation
 
             if (tasksSent - askedAt >= Const.ASA_OVERALL_FEEDBACK_EVERY)
             {
-                overallFeedbackPopUpGO.SetActive(true);
-                dimPanelGO.SetActive(true);
+                Navigator.GetManager().Open(overallFeedbackModal);
             }
-        }
-
-        public void ReturnToTaskPanel()
-        {
-            isLoading = false;
-            loadingPopUpGO.SetActive(true);
-        }
-
-        void Update()
-        {
-            // For updating different animations depending on state
-            if (isLoading)
-            {
-                AnimateLoadingProfile();
-            }
-        }
-
-        public void AnimateLoadingProfile()
-        {
-            // Change value -6.0f to change rotation speed
-            loadingIconGO.transform.Rotate(0, 0, -6.0f, Space.Self);
         }
     }
 }

@@ -11973,7 +11973,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 474211609}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -11990,7 +11990,7 @@ RectTransform:
   - {fileID: 2075869467}
   - {fileID: 38652073}
   - {fileID: 431676640}
-  m_Father: {fileID: 1164813425}
+  m_Father: {fileID: 983078108}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -12047,25 +12047,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c79b4446a669eb48a6bf73d39bbe79b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
-  audioManager: {fileID: 822940822}
-  AdvancedScreen: {fileID: 1164813428}
-  recordButtonGO: {fileID: 1922058836}
-  pauseButtonGO: {fileID: 2066595227}
-  sendButtonGO: {fileID: 87192917}
-  replayButtonGO: {fileID: 1154039599}
-  replayBarGO: {fileID: 1717783599}
-  progressBarBackgroundGO: {fileID: 2075869466}
-  progressBarGO: {fileID: 38652072}
-  backButtonASAGO: {fileID: 1912630941}
-  feedbackPanelGO: {fileID: 6675190759561332594}
-  loadingPopUpGO: {fileID: 7259973715481348085}
-  dimPanelASAGO: {fileID: 431676639}
-  loadingIconGO: {fileID: 663327819}
-  resultsButtonGO: {fileID: 874353685}
-  errorTextGO: {fileID: 1523942761}
-  backButtonGO: {fileID: 775814145}
-  ratingOptions: {fileID: 949766071}
-  feedbackTextGO: {fileID: 1039887686}
   tasks:
   - taskText:
       m_TableReference:
@@ -12122,11 +12103,7 @@ MonoBehaviour:
       m_LocalVariables: []
     taskImage: {fileID: 21300000, guid: 56ed7b179b72323679daa5c5e82c3478, type: 3}
     recordingTime: 60
-  taskTextGO: {fileID: 1186766482}
-  taskImageGO: {fileID: 698106385}
-  isLoading: 0
   currentTaskSelected: -1
-  errorPopupGO: {fileID: 1946420586}
   references:
     version: 2
     RefIds: []
@@ -26802,6 +26779,10 @@ RectTransform:
   - {fileID: 1805948026}
   - {fileID: 430015519}
   - {fileID: 1164813425}
+  - {fileID: 4672596100379138119}
+  - {fileID: 8725063672769402916}
+  - {fileID: 474211610}
+  - {fileID: 7781987390033845378}
   - {fileID: 19683656}
   - {fileID: 1970130707}
   - {fileID: 645107176}
@@ -31535,11 +31516,7 @@ RectTransform:
   - {fileID: 1999144880}
   - {fileID: 1670868349}
   - {fileID: 1399056236}
-  - {fileID: 474211610}
-  - {fileID: 8725063672769402916}
-  - {fileID: 7781987390033845378}
   - {fileID: 5128489673786422674}
-  - {fileID: 4672596100379138119}
   - {fileID: 1454303701}
   - {fileID: 1117293439}
   - {fileID: 1457203360}
@@ -31600,28 +31577,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aeda2a1644a93604ea52b3c281646ba3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  advancePanelGO: {fileID: 1164813424}
-  taskPanelGO: {fileID: 5856481543353187569}
-  numberGameButtonGO: {fileID: 1399056235}
-  ASAButtonGO: {fileID: 1670868348}
-  ASAPanelGO: {fileID: 474211609}
-  consentPopUpGO: {fileID: 1117293438}
-  acceptButtonGO: {fileID: 1612940489}
-  refuseButtonGO: {fileID: 1626977473}
-  consentReadToggle: {fileID: 1501005295}
-  backgroundPopUpGO: {fileID: 1457203359}
-  sendButtonGO: {fileID: 1830336616}
-  dimPanelGO: {fileID: 1454303700}
-  feedbackPanelGO: {fileID: 6675190759561332594}
-  loadingPopUpGO: {fileID: 7259973715481348085}
-  profilePanelGO: {fileID: 8818382073644628020}
-  ASATaskScreen: {fileID: 474211613}
-  languageOtherField: {fileID: 1762023269}
-  motherTongueOptions: {fileID: 405094356}
-  errorMessage: {fileID: 1225000242}
-  genderOptions: {fileID: 1767757977}
-  ageOptions: {fileID: 854305225}
-  selfAssessmentOptions: {fileID: 857957623}
 --- !u!1 &1165680312
 GameObject:
   m_ObjectHideFlags: 0
@@ -42897,220 +42852,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e4d9ba27a3043aa4fafd220e5babbdf3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ASAPRofilePanel
-  levelBarGO: {fileID: 1370295920}
-  levelText: {fileID: 2093427571}
-  performanceText: {fileID: 931520614}
-  rankText: {fileID: 1453477437}
-  positionText: {fileID: 683520350}
-  profileBackButtonGO: {fileID: 128193728}
-  profilePanelGO: {fileID: 8818382073644628020}
-  settingsButtonGO: {fileID: 65379038}
-  settingsBackButtonGO: {fileID: 1044202598}
-  settingsPopupGO: {fileID: 914154202}
-  dimPanelGO: {fileID: 1109305271}
-  copyGuidButtonGO: {fileID: 729080778}
-  deleteDataButtonGO: {fileID: 504920958}
-  deleteConfirmPopupGO: {fileID: 1934169952}
-  deleteConfirmButtonGO: {fileID: 1989483479}
-  deleteCancelButtonGO: {fileID: 1697284573}
-  deleteStatusText: {fileID: 43841}
-  deleteWarningText:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 34375829905408
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  deleteLoadingText:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 34784963289088
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  deleteConfirmedNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 35377484226560
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  deleteReceivedNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 36367994281984
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  deleteCancelLabel: {fileID: 1579633794}
-  deleteOkLabel: {fileID: 1697066196}
-  taskPanelGO: {fileID: 5856481543353187569}
-  feedbackButtonGO: {fileID: 869523216}
-  feedbackPopUpGO: {fileID: 7259973715877065792}
-  feedbackBackButtonGO: {fileID: 1856570282}
-  feedbackSendButtonGO: {fileID: 236179134}
-  loadingPopUpProfile: {fileID: 1837294515}
-  performanceInfo: {fileID: 735852519}
-  rankInfo: {fileID: 799576051}
-  revertLevelButtonGO: {fileID: 1994942384}
-  advanceLevelButtonGO: {fileID: 841020695}
-  insufficientDataNoticeGO: {fileID: 1767565772}
-  levelTextGO: {fileID: 2093427569}
-  levelDescriptionTextGO: {fileID: 1168930710}
-  levelDescriptionText: {fileID: 1168930711}
-  levelDescriptionA1:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 531886071808
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  levelDescriptionA2:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 8894137065472
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  levelDescriptionB1:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 13267697229824
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  levelDescriptionB2:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 13450052984832
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  levelDescriptionC1Plus:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 13467077664768
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  errorPopupGO: {fileID: 1376894215}
-  comparisonFeedbackTextGO: {fileID: 217988256}
-  insufficientDataNotice: {fileID: 1324659955}
-  ASAResultsScreen: {fileID: 0}
-  rankPercentText:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 16883006922752
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  rankPositionText:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 17416568528896
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  topRankText:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 19380538793984
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  rankFirstText:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 5902470477864960
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  noRankNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 19467973255168
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  noPositionNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 19548101238784
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  insufficientTasksNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 14536994283520
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  cohortSizeNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 20111354322944
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  rankUnavailableNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 20288265871360
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  rankUnavailableGeneralNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
-    m_TableEntryReference:
-      m_KeyId: 20790462472192
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  guidTextGO: {fileID: 621128077}
-  comparisonRatingOptions: {fileID: 1202523372}
-  guid: 
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &1626174519
 GameObject:
   m_ObjectHideFlags: 0
@@ -52939,30 +52680,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31298b07cbaf19842b3285fcadc6e283, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TaskPanel
-  advancePanelGO: {fileID: 1164813424}
-  taskPanelGO: {fileID: 5856481543353187569}
-  ASAPanelGO: {fileID: 474211609}
-  backButtonGO: {fileID: 8986904959411576846}
-  task1ButtonGO: {fileID: 4253319599287483581}
-  task2ButtonGO: {fileID: 3449007511206407262}
-  task3ButtonGO: {fileID: 3887359245527980723}
-  task4ButtonGO: {fileID: 994057028911151204}
-  task5ButtonGO: {fileID: 5729106356032764942}
-  ASATaskScreen: {fileID: 474211613}
-  dimPanelGO: {fileID: 22630210}
-  profileButtonGO: {fileID: 29141840}
-  profilePanelGO: {fileID: 8818382073644628020}
-  loadingIconGO: {fileID: 1760811886}
-  profileLoadingBackButtonGO: {fileID: 1452922760}
-  profileLoadingErrorTextGO: {fileID: 1147529915}
-  loadingPopUpGO: {fileID: 1837294515}
-  errorPopupGO: {fileID: 749168139}
-  overallFeedbackPopUpGO: {fileID: 7259973715778670186}
-  feedbackSendButtonGO: {fileID: 1020554282}
-  overallFeedbackTextGO: {fileID: 1626174521}
-  feedbackBackButtonGO: {fileID: 1118737820}
-  isLoading: 0
-  overallRatingOptions: {fileID: 607544762}
 --- !u!1 &1969231988
 GameObject:
   m_ObjectHideFlags: 0
@@ -65501,171 +65218,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1c31de6297c54274791b52513352c4fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FeedbackPanel
-  feedbackPanelGO: {fileID: 6675190759561332594}
-  ASAPanelGO: {fileID: 474211609}
-  newTaskButtonGO: {fileID: 3400324025174537997}
-  proficiencyButtonGO: {fileID: 6623422670541326130}
-  pronunciationButtonGO: {fileID: 3997034136984572123}
-  rangeButtonGO: {fileID: 958304264255907556}
-  accuracyButtonGO: {fileID: 3733609631622274574}
-  fluencyButtonGO: {fileID: 7331578910116541940}
-  popupPanelGO: {fileID: 8088363230038682005}
-  dimPanelGO: {fileID: 1200215848976123947}
-  popupBackButtonGO: {fileID: 5503936012229672900}
-  relevanceWarningGO: {fileID: 8758293426211234762}
-  relevanceWarningText: {fileID: 5848538976764744840}
-  answerOffTopicNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-    m_TableEntryReference:
-      m_KeyId: 4093949075456
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  answerPartialNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-    m_TableEntryReference:
-      m_KeyId: 4361424035840
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  transcriptText: {fileID: 2685005812162428896}
-  emptyTranscriptNotice:
-    m_TableReference:
-      m_TableCollectionName: 
-    m_TableEntryReference:
-      m_KeyId: 0
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  infoTextGO: {fileID: 4385178135172755684}
-  scrollContent: {fileID: 2756969594389709978}
-  transcriptGroup: {fileID: 8300475523754581570}
-  proficiencyScore: {fileID: 4206508330918945279}
-  pronunciationScore: {fileID: 6726074530307879023}
-  rangeScore: {fileID: 3611965833788379237}
-  accuracyScore: {fileID: 908925949546013496}
-  fluencyScore: {fileID: 5711857411802499067}
-  replayButtonGO: {fileID: 1154039599}
-  sendButtonGO: {fileID: 87192917}
-  infoButtonGO: {fileID: 9025874173180565980}
-  infoPopupGO: {fileID: 3847871891900618481}
-  infoBackButtonGO: {fileID: 6490051440950357438}
-  feedbackButtonGO: {fileID: 8912059481054599914}
-  feedbackPopUpGO: {fileID: 829803046462902894}
-  feedbackBackButtonGO: {fileID: 7410842367592468489}
-  feedbackSendButtonGO: {fileID: 3432927587683863986}
-  accuracyRatingOptions: {fileID: 874455708662284406}
-  understandingRatingOptions: {fileID: 6187826607011703756}
-  accuracyFeedbackTextGO: {fileID: 1708471972693017272}
-  understandingFeedbackTextGO: {fileID: 1447729691709924671}
-  proficiencyTitleGO: {fileID: 3077969331409330345}
-  pronunciationTitleGO: {fileID: 5528512350833161674}
-  rangeTitleGO: {fileID: 8935463795528124467}
-  accuracyTitleGO: {fileID: 5590995256441757583}
-  fluencyTitleGO: {fileID: 3638094296573170700}
-  TaskPanelGO: {fileID: 5856481543353187569}
-  errorPopupGO: {fileID: 43533673977131175}
-  panels:
-  - titleText:
-      m_TableReference:
-        m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-      m_TableEntryReference:
-        m_KeyId: 669878673408
-        m_Key: 
-      m_FallbackState: 0
-      m_WaitForCompletion: 0
-      m_LocalVariables: []
-    popupText:
-      m_TableReference:
-        m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-      m_TableEntryReference:
-        m_KeyId: 6343601774592
-        m_Key: 
-      m_FallbackState: 0
-      m_WaitForCompletion: 0
-      m_LocalVariables: []
-  - titleText:
-      m_TableReference:
-        m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-      m_TableEntryReference:
-        m_KeyId: 2876388761600
-        m_Key: 
-      m_FallbackState: 0
-      m_WaitForCompletion: 0
-      m_LocalVariables: []
-    popupText:
-      m_TableReference:
-        m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-      m_TableEntryReference:
-        m_KeyId: 6757755740160
-        m_Key: 
-      m_FallbackState: 0
-      m_WaitForCompletion: 0
-      m_LocalVariables: []
-  - titleText:
-      m_TableReference:
-        m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-      m_TableEntryReference:
-        m_KeyId: 2907997036544
-        m_Key: 
-      m_FallbackState: 0
-      m_WaitForCompletion: 0
-      m_LocalVariables: []
-    popupText:
-      m_TableReference:
-        m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-      m_TableEntryReference:
-        m_KeyId: 6846674984960
-        m_Key: 
-      m_FallbackState: 0
-      m_WaitForCompletion: 0
-      m_LocalVariables: []
-  - titleText:
-      m_TableReference:
-        m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-      m_TableEntryReference:
-        m_KeyId: 2925197877248
-        m_Key: 
-      m_FallbackState: 0
-      m_WaitForCompletion: 0
-      m_LocalVariables: []
-    popupText:
-      m_TableReference:
-        m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-      m_TableEntryReference:
-        m_KeyId: 6874936205312
-        m_Key: 
-      m_FallbackState: 0
-      m_WaitForCompletion: 0
-      m_LocalVariables: []
-  - titleText:
-      m_TableReference:
-        m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-      m_TableEntryReference:
-        m_KeyId: 2951772987392
-        m_Key: 
-      m_FallbackState: 0
-      m_WaitForCompletion: 0
-      m_LocalVariables: []
-    popupText:
-      m_TableReference:
-        m_TableCollectionName: GUID:db69d3d55aef5df5fa3b2c531d1f5502
-      m_TableEntryReference:
-        m_KeyId: 6939780145152
-        m_Key: 
-      m_FallbackState: 0
-      m_WaitForCompletion: 0
-      m_LocalVariables: []
-  titleTextGO: {fileID: 1461044899835127321}
-  popupTextGO: {fileID: 1425838762264643210}
-  references:
-    version: 2
-    RefIds: []
 --- !u!224 &4311315314109886907
 RectTransform:
   m_ObjectHideFlags: 0
@@ -66247,7 +65799,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8818382073644628020}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -66261,7 +65813,7 @@ RectTransform:
   - {fileID: 5128489672845706791}
   - {fileID: 914154203}
   - {fileID: 1934169953}
-  m_Father: {fileID: 1164813425}
+  m_Father: {fileID: 983078108}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -71878,7 +71430,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5856481543353187569}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -71897,7 +71449,7 @@ RectTransform:
   - {fileID: 1837294516}
   - {fileID: 5128489673011051533}
   - {fileID: 749168140}
-  m_Father: {fileID: 1164813425}
+  m_Father: {fileID: 983078108}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -73496,7 +73048,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6675190759561332594}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -73509,7 +73061,7 @@ RectTransform:
   - {fileID: 7865908709743513584}
   - {fileID: 8117560807057047809}
   - {fileID: 2911745349012512777}
-  m_Father: {fileID: 1164813425}
+  m_Father: {fileID: 983078108}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}

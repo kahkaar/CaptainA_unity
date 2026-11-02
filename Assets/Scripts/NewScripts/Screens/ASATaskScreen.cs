@@ -5,72 +5,34 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.UI;
-using UnityEngine.Serialization;
 
 namespace SaySuomi.Navigation
 {
-    public class ASATaskScreen : MonoBehaviour, ILegacyBackHandler
+    public class ASATaskScreen : AppScreen
     {
-        [SerializeField]
-        private AudioManager audioManager;
-
-        [SerializeField]
-        [FormerlySerializedAs("AdvancePanel")]
-        private AdvancedScreen AdvancedScreen;
-
-        [SerializeField]
         GameObject recordButtonGO;
-
-        [SerializeField]
         GameObject pauseButtonGO;
-
-        [SerializeField]
         GameObject sendButtonGO;
-
-        [SerializeField]
         GameObject replayButtonGO;
-
-        [SerializeField]
         GameObject replayBarGO;
-
-        [SerializeField]
         GameObject progressBarBackgroundGO;
-
-        [SerializeField]
         GameObject progressBarGO;
 
-        [SerializeField]
-        GameObject backButtonASAGO;
-
-        [SerializeField]
-        GameObject feedbackPanelGO;
-
-        [SerializeField]
-        GameObject loadingPopUpGO;
-
-        [SerializeField]
-        GameObject dimPanelASAGO;
-
-        [SerializeField]
+        LoadingModal loadingModal;
         GameObject loadingIconGO;
-
-        [SerializeField]
         GameObject resultsButtonGO;
-
-        [SerializeField]
         GameObject errorTextGO;
-
-        [SerializeField]
         GameObject backButtonGO;
+        GameObject errorPopupGO;
+        TextMeshProUGUI loadingTitleText;
 
-        public ToggleGroup ratingOptions;
+        ToggleGroup ratingOptions;
 
         // Posts the self-assessment emoji on tap rather than waiting for Results. Built once
         // and kept: it remembers what the server already has, and that memory is what stops
         // the Results button re-sending an answer that has not changed.
         private FeedbackAutoSend selfAssessmentFeedback;
 
-        [SerializeField]
         TMP_InputField feedbackTextGO;
 
         [System.Serializable]
@@ -81,10 +43,10 @@ namespace SaySuomi.Navigation
             public float recordingTime = 0;
         }
 
+        // In the Inspector because it holds sprites, and assets cannot be found by path.
         [SerializeField]
         private TaskAttributes[] tasks;
 
-        [SerializeField]
         private TextMeshProUGUI taskTextGO;
 
         private LocalizedTextHelper taskTextHelper;
@@ -93,14 +55,11 @@ namespace SaySuomi.Navigation
 
         private LocalizedTextHelper loadingErrorHelper;
 
-        [SerializeField]
         private Image taskImageGO;
 
         private bool isRecording = false;
 
         private bool isReplaying = false;
-
-        public bool isLoading = false;
 
         private float currentTime = 0;
 
@@ -121,8 +80,79 @@ namespace SaySuomi.Navigation
 
         private AudioClip recording;
 
-        [SerializeField]
-        GameObject errorPopupGO;
+        protected override void Awake()
+        {
+            base.Awake();
+
+            recordButtonGO = FindObject("RecordButton");
+            pauseButtonGO = FindObject("PauseButton");
+            sendButtonGO = FindObject("SendButton");
+            replayButtonGO = FindObject("ReplayButton");
+            replayBarGO = FindObject("ReplayBar");
+            progressBarBackgroundGO = FindObject("ProgressBarBackground");
+            progressBarGO = FindObject("ProgressBar");
+            taskTextGO = Find<TextMeshProUGUI>("TaskText");
+            taskImageGO = Find<Image>("TaskImage");
+
+            // Found by name, because AdvancedScreen owned it in the scene but this uses it.
+            loadingModal = ModalScreen.Attach<LoadingModal>(
+                Navigator.FindInCanvas(this, "LoadingPopUp"),
+                dismissible: false
+            );
+            loadingIconGO = loadingModal.FindObject("LoadingIcon");
+            resultsButtonGO = loadingModal.FindObject("ResultsButton");
+            errorTextGO = loadingModal.FindObject("ErrorText");
+            backButtonGO = loadingModal.FindObject("BackButton");
+            errorPopupGO = loadingModal.FindObject("ErrorPopup");
+            loadingTitleText = loadingModal.Find<TextMeshProUGUI>("Title");
+            ratingOptions = loadingModal.Find<ToggleGroup>("RatingGroup");
+            feedbackTextGO = loadingModal.Find<TMP_InputField>("FeedbackTextField");
+
+            Navigator navigator = Navigator.GetManager();
+
+            ButtonWiring.Replace(recordButtonGO.GetComponent<Button>(), OnRecordButtonClicked);
+            ButtonWiring.Replace(pauseButtonGO.GetComponent<Button>(), StopRecord);
+            ButtonWiring.Replace(sendButtonGO.GetComponent<Button>(), OnSendButtonClicked);
+            ButtonWiring.Replace(replayButtonGO.GetComponent<Button>(), OnReplayButtonClicked);
+            ButtonWiring.Replace(Find<Button>("BackButton"), () => navigator.Back());
+            ButtonWiring.Replace(resultsButtonGO.GetComponent<Button>(), OnResultsButtonClicked);
+            ButtonWiring.Replace(backButtonGO.GetComponent<Button>(), () => navigator.Back());
+
+            // Go back to redo current task
+            loadingModal.OnBack = () =>
+            {
+                ErrorBanner.Hide(errorPopupGO);
+                ratingOptions.SetAllTogglesOff();
+                feedbackTextGO.text = "";
+                return false;
+            };
+
+            // Each emoji now posts the moment it is tapped, so a learner who rates the result
+            // and then quits, or backs out to redo the task, is still counted. Results keeps
+            // sending as well - see OnResultsButtonClicked.
+            //
+            // Hosted on NetworkManager, because this screen hides behind Results and a post
+            // running on it would die there.
+            selfAssessmentFeedback = new FeedbackAutoSend(NetworkManager.GetManager(), "self_assessment");
+            selfAssessmentFeedback.Attach(ratingOptions, () => feedbackTextGO.text);
+            selfAssessmentFeedback.AttachComment(feedbackTextGO, ratingOptions);
+        }
+
+        /// <summary>
+        /// The microphone takes priority over leaving, because leaving would throw the recording
+        /// away. What the screen shows then is Stop, so back does that: the first press stops
+        /// the recording, and the next one leaves.
+        /// </summary>
+        public override bool HandleBack()
+        {
+            if (!isRecording)
+            {
+                return false;
+            }
+
+            StopRecord();
+            return true;
+        }
 
         public void DisplayTask(int taskSelected)
         {
@@ -146,42 +176,6 @@ namespace SaySuomi.Navigation
 
         void OnEnable()
         {
-            recordButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            pauseButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            sendButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            replayButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            resultsButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            backButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-
-            recordButtonGO.GetComponent<Button>().onClick.AddListener(() => OnRecordButtonClicked());
-            pauseButtonGO.GetComponent<Button>().onClick.AddListener(() => StopRecord());
-            sendButtonGO.GetComponent<Button>().onClick.AddListener(() => OnSendButtonClicked());
-            replayButtonGO.GetComponent<Button>().onClick.AddListener(() => OnReplayButtonClicked());
-            resultsButtonGO.GetComponent<Button>().onClick.AddListener(() => OnResultsButtonClicked());
-            backButtonGO.GetComponent<Button>().onClick.AddListener(() => OnBackButtonClicked());
-
-            ButtonUtils.Rewire(
-                backButtonASAGO,
-                () =>
-                {
-                    if (isRecording)
-                    {
-                        StopRecord();
-                    }
-                    else
-                    {
-                        ReturnToTaskPanel();
-                    }
-                }
-            );
-
-            // Each emoji now posts the moment it is tapped, so a learner who rates the result
-            // and then quits, or backs out to redo the task, is still counted. Results keeps
-            // sending as well - see OnResultsButtonClicked.
-            selfAssessmentFeedback ??= new FeedbackAutoSend(this, "self_assessment");
-            selfAssessmentFeedback.Attach(ratingOptions, () => feedbackTextGO.text);
-            selfAssessmentFeedback.AttachComment(feedbackTextGO, ratingOptions);
-
             replayBarGO.SetActive(false);
             progressBarBackgroundGO.SetActive(false);
             progressBarGO.SetActive(false);
@@ -190,8 +184,6 @@ namespace SaySuomi.Navigation
             recordButtonGO.SetActive(true);
             sendButtonGO.SetActive(false);
             replayButtonGO.SetActive(false);
-            resultsButtonGO.SetActive(false);
-            dimPanelASAGO.SetActive(false);
 
             // The panel is reused, so it must open in a known state rather than whatever the
             // last visit left behind. OnDisable already does this, but not every way out of a
@@ -230,79 +222,6 @@ namespace SaySuomi.Navigation
             {
                 UpdateReplayBar();
             }
-            if (isLoading)
-            {
-                AnimateLoading();
-            }
-
-            // Handle back button press on new Input System
-            if (
-                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame
-                && !Navigator.GetManager().HandledBackThisFrame
-            )
-            {
-                OnPhoneBackPressed();
-            }
-        }
-
-        /// <summary>
-        /// Android's back button and back gesture, which Unity reports as Escape.
-        ///
-        /// Until now this screen had no way out at all: it has no back button of its own, so a
-        /// learner who opened a task was stuck there until they finished it. Back now leaves
-        /// the task the same way the New task button does.
-        ///
-        /// The rule is that back does whatever the visible back affordance does, and nothing
-        /// when there is none - so it cannot reach a state the buttons on screen would not.
-        /// Both screens that can sit in front of this one are siblings rather than children,
-        /// which means switching this panel off would leave them on screen; each has to be
-        /// ruled out before falling through to leaving the task.
-        /// </summary>
-        private void OnPhoneBackPressed()
-        {
-            // Not while the microphone is open. Leaving would throw the recording away, and
-            // there is no back affordance on screen to say so - what is showing is Stop. The
-            // learner is not stuck either: stop first, then back.
-            if (isRecording)
-            {
-                return;
-            }
-
-            // The results screen opens on top of this one without switching it off, so this
-            // Update carries on running behind it. It owns the key while it is up.
-            if (feedbackPanelGO.activeSelf)
-            {
-                return;
-            }
-
-            if (loadingPopUpGO.activeSelf)
-            {
-                // The popup only shows its own Back button when the upload failed. While the
-                // request is in flight there is nothing to go back to, and once the result has
-                // arrived the way on is Results - backing out there would throw away a score
-                // the learner cannot get again without recording the task a second time.
-                if (backButtonGO.activeSelf)
-                {
-                    OnBackButtonClicked();
-                }
-
-                return;
-            }
-
-            ReturnToTaskPanel();
-        }
-
-        /// <summary>
-        /// Leaves the task for the task list - the exact reverse of ASATaskListScreen.OpenTask.
-        ///
-        /// Only reached with the microphone closed, so nothing is being thrown away mid-flight.
-        /// A finished recording that was never sent does go, which is the intended reading of
-        /// backing out: an answer the learner chose not to submit.
-        /// </summary>
-        private void ReturnToTaskPanel()
-        {
-            AdvancedScreen.ShowTaskPanel();
-            gameObject.SetActive(false);
         }
 
         void UpdateProgressBar()
@@ -422,7 +341,7 @@ namespace SaySuomi.Navigation
         public void OnReplayButtonClicked()
         {
             // Retrieve audio and set the relevant variables for playing the animation
-            recording = audioManager.GetReplayClip();
+            recording = AudioManager.GetManager().GetReplayClip();
             currentTime = recording.length;
             replayBarGO.SetActive(true);
             isReplaying = true;
@@ -430,7 +349,7 @@ namespace SaySuomi.Navigation
 
         public void OnSendButtonClicked()
         {
-            audioManager.StopReplaying();
+            AudioManager.GetManager().StopReplaying();
             isReplaying = false;
             replayButtonGO.SetActive(false);
             replayBarGO.SetActive(false);
@@ -449,15 +368,19 @@ namespace SaySuomi.Navigation
                     OnASAPostDone
                 );
 
-            loadingPopUpGO.SetActive(true);
-            StopErrorAnimation();
+            // The popup only offers Back once the upload has failed. While the request is in
+            // flight there is nothing to go back to, and once the result has arrived the way on
+            // is Results - backing out there would throw away a score the learner cannot get
+            // again without recording the task a second time.
+            loadingModal.Dismissible = false;
+            Navigator.GetManager().Open(loadingModal);
+
+            ErrorBanner.Hide(errorPopupGO);
             ratingOptions.SetAllTogglesOff();
             feedbackTextGO.text = "";
             resultsButtonGO.SetActive(false);
             errorTextGO.SetActive(false);
             loadingIconGO.SetActive(true);
-            isLoading = true;
-            dimPanelASAGO.SetActive(true);
             backButtonGO.SetActive(false);
         }
 
@@ -467,12 +390,12 @@ namespace SaySuomi.Navigation
 
             if (serverOk)
             {
-                isLoading = false;
                 resultsButtonGO.SetActive(true);
                 SetLoadingTitle(ServerNotices.LoadingCompleted());
                 return;
             }
 
+            loadingModal.Dismissible = true;
             errorTextGO.SetActive(true);
             backButtonGO.SetActive(true);
             SetLoadingTitle(ServerNotices.LoadingFailed());
@@ -485,9 +408,7 @@ namespace SaySuomi.Navigation
 
         private void SetLoadingTitle(LocalizedString message)
         {
-            loadingTitleHelper ??= new LocalizedTextHelper(
-                loadingPopUpGO.transform.Find("Title").GetComponent<TextMeshProUGUI>()
-            );
+            loadingTitleHelper ??= new LocalizedTextHelper(loadingTitleText);
             loadingTitleHelper.SetText(message);
         }
 
@@ -495,19 +416,6 @@ namespace SaySuomi.Navigation
         {
             loadingTitleHelper?.ClearText();
             loadingErrorHelper?.ClearText();
-        }
-
-        public void AnimateLoading()
-        {
-            // Change value -6.0f to change rotation speed
-            loadingIconGO.transform.Rotate(0, 0, -6.0f, Space.Self);
-        }
-
-        public void StopErrorAnimation()
-        {
-            Animator anim = errorPopupGO.GetComponent<Animator>();
-            anim.enabled = false;
-            errorPopupGO.SetActive(false);
         }
 
         public void OnResultsButtonClicked()
@@ -518,22 +426,15 @@ namespace SaySuomi.Navigation
             // Send feedback if given
             if (self_rating == null && comment_self_rating != "")
             {
-                Animator anim = errorPopupGO.GetComponent<Animator>();
-
-                errorPopupGO.SetActive(true);
-
-                anim.enabled = true;
-
-                anim.Play("Error Popup Animation");
-
+                ErrorBanner.Show(errorPopupGO);
                 return;
             }
 
-            // Reset feedback forms and go to feedback panel
-            ratingOptions.SetAllTogglesOff();
-            loadingPopUpGO.SetActive(false);
-            dimPanelASAGO.SetActive(false);
-            feedbackPanelGO.SetActive(true);
+            // Reset feedback forms, which OnBack does, and go to feedback panel
+            Navigator navigator = Navigator.GetManager();
+            loadingModal.Dismissible = true;
+            navigator.Back();
+            navigator.Push<ASAResultsScreen>();
 
             if (self_rating != null)
             {
@@ -544,21 +445,17 @@ namespace SaySuomi.Navigation
             }
         }
 
-        public void OnBackButtonClicked()
-        {
-            // Go back to redo current task
-            errorPopupGO.SetActive(false);
-            ratingOptions.SetAllTogglesOff();
-            feedbackTextGO.text = "";
-            loadingPopUpGO.SetActive(false);
-            dimPanelASAGO.SetActive(false);
-        }
-
         void OnDisable()
         {
             taskTextHelper?.ClearText();
 
-            audioManager.StopReplaying();
+            // Already destroyed when this runs because the app is quitting.
+            AudioManager audioManager = AudioManager.GetManager();
+            if (audioManager != null)
+            {
+                audioManager.StopReplaying();
+            }
+
             CancelRecording();
         }
 

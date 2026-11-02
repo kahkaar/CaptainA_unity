@@ -4,173 +4,69 @@ using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Serialization;
 
 namespace SaySuomi.Navigation
 {
     public class AdvancedScreen : AppScreen
     {
+        const string BackgroundContent = "BackgroundPopUp/Viewport/Content/";
+
         public override bool IsTabRoot => true;
 
-        // Back does what the visible back control does on the unmigrated screens and popups
-        // here, and must not jump to another tab from behind them. Temporary: goes in Stage 5,
-        // when they join the stack.
-        public override bool HandleBack()
-        {
-            if (consentPopUpGO.activeSelf)
-            {
-                RefuseConsent();
-                return true;
-            }
-
-            if (backgroundPopUpGO.activeSelf)
-            {
-                // Send stays disabled while the form is on its way to the server, and leaving
-                // then would open the task list behind the learner when it answers.
-                if (sendButtonGO.GetComponent<Button>().interactable)
-                {
-                    backgroundPopUpGO.SetActive(false);
-                    dimPanelGO.SetActive(false);
-                }
-
-                return true;
-            }
-
-            if (profilePanelGO.activeSelf)
-            {
-                profilePanelGO.GetComponent<ASAProfileScreen>().OnBackPressed();
-                return true;
-            }
-
-            if (feedbackPanelGO.activeSelf || loadingPopUpGO.activeSelf)
-            {
-                return true;
-            }
-
-            if (taskPanelGO.activeSelf)
-            {
-                taskPanelGO.GetComponent<ASATaskListScreen>().OnBackPressed();
-                return true;
-            }
-
-            return false;
-        }
-
-        [SerializeField]
-        GameObject advancePanelGO;
-
-        [SerializeField]
-        GameObject taskPanelGO;
-
-        [SerializeField]
-        GameObject numberGameButtonGO;
-
-        [SerializeField]
-        GameObject ASAButtonGO;
-
-        [SerializeField]
-        GameObject ASAPanelGO;
-
-        [SerializeField]
-        GameObject consentPopUpGO;
-
-        [SerializeField]
-        GameObject acceptButtonGO;
-
-        [SerializeField]
-        GameObject refuseButtonGO;
+        ModalScreen consentModal;
+        ModalScreen backgroundModal;
+        Button acceptButton;
 
         // "I have read and understood the Privacy Notice." on the consent sheet.
         // Continue stays disabled until this is ticked, so consent cannot be given by
-        // reflex-tapping the primary button. Optional: leave unassigned and the sheet
-        // behaves as it did before, with Continue always enabled.
-        [SerializeField]
+        // reflex-tapping the primary button.
         Toggle consentReadToggle;
 
-        [SerializeField]
-        GameObject backgroundPopUpGO;
-
-        [SerializeField]
-        GameObject sendButtonGO;
-
-        [SerializeField]
-        GameObject dimPanelGO;
-
-        [SerializeField]
-        GameObject feedbackPanelGO;
-
-        [SerializeField]
-        GameObject loadingPopUpGO;
-
-        [SerializeField]
-        GameObject profilePanelGO;
-
-        [SerializeField]
-        [FormerlySerializedAs("ASAPanel")]
-        ASATaskScreen ASATaskScreen;
+        Button sendButton;
 
         // Other languages is now one open-ended field, and unlike the rest of the form it is
         // optional - leaving it blank is a valid answer.
-        [SerializeField]
-        private TMP_InputField languageOtherField;
+        TMP_InputField languageOtherField;
+        TMP_InputField motherTongueOptions;
+        TextMeshProUGUI errorMessage;
+        ToggleGroup genderOptions;
+        ToggleGroup ageOptions;
+        ToggleGroup selfAssessmentOptions;
 
-        [SerializeField]
-        private TMP_InputField motherTongueOptions;
-
-        [SerializeField]
-        private TextMeshProUGUI errorMessage;
-
-        public ToggleGroup genderOptions;
-
-        public ToggleGroup ageOptions;
-
-        public ToggleGroup selfAssessmentOptions;
-
-        void OnEnable()
+        protected override void Awake()
         {
-            // The secret text used to be read here to decide whether to wire up the
-            // DescribeButtons. Those are gone, and nothing else on this panel looks at it, so
-            // the check went with them. FlashcardsScreen still uses Secret.SECRET_TEXT.
+            base.Awake();
 
-            refuseButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
-            acceptButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
+            acceptButton = Find<Button>("ConsentPopUp/PopupPanel/AcceptButton");
+            consentReadToggle = Find<Toggle>("ConsentPopUp/PopupPanel/ConsentToggle");
+            sendButton = Find<Button>(BackgroundContent + "SendButton");
+            languageOtherField = Find<TMP_InputField>(BackgroundContent + "OtherLanguagesOptions/InputField");
+            motherTongueOptions = Find<TMP_InputField>(BackgroundContent + "MotherTongueOptions/InputField");
+            errorMessage = Find<TextMeshProUGUI>(BackgroundContent + "ErrorMessage");
+            genderOptions = Find<ToggleGroup>(BackgroundContent + "GenderOptions");
+            ageOptions = Find<ToggleGroup>(BackgroundContent + "AgeOptions");
+            selfAssessmentOptions = Find<ToggleGroup>(BackgroundContent + "SelfAssessmentOptions");
 
-            // Rewire, because this screen now re-enables each time something closes above it. A
-            // plain AddListener would stack, and one Send tap would post the form several times.
-            ButtonUtils.Rewire(numberGameButtonGO, () => OnNumberGameButtonClicked());
-            ButtonUtils.Rewire(ASAButtonGO, OnASAButtonClicked);
-
-            acceptButtonGO.GetComponent<Button>().onClick.AddListener(() => AcceptConsent());
-            refuseButtonGO.GetComponent<Button>().onClick.AddListener(() => RefuseConsent());
+            ButtonWiring.Replace(Find<Button>("NumberGameButton"), () => OnNumberGameButtonClicked());
+            ButtonWiring.Replace(Find<Button>("ASAButton"), ProceedToASA);
+            ButtonWiring.Replace(acceptButton, AcceptConsent);
+            ButtonWiring.Replace(Find<Button>("ConsentPopUp/PopupPanel/RefuseButton"), RefuseConsent);
+            ButtonWiring.Replace(Find<Button>("ConsentPopUp/PopupDimCatcher"), RefuseConsent);
+            ButtonWiring.Replace(Find<Button>("ConsentPopUp/PopupPanel/LinkButton"), LinkButtonPressed);
+            ButtonWiring.Replace(sendButton, GetUserInput);
 
             // Continue follows the checkbox rather than being live from the start. Consent
             // that was given without the notice being acknowledged is not worth much, and
             // the disabled button is what tells the user why nothing happened.
-            if (consentReadToggle != null)
-            {
-                consentReadToggle.onValueChanged.AddListener(isOn =>
-                    acceptButtonGO.GetComponent<Button>().interactable = isOn
-                );
-            }
+            consentReadToggle.onValueChanged.AddListener(isOn => acceptButton.interactable = isOn);
 
-            ButtonUtils.Rewire(sendButtonGO, GetUserInput);
+            consentModal = ModalScreen.Attach(FindObject("ConsentPopUp"));
+            backgroundModal = ModalScreen.Attach(FindObject("BackgroundPopUp"));
+        }
 
+        void OnEnable()
+        {
             errorMessage.enabled = false;
-
-            // The picture-description feature has been removed from the Advanced panel: the
-            // six DescribeButtons, their OnDescribe*ButtonClicked handlers, and the three
-            // describePanel objects are all gone, along with the secret-code gate that used
-            // to guard the assessment.
-
-            // Set the proper panels and game objects as inactive at first
-            ASAPanelGO.SetActive(false);
-            feedbackPanelGO.SetActive(false);
-            taskPanelGO.SetActive(false);
-            loadingPopUpGO.SetActive(false);
-            dimPanelGO.SetActive(false);
-            consentPopUpGO.SetActive(false);
-            backgroundPopUpGO.SetActive(false);
-            profilePanelGO.SetActive(false);
 
             // Opening the tab is what clears its new-feature dot - the learner has now seen
             // whatever it was pointing at. Recorded here rather than on the tab button so that
@@ -185,22 +81,19 @@ namespace SaySuomi.Navigation
             }
         }
 
-        public void OnNumberGameButtonClicked(NGTaskType taskType = NGTaskType.EASY)
+        void OnNumberGameButtonClicked(NGTaskType taskType = NGTaskType.EASY)
         {
             // Go to number game (not very polished or functional for now)
             Navigator.GetManager().Push<NumberGameScreen>().SetTaskType(taskType);
         }
 
-        public void OnASAButtonClicked()
+        // The assessment used to sit behind a secret code while it was being trialled. It is a
+        // public feature now, so the button goes straight through - consent and the background
+        // form are the only gates that remain.
+        void ProceedToASA()
         {
-            // The assessment used to sit behind a secret code while it was being trialled.
-            // It is a public feature now, so the button goes straight through - consent and
-            // the background form are the only gates that remain.
-            ProceedToASA();
-        }
+            Navigator navigator = Navigator.GetManager();
 
-        private void ProceedToASA()
-        {
             // Go to ASA task selection if consent has been given and the background form has been filled
             // Open relevant pop-ups otherwise
             if (
@@ -209,7 +102,7 @@ namespace SaySuomi.Navigation
             )
             {
                 Debug.Log(PlayerPrefs.GetString("UserGuid"));
-                taskPanelGO.SetActive(true);
+                navigator.Push<ASATaskListScreen>();
             }
 
             if (
@@ -217,8 +110,7 @@ namespace SaySuomi.Navigation
                 && PlayerPrefs.GetInt("BackgroundFormCompleted", 0) == 0
             )
             {
-                backgroundPopUpGO.SetActive(true);
-                dimPanelGO.SetActive(true);
+                navigator.Open(backgroundModal);
             }
 
             if (
@@ -227,45 +119,25 @@ namespace SaySuomi.Navigation
             )
             {
                 ResetConsentSheet();
-                consentPopUpGO.SetActive(true);
-                dimPanelGO.SetActive(true);
+                navigator.Open(consentModal);
             }
-        }
-
-        /// <summary>
-        /// Brings the task list back to the front, for a screen that needs to return to it
-        /// without holding its own reference. This panel owns every screen under it - OnEnable
-        /// is what switches them all off - so the reference stays here rather than being
-        /// duplicated into each child.
-        ///
-        /// Only turns the task list on. The caller switches itself off, because it is the one
-        /// that knows whether it has anything to clean up first.
-        /// </summary>
-        public void ShowTaskPanel()
-        {
-            taskPanelGO.SetActive(true);
         }
 
         // The sheet is a single reused object, so clear it every time it opens. Without this
         // a user who ticked the box, backed out, and came back would find Continue already
         // enabled and could consent without seeing the notice again.
-        private void ResetConsentSheet()
+        void ResetConsentSheet()
         {
-            if (consentReadToggle == null)
-            {
-                return;
-            }
-
             consentReadToggle.isOn = false;
-            acceptButtonGO.GetComponent<Button>().interactable = false;
+            acceptButton.interactable = false;
         }
 
-        public void LinkButtonPressed()
+        void LinkButtonPressed()
         {
             Application.OpenURL("https://aalto-speech.github.io/privacy-notices/saysuomi-privacy.html");
         }
 
-        public void AcceptConsent()
+        void AcceptConsent()
         {
             // Create new user after consent has been given
             string guid = Guid.NewGuid().ToString();
@@ -279,17 +151,17 @@ namespace SaySuomi.Navigation
             PlayerPrefs.SetString("ConsentTimestamp", timestamp);
             PlayerPrefs.Save();
 
-            consentPopUpGO.SetActive(false);
-            backgroundPopUpGO.SetActive(true);
+            Navigator navigator = Navigator.GetManager();
+            navigator.Back();
+            navigator.Open(backgroundModal);
         }
 
-        public void RefuseConsent()
+        void RefuseConsent()
         {
-            consentPopUpGO.SetActive(false);
-            dimPanelGO.SetActive(false);
+            Navigator.GetManager().Back();
         }
 
-        public void GetUserInput()
+        void GetUserInput()
         {
             // Set all relevant values for the user based on filled background form
             bool isValid = ValidateInformation();
@@ -349,8 +221,12 @@ namespace SaySuomi.Navigation
             // user into the assessment with a guid the server had never heard of. Every
             // assessment then answered 404, and because the form was already flagged complete
             // the app never asked again: a permanent dead end that only a reinstall cleared.
-            sendButtonGO.GetComponent<Button>().interactable = false;
+            sendButton.interactable = false;
             errorMessage.enabled = false;
+
+            // Back waits too, because leaving now would open the task list behind the learner
+            // when the server answers.
+            backgroundModal.Dismissible = false;
 
             StartCoroutine(
                 NetworkManager
@@ -360,7 +236,8 @@ namespace SaySuomi.Navigation
                         backgroundFormData,
                         serverOk =>
                         {
-                            sendButtonGO.GetComponent<Button>().interactable = true;
+                            sendButton.interactable = true;
+                            backgroundModal.Dismissible = true;
 
                             if (!serverOk)
                             {
@@ -372,9 +249,9 @@ namespace SaySuomi.Navigation
                             PlayerPrefs.SetInt("BackgroundFormCompleted", 1);
                             PlayerPrefs.Save();
 
-                            backgroundPopUpGO.SetActive(false);
-                            dimPanelGO.SetActive(false);
-                            taskPanelGO.SetActive(true);
+                            Navigator navigator = Navigator.GetManager();
+                            navigator.Back();
+                            navigator.Push<ASATaskListScreen>();
                         }
                     )
             );
@@ -383,7 +260,7 @@ namespace SaySuomi.Navigation
         // Keeps the user on the background form and tells them why they are still there.
         // The type is included because "something went wrong" is useless in a bug report,
         // and for a 422 the user genuinely cannot fix it by trying again.
-        private void ShowOnboardingError()
+        void ShowOnboardingError()
         {
             NetworkManager network = NetworkManager.GetManager();
             string reason = string.IsNullOrEmpty(network.lastError)
@@ -399,7 +276,7 @@ namespace SaySuomi.Navigation
             errorMessage.enabled = true;
         }
 
-        public bool ValidateInformation()
+        bool ValidateInformation()
         {
             // Every remaining question is mandatory except other languages, which is an
             // open-ended field the user is allowed to leave blank.
@@ -414,12 +291,6 @@ namespace SaySuomi.Navigation
             }
             errorMessage.enabled = true;
             return false;
-        }
-
-        void OnDisable()
-        // Need to destroy all game objects in the list to avoid creating a duplicate scorelist
-        {
-            ASAPanelGO.SetActive(false);
         }
     }
 }

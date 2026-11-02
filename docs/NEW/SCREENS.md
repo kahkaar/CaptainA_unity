@@ -2,10 +2,6 @@
 
 Every screen and modal in the app, and how they connect.
 
-> **Status: in progress.** Tabs, overlays, flashcard sessions, NumberGame and the Instruction,
-> Survey and Secret modals are implemented. The ASA flow describes the intended design until
-> Stage 5 finishes.
-
 ## Screens and overlays
 
 | Class                    | Layer           | Purpose                       |
@@ -29,18 +25,18 @@ Every screen and modal in the app, and how they connect.
 | Modal                 | Class                  | Opened from        | Back                       |
 | --------------------- | ---------------------- | ------------------ | -------------------------- |
 | Instruction           | `InstructionModal`     | Any tab or Phoneme | Closes, not marked as seen |
-| Survey                | `SurveyModal`          | Network response   | Closes                     |
+| Survey                | `SurveyModal`          | Recording count    | Closes                     |
 | Secret                | `SecretModal`          | Info               | Closes                     |
 | Consent               | `ModalScreen.Attach`   | Advanced           | Same as Refuse             |
-| Background form       | `ModalScreen.Attach`   | Advanced           | Closes                     |
-| Task loading          | `ModalScreen.Attach`   | Task               | Blocked until an error     |
-| Profile loading       | `ModalScreen.Attach`   | Task list          | Blocked until an error     |
-| Overall feedback      | `ModalScreen.Attach`   | Task list          | Closes                     |
+| Background form       | `ModalScreen.Attach`   | Advanced           | Closes, blocked while sending |
+| Task loading          | `LoadingModal`         | Task               | Blocked until an error     |
+| Profile loading       | `LoadingModal`         | Task list, profile | Blocked until an error     |
+| Overall feedback      | `ModalScreen.Attach`   | Task list          | Closes, counts as declining |
 | Results info          | `ModalScreen.Attach`   | Results            | Closes                     |
 | Results dimension     | `ModalScreen.Attach`   | Results            | Closes                     |
 | Results feedback      | `ModalScreen.Attach`   | Results            | Closes                     |
 | Profile settings      | `ModalScreen.Attach`   | Profile            | Closes                     |
-| Delete confirmation   | `ModalScreen.Attach`   | Profile            | Closes                     |
+| Delete confirmation   | `ModalScreen.Attach`   | Settings           | Closes, blocked while deleting. After deleting, closes to Advanced |
 | Profile feedback      | `ModalScreen.Attach`   | Profile            | Closes                     |
 
 Back leaves an instruction unmarked, as closing one by navigation does today, so it shows
@@ -99,12 +95,15 @@ flowchart TD
     profile -- "Back" --> list
     profile -- "Dismiss after account deletion" --> advanced
 
-    task -- "Back, when not recording" --> list
+    task -- "Back, once any recording has stopped" --> list
     task -- "Send" --> loading["Task loading (modal)"]
     loading -- "Back after failure" --> task
     loading -- "Results button" --> results["Results"]
     results -- "New Task or back" --> list
 ```
+
+Consent missing with the form marked complete has no branch, so the ASA button does nothing in
+that state. This matches the old code.
 
 ## Navigator calls
 
@@ -117,6 +116,6 @@ flowchart TD
 | Open results               | `Push<ASAResultsScreen>()`                                |
 | New Task                   | `PopTo<ASATaskListScreen>()`                              |
 | Back on results            | `HandleBack` calls `PopTo<ASATaskListScreen>()`           |
-| Profile request succeeds   | `Push<ASAProfileScreen>()`, then fill it with the stats   |
+| Profile request succeeds   | `Back()` closes the loading popup, then `Push<ASAProfileScreen>()` and `ShowStats` |
 | Account deleted            | `PopToRoot()`                                             |
 | Survey due                 | `Open<SurveyModal>()`                                     |

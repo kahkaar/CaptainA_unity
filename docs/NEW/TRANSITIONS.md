@@ -2,9 +2,6 @@
 
 How navigation is animated. The animations use coroutines, with no extra package.
 
-> **Status: in progress.** All of these are in use and have been run in Unity. The ASA screens
-> start using them in Stage 5.
-
 ## Animations
 
 | Navigation               | Animation                                                         | Duration |
@@ -45,7 +42,8 @@ flowchart TD
   `Push<T>().DisplayTask(...)` still works.
 - **Hiding:** the outgoing screen is disabled when the animation ends, so its `OnDisable`
   runs up to 250 ms after navigation starts.
-- **Input:** both screens have `blocksRaycasts` off during the animation.
+- **Input:** both screens have `blocksRaycasts` off during the animation. A modal only blocks
+  itself, because the dim beneath it already covers everything else.
 - **Interruptions:** any new navigation first snaps the running transition to its end
   state, then proceeds. This covers rapid taps, back presses and network callbacks.
 - **Multi-layer pops:** `PopTo`, `PopToRoot` and `SelectTab` animate only the top entry

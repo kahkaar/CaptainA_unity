@@ -2,11 +2,6 @@
 
 How the app moves between screens, overlays and modals.
 
-> **Status: in progress.** Tabs, overlays, app-wide modals, flashcard sessions and NumberGame
-> are on the new system and have been run in Unity. The ASA flow joins in Stage 5, so parts of
-> this describe the finished design.
-> See [temporary behaviour](#temporary-behaviour).
-
 Related: [Screens](SCREENS.md), [Transitions](TRANSITIONS.md), [Wiring](WIRING.md),
 [Migration](MIGRATION.md).
 
@@ -14,22 +9,25 @@ Related: [Screens](SCREENS.md), [Transitions](TRANSITIONS.md), [Wiring](WIRING.m
 
 One class, `Navigator`, owns all navigation. Screens never switch each other on or off:
 they ask `Navigator` to open a screen by type, and it handles history, back, visibility
-and animation. Code lives in `Assets/Scripts/NewScripts/Navigation/`, in the
-`SaySuomi.Navigation` namespace.
+and animation. Code lives under `Assets/Scripts/NewScripts/` in the `Navigation`, `Screens`,
+`Modals` and `Managers` folders, all in the `SaySuomi.Navigation` namespace.
 
 | Class               | Role                                                                   |
 | ------------------- | ---------------------------------------------------------------------- |
 | `Navigator`         | Owns the stack, the current tab and back handling. Created at launch.  |
 | `AppScreen`         | Base class for every screen. Declares its layer and back behaviour.    |
-| `ModalScreen`       | `AppScreen` for popups. Adds `Dismissible`.                            |
+| `ModalScreen`       | `AppScreen` for popups. Adds `Attach`, `Dismissible` and `OnBack`.     |
+| `LoadingModal`      | `ModalScreen` for popups waiting on the server. Spins `LoadingIcon`.   |
 | `ModalHost`         | Presents modals: the shared dim and the modal animations.              |
-| `ScreenTransitions` | The animation coroutines and their durations.                          |
+| `ScreenTransitions` | The animation curves and durations, and the runner that plays them.    |
 | `TabBar`            | Tab buttons, icons and the new-feature dot. Follows `TabChanged`.      |
+| `ErrorBanner`       | Shows and hides the drop-down error messages.                          |
+| `ButtonWiring`      | Connects buttons in code and switches off their Inspector entries.     |
 
 ## Layers
 
-Each screen declares its layer in code. Draw order comes from the hierarchy, so a higher
-layer always covers a lower one.
+Each screen declares its layer in code by overriding `Layer`. Draw order comes from sibling
+order under the root Canvas, so a higher layer always covers a lower one.
 
 | Layer     | Examples                       | The screen below                                | Covers the tab bar |
 | --------- | ------------------------------ | ----------------------------------------------- | ------------------ |
@@ -67,6 +65,8 @@ void Back();                       // the only Escape handler in the app
 void PopTo<T>() where T : AppScreen;
 void PopToRoot();
 void SelectTab(AppScreen tabRoot); // clears the stack; no-op when already on that tab's root
+bool IsOpen(AppScreen screen);
+T Get<T>() where T : AppScreen;
 event Action<AppScreen> TabChanged;
 ```
 
@@ -87,12 +87,12 @@ flowchart TD
     start["Push is called"] --> running{"Transition running?"}
     running -- Yes --> snap["Snap it to its end state"]
     running -- No --> activate
-    snap --> activate["Activate the new screen and add it to the stack"]
+    snap --> activate["Add the new screen to the stack and activate it"]
     activate --> returned["Return the screen to the caller"]
     returned --> wait["Wait one frame"]
     wait --> animate["Animate, with input blocked on both screens"]
     animate --> layer{"Is the new screen on the Screen layer?"}
-    layer -- Yes --> hide["Hide the screen below"]
+    layer -- Yes --> hide["Hide everything below it"]
     layer -- No --> keep["Keep the screen below active"]
     hide --> finish["Restore position, scale and alpha, then allow input"]
     keep --> finish
@@ -105,12 +105,12 @@ press therefore acts on exactly one layer.
 
 ```mermaid
 flowchart TD
-    press["Back pressed"] --> handled{"Does the top entry's HandleBack return true?"}
-    handled -- Yes --> consumed["Stop: the screen consumed the press"]
+    press["Back pressed"] --> blocked{"Is the top entry a non-dismissible modal?"}
+    blocked -- Yes --> ignored["Stop: ignore the press"]
+    blocked -- No --> handled{"Does the top entry's HandleBack return true?"}
+    handled -- Yes --> consumed["Stop: the screen handled it"]
     handled -- No --> root{"Is the top entry a tab root?"}
-    root -- No --> modal{"Is it a non-dismissible modal?"}
-    modal -- Yes --> ignored["Stop: ignore the press"]
-    modal -- No --> pop["Pop the top entry"]
+    root -- No --> pop["Pop the top entry"]
     root -- Yes --> freestyle{"Is the tab Freestyle?"}
     freestyle -- No --> select["Select the Freestyle tab"]
     freestyle -- Yes --> quit["Application.Quit"]
@@ -118,15 +118,15 @@ flowchart TD
 
 Override `HandleBack` only when a screen must do something other than close. For example,
 `ASATaskScreen` stops a running recording and returns true, so the first press stops the
-recording and the next one leaves.
+recording and the next one leaves. `ASAResultsScreen` returns to the task list rather than the
+task it covers.
 
 `Application.Quit` does nothing in the Editor, so exiting has to be tested on a device.
 
 ## Tabs
 
 `SelectTab` clears the stack, then shows the chosen tab root. Returning to a tab therefore
-always lands on its root. Once every screen has migrated, selecting the tab whose root is
-already showing will do nothing.
+always lands on its root. Selecting the tab whose root is already showing does nothing.
 
 `TabBar` updates from `TabChanged` rather than from its own button clicks, so its icons
 stay correct when back selects Freestyle.
@@ -137,10 +137,23 @@ stay correct when back selects Freestyle.
 place. `ModalHost`, which `Navigator` adds to its own object, only handles how they are
 presented:
 
-- It creates one shared dim in code and keeps it directly below the top modal, in that
-  modal's parent. The dim blocks input to everything beneath it, so a modal must draw above
-  the tab bar for the dim to block the tabs.
+- It puts the newest modal on top, then creates one shared dim in code and keeps it directly
+  below that modal. The dim blocks input to everything beneath it, including the tab bar.
 - It runs the modal open and close animations.
+
+`ModalScreen.Attach` lifts a popup from the screen that owns it in the scene to the top of the
+root Canvas, keeping its position. Only there can it draw above the tab bar. Two things follow:
+
+- A popup still appears under its owner in the Editor, but not while the app runs.
+- A screen must find anything it needs inside a popup by path before calling `Attach`, or use
+  the returned modal's `Find` afterwards.
+
+`ModalScreen.OnBack` runs whenever back closes a popup, including from its own back button if
+that calls `Navigator.Back`. It is the place to reset a form or record a decline, so every way
+out behaves the same. Return true from it to keep the popup open.
+
+Drop-down error messages go through `ErrorBanner`, which moves them to the top of the Canvas
+so they draw above the popup they belong to.
 
 `Dismissible` is false while a loading popup is waiting on the server, then true once it
 shows an error, so back can leave a failed request but not one in progress.
@@ -155,24 +168,11 @@ Leave tab roots other than Freestyle inactive in the scene. `Navigator` runs aft
 objects are enabled, so an active root's `OnEnable` would already have run. For Advanced,
 that clears the new-feature dot at launch.
 
+`Navigator` also disables the old `PopUpManager` if it is still in the scene, because its
+`Start` would hide the instruction popup while it is open. These lines go at cutover.
+
 That launch hook runs in every scene. If a scene has no `AppScreen`, `Navigator` removes
 itself and does nothing, so scenes using the old panels are unaffected.
-
-## Temporary behaviour
-
-While old and new screens coexist, these keep them from fighting over back and tabs. Each
-goes when the listed stage finishes.
-
-| Temporary code                        | Why it exists                                                       | Removed in     |
-| ------------------------------------- | ------------------------------------------------------------------- | -------------- |
-| `ILegacyBackHandler`                  | An old screen that reads Escape keeps the press, so `Navigator` stays out of it | Stage 5 |
-| `HandledBackThisFrame`                | An old screen below the stack must not also close when the stack took the press | Stage 5 |
-| `AdvancedScreen.HandleBack` and the `OnBackPressed` methods it calls | Back matches the visible back control on Advanced's unmigrated screens, and can't jump to another tab from behind them | Stage 5 |
-| Re-selecting a tab re-runs its lifecycle | Advanced closes its unmigrated sub-screens in `OnEnable` | Stage 5        |
-| Disabling `PopUpManager` at launch    | Its `Start` would hide the instruction popup while it is open       | Cutover        |
-
-`Navigator` runs before other scripts, using `[DefaultExecutionOrder(-100)]`. That way an old
-screen is still open when it checks, even if that screen closes itself later in the frame.
 
 ## Opening popups from `OnEnable`
 
@@ -197,6 +197,9 @@ then updates its own UI and decides where to go.
 | `ServerPost_ASA`      | `bool`                | `lastServerError` | `ASATaskScreen`            |
 | `ServerPost_profile`  | Response JSON, or `null` | `lastServerError` | `ASATaskListScreen`     |
 | `ServerPost_setLevel` | `bool`                | `lastServerError` | `ASAProfileScreen`         |
+| `ServerPost_guid`     | `bool`                | `lastError`, `lastErrorType` | `AdvancedScreen` |
+| `ServerPost_deleteUser` | `bool`              | `DataConfirmedDeleted` | `ASAProfileScreen`    |
+| `ServerPost_feedback` | `bool`, optional      | `lastError`       | Task list, profile, `FeedbackAutoSend` |
 
 - **Results:** read `asrResult` or `asrResultASA` from the callback. `ASAProfileScreen.ShowStats`
   parses profile JSON, so the data types stay with the screen.
@@ -207,5 +210,7 @@ then updates its own UI and decides where to go.
 - **Level changes:** check `CanSetLevel` before showing progress. A build with a blank
   `Secret.cs` has no endpoint, so nothing is sent.
 
-The coroutines keep running on whichever object started them, so a request started by a
-screen stops if that screen is disabled.
+A coroutine runs on whichever object started it and stops if that object is disabled. A
+request that must outlive a screen runs on `NetworkManager` instead: `FeedbackAutoSend`, because
+the task screen hides behind Results, and the profile reload, because the task list is hidden
+behind the profile.
