@@ -46,7 +46,7 @@ namespace SaySuomi.Navigation
 
         void Awake()
         {
-            AppScreen[] found = FindObjectsByType<AppScreen>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            AppScreen[] found = FindObjectsByType<AppScreen>(FindObjectsInactive.Include);
             if (found.Length == 0)
             {
                 // Disabled as well, because Destroy waits for the end of the frame and Update
