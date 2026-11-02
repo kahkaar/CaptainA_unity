@@ -982,7 +982,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 19683655}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 184e891ce29114641abf666f812baa5f, type: 3}
+  m_Script: {fileID: 11500000, guid: 519acff8ec3ca2e4f93a66e9f81a86bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   phonemeScorePrefab: {fileID: 6381064047084870250, guid: 5ca933ef40c59104e8460bb358522464, type: 3}
@@ -1601,7 +1601,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2096764790}
-        m_TargetAssemblyTypeName: SecretPopUpPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.SecretModal, Assembly-CSharp
         m_MethodName: OnNoButtonClick
         m_Mode: 1
         m_Arguments:
@@ -1734,7 +1734,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1990495848}
-        m_TargetAssemblyTypeName: SurveyPopUpPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.SurveyModal, Assembly-CSharp
         m_MethodName: OnYesButtonClick
         m_Mode: 1
         m_Arguments:
@@ -3693,7 +3693,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SuperMemoPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnSubmitButtonClick
         m_Mode: 3
         m_Arguments:
@@ -6235,20 +6235,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 215614416}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 31db70e01cb223240a7beee0268ee207, type: 3}
+  m_Script: {fileID: 11500000, guid: 78c86d423e00c81448df9f01262fbfc2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  panels:
-  - {fileID: 1805948025}
-  - {fileID: 430015518}
-  - {fileID: 1164813424}
-  - {fileID: 19683655}
-  tabs:
-  - {fileID: 647791279}
-  - {fileID: 805330315}
-  - {fileID: 442258563}
-  - {fileID: 1114609791}
-  newFeatureBadgeGO: {fileID: 523084016}
 --- !u!1 &217988254
 GameObject:
   m_ObjectHideFlags: 0
@@ -6427,108 +6416,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 217988254}
   m_CullTransparentMesh: 1
---- !u!1 &222325983
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 222325987}
-  - component: {fileID: 222325986}
-  - component: {fileID: 222325985}
-  - component: {fileID: 222325984}
-  m_Layer: 5
-  m_Name: Canvas
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &222325984
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 222325983}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dc42784cf147c0c48a680349fa168899, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GraphicRaycaster
-  m_IgnoreReversedGraphics: 1
-  m_BlockingObjects: 0
-  m_BlockingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
---- !u!114 &222325985
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 222325983}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0cd44c1031e13a943bb63640046fad76, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.CanvasScaler
-  m_UiScaleMode: 0
-  m_ReferencePixelsPerUnit: 100
-  m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 800, y: 600}
-  m_ScreenMatchMode: 0
-  m_MatchWidthOrHeight: 0
-  m_PhysicalUnit: 3
-  m_FallbackScreenDPI: 96
-  m_DefaultSpriteDPI: 96
-  m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
---- !u!223 &222325986
-Canvas:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 222325983}
-  m_Enabled: 1
-  serializedVersion: 3
-  m_RenderMode: 0
-  m_Camera: {fileID: 0}
-  m_PlaneDistance: 100
-  m_PixelPerfect: 0
-  m_ReceivesEvents: 1
-  m_OverrideSorting: 0
-  m_OverridePixelPerfect: 0
-  m_SortingBucketNormalizedSize: 0
-  m_VertexColorAlwaysGammaSpace: 0
-  m_UseReflectionProbes: 0
-  m_AdditionalShaderChannelsFlag: 0
-  m_UpdateRectTransformForStandalone: 0
-  m_SortingLayerID: 0
-  m_SortingOrder: 0
-  m_TargetDisplay: 0
---- !u!224 &222325987
-RectTransform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 222325983}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0, y: 0, z: 0}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
-  m_Pivot: {x: 0, y: 0}
 --- !u!1 &226726173
 GameObject:
   m_ObjectHideFlags: 0
@@ -9809,7 +9696,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -10256,7 +10143,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1769915102}
-        m_TargetAssemblyTypeName: DetailScorePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.ScoreDetailScreen, Assembly-CSharp
         m_MethodName: ClosePanel
         m_Mode: 1
         m_Arguments:
@@ -10671,7 +10558,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 430015518}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eebbcec823310a24299a40fb81939011, type: 3}
+  m_Script: {fileID: 11500000, guid: 986d867514ebed8469f0111399a521ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   deckListPrefab: {fileID: 7129993795368182319, guid: 7c95651e74bff814d8388a08ab6399cb, type: 3}
@@ -11182,7 +11069,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215614421}
-        m_TargetAssemblyTypeName: Navigation, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.TabBar, Assembly-CSharp
         m_MethodName: NavigationBarClick
         m_Mode: 2
         m_Arguments:
@@ -11605,7 +11492,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 455336489}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d57a6c140b69a350cb3893c9563afc53, type: 3}
+  m_Script: {fileID: 11500000, guid: f8b687789ac293e4f816c55c58b39cdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   infoPanel: {fileID: 455336489}
@@ -12172,11 +12059,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 474211609}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5cd8891c8766001889044f4a1685b3a9, type: 3}
+  m_Script: {fileID: 11500000, guid: 3c79b4446a669eb48a6bf73d39bbe79b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
   audioManager: {fileID: 822940822}
-  AdvancePanel: {fileID: 1164813428}
+  AdvancedScreen: {fileID: 1164813428}
   recordButtonGO: {fileID: 1922058836}
   pauseButtonGO: {fileID: 2066595227}
   sendButtonGO: {fileID: 87192917}
@@ -12493,7 +12380,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -13558,7 +13445,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2127582246}
-        m_TargetAssemblyTypeName: PhonemePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.PhonemeScreen, Assembly-CSharp
         m_MethodName: ClosePanel
         m_Mode: 1
         m_Arguments:
@@ -13857,7 +13744,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2127582246}
-        m_TargetAssemblyTypeName: PhonemePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.PhonemeScreen, Assembly-CSharp
         m_MethodName: OnVideoButtonClick
         m_Mode: 1
         m_Arguments:
@@ -14288,7 +14175,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 455336493}
-        m_TargetAssemblyTypeName: InfoPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.InfoScreen, Assembly-CSharp
         m_MethodName: ClosePanel
         m_Mode: 1
         m_Arguments:
@@ -15074,7 +14961,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -16609,7 +16496,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 645107172}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7001f712b67a7474aae41507329d8599, type: 3}
+  m_Script: {fileID: 11500000, guid: 1049368bc36ad6e4d995d6eda60e9c2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   recordButtonGO: {fileID: 582804857}
@@ -16706,7 +16593,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215614421}
-        m_TargetAssemblyTypeName: Navigation, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.TabBar, Assembly-CSharp
         m_MethodName: NavigationBarClick
         m_Mode: 2
         m_Arguments:
@@ -17423,7 +17310,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1164813428}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: LinkButtonPressed
         m_Mode: 1
         m_Arguments:
@@ -21146,7 +21033,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -21497,7 +21384,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215614421}
-        m_TargetAssemblyTypeName: Navigation, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.TabBar, Assembly-CSharp
         m_MethodName: NavigationBarClick
         m_Mode: 2
         m_Arguments:
@@ -21842,7 +21729,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 822940820}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 459959c627f4b69e699f7be343b6ebfd, type: 3}
+  m_Script: {fileID: 11500000, guid: 4076e5e4597432045a76fe819fabdff9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   recordNotif: {fileID: 8300000, guid: 74aa27e82861e5c4ca8af516e37e1561, type: 3}
@@ -22154,7 +22041,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -23017,7 +22904,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1990495848}
-        m_TargetAssemblyTypeName: SurveyPopUpPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.SurveyModal, Assembly-CSharp
         m_MethodName: OnLaterButtonClick
         m_Mode: 1
         m_Arguments:
@@ -26856,7 +26743,7 @@ GameObject:
   - component: {fileID: 983078106}
   - component: {fileID: 983078105}
   m_Layer: 5
-  m_Name: MainView
+  m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -27495,7 +27382,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SuperMemoPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnSubmitButtonClick
         m_Mode: 3
         m_Arguments:
@@ -28744,7 +28631,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -29816,7 +29703,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 215614421}
-        m_TargetAssemblyTypeName: Navigation, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.TabBar, Assembly-CSharp
         m_MethodName: NavigationBarClick
         m_Mode: 2
         m_Arguments:
@@ -30339,7 +30226,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1769915102}
-        m_TargetAssemblyTypeName: DetailScorePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.ScoreDetailScreen, Assembly-CSharp
         m_MethodName: OnDetailScoreScroll
         m_Mode: 0
         m_Arguments:
@@ -30683,7 +30570,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1164813428}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: RefuseConsent
         m_Mode: 1
         m_Arguments:
@@ -31655,7 +31542,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1164813425
 RectTransform:
   m_ObjectHideFlags: 0
@@ -31735,7 +31622,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1164813424}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75c1779a71f235554a29c432fa2bd6d9, type: 3}
+  m_Script: {fileID: 11500000, guid: aeda2a1644a93604ea52b3c281646ba3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   advancePanelGO: {fileID: 1164813424}
@@ -31754,7 +31641,7 @@ MonoBehaviour:
   feedbackPanelGO: {fileID: 6675190759561332594}
   loadingPopUpGO: {fileID: 7259973715481348085}
   profilePanelGO: {fileID: 8818382073644628020}
-  ASAPanel: {fileID: 474211613}
+  ASATaskScreen: {fileID: 474211613}
   languageOtherField: {fileID: 1762023269}
   motherTongueOptions: {fileID: 405094356}
   errorMessage: {fileID: 1225000242}
@@ -32650,7 +32537,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SuperMemoPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnRecordButtonClick
         m_Mode: 1
         m_Arguments:
@@ -33064,7 +32951,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 19683659}
-        m_TargetAssemblyTypeName: ProfilePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.ProgressScreen, Assembly-CSharp
         m_MethodName: OnInfoButtonClick
         m_Mode: 1
         m_Arguments:
@@ -33982,7 +33869,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2096764790}
-        m_TargetAssemblyTypeName: SecretPopUpPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.SecretModal, Assembly-CSharp
         m_MethodName: OnYesButtonClick
         m_Mode: 1
         m_Arguments:
@@ -35707,7 +35594,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -36423,7 +36310,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1769915102}
-        m_TargetAssemblyTypeName: DetailScorePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.ScoreDetailScreen, Assembly-CSharp
         m_MethodName: ClosePanel
         m_Mode: 1
         m_Arguments:
@@ -38700,7 +38587,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SuperMemoPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnSubmitButtonClick
         m_Mode: 3
         m_Arguments:
@@ -41104,7 +40991,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SuperMemoPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: DisplayAnswer
         m_Mode: 1
         m_Arguments:
@@ -42703,7 +42590,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 455336493}
-        m_TargetAssemblyTypeName: InfoPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.InfoScreen, Assembly-CSharp
         m_MethodName: SecretButton
         m_Mode: 1
         m_Arguments:
@@ -43033,7 +42920,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 8818382073644628020}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1cbb70d79ba5e4c488c66777a3dd6bc6, type: 3}
+  m_Script: {fileID: 11500000, guid: e4d9ba27a3043aa4fafd220e5babbdf3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ASAPRofilePanel
   levelBarGO: {fileID: 1370295920}
@@ -43153,7 +43040,7 @@ MonoBehaviour:
   errorPopupGO: {fileID: 1376894215}
   comparisonFeedbackTextGO: {fileID: 217988256}
   insufficientDataNotice: {fileID: 1324659955}
-  FeedbackPanel: {fileID: 0}
+  ASAResultsScreen: {fileID: 0}
   rankPercentText:
     m_TableReference:
       m_TableCollectionName: GUID:850ceabc4262bb1acb39b8a91b2fcf93
@@ -44634,133 +44521,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1660497272}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d86ad4bb5cdd8e54ca3f439ca06f612c, type: 3}
+  m_Script: {fileID: 11500000, guid: cde5f9b9005b9c74082b37bd256e9fd2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  surveyPopUpPanelGO: {fileID: 1990495844}
-  feedbackPanelGO: {fileID: 6675190759561332594}
-  ASAPanelGO: {fileID: 474211609}
-  loadingPopUpProfileGO: {fileID: 1837294515}
-  feedbackLoadingIconGO: {fileID: 663327819}
-  profileLoadingIconGO: {fileID: 1760811886}
-  dimPanelASAGO: {fileID: 431676639}
-  resultsButtonGO: {fileID: 874353685}
-  feedbackLoadingBackButtonGO: {fileID: 775814145}
-  profileLoadingBackButtonGO: {fileID: 1452922760}
-  feedbackTextGO: {fileID: 1039887686}
-  feedbackLoadingErrorTextGO: {fileID: 1523942761}
-  feedbackLoadingTitleText: {fileID: 1206766738578775681}
-  loadingText:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 2573893778890752
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  loadingFailedNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 2574131100999680
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  loadingCompletedNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 2574532344897536
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  profileLoadingErrorTextGO: {fileID: 1147529915}
-  profilePanelGO: {fileID: 8818382073644628020}
-  dimPanelGO: {fileID: 22630210}
-  AdvancePanel: {fileID: 1164813428}
-  ASAPanel: {fileID: 474211613}
-  ASAProfilePanel: {fileID: 1625667668}
-  taskPanel: {fileID: 1964757491}
-  feedbackErrorText: {fileID: 1523942763}
-  profileErrorText: {fileID: 1147529917}
-  noConnectionNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 6320358917496832
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  noConsentNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 6321177507225600
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  accountNotFoundNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 6321228962947072
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  versionMismatchNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 6321274882187264
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  recordingTooLongNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 6321523981901824
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  serverBusyNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 6321580026191872
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  badRequestNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 6321609004638208
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  defaultNotice:
-    m_TableReference:
-      m_TableCollectionName: GUID:d3a4387299faa8b81aed682b3107b9e1
-    m_TableEntryReference:
-      m_KeyId: 6321645155344384
-      m_Key: 
-    m_FallbackState: 0
-    m_WaitForCompletion: 0
-    m_LocalVariables: []
-  references:
-    version: 2
-    RefIds: []
 --- !u!1 &1661560087
 GameObject:
   m_ObjectHideFlags: 0
@@ -45090,7 +44853,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SuperMemoPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnHideFinnishToogle
         m_Mode: 0
         m_Arguments:
@@ -48193,7 +47956,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1769915098}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 12928ce682838c74781939ad2df41c38, type: 3}
+  m_Script: {fileID: 11500000, guid: 0f3c9a372641ec443b6972edccf86082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   detailScorePanel: {fileID: 1769915098}
@@ -49174,7 +48937,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1805948025}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1492310d9a9bad142b82e8a81d6a046d, type: 3}
+  m_Script: {fileID: 11500000, guid: 51bfd60660164b9468cca61586b2f849, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   topPanelGO: {fileID: 1737152929}
@@ -49527,7 +49290,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SuperMemoPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnAutoPlayToogle
         m_Mode: 0
         m_Arguments:
@@ -49845,7 +49608,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -50678,7 +50441,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1805948029}
-        m_TargetAssemblyTypeName: MainPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.FreestyleScreen, Assembly-CSharp
         m_MethodName: OnRecordButtonClick
         m_Mode: 1
         m_Arguments:
@@ -52727,7 +52490,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -53210,7 +52973,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5856481543353187569}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: efa78b3744b8aba3e8be00b08a1367ee, type: 3}
+  m_Script: {fileID: 11500000, guid: 31298b07cbaf19842b3285fcadc6e283, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TaskPanel
   advancePanelGO: {fileID: 1164813424}
@@ -53222,7 +52985,7 @@ MonoBehaviour:
   task3ButtonGO: {fileID: 3887359245527980723}
   task4ButtonGO: {fileID: 994057028911151204}
   task5ButtonGO: {fileID: 5729106356032764942}
-  ASAPanel: {fileID: 474211613}
+  ASATaskScreen: {fileID: 474211613}
   dimPanelGO: {fileID: 22630210}
   profileButtonGO: {fileID: 29141840}
   profilePanelGO: {fileID: 8818382073644628020}
@@ -53531,7 +53294,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1970130706}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 56ea8b684db8ab441a389722915c4336, type: 3}
+  m_Script: {fileID: 11500000, guid: cf0752f9285995f419a0d9a5b2efeee9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   frontCardText: {fileID: 156690638}
@@ -53718,7 +53481,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -53937,7 +53700,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1990495844}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f76b44f7783de5947a134f8e746bb083, type: 3}
+  m_Script: {fileID: 11500000, guid: 70256a93716d3a14585a6dc378cec2c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   surveyPopUpPanelGO: {fileID: 1990495844}
@@ -55462,7 +55225,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SuperMemoPanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnSubmitButtonClick
         m_Mode: 3
         m_Arguments:
@@ -55595,7 +55358,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1769915102}
-        m_TargetAssemblyTypeName: DetailScorePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.ScoreDetailScreen, Assembly-CSharp
         m_MethodName: ClosePanel
         m_Mode: 1
         m_Arguments:
@@ -57157,7 +56920,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2096764788}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8efb5266da1d22b4fa8f4baa4f48e1ad, type: 3}
+  m_Script: {fileID: 11500000, guid: 07ff77f59e109824588d1acf56bed577, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   secretPopUpPanelGO: {fileID: 2096764788}
@@ -57766,7 +57529,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 2127582240}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bc7edd2b9b0139145883ce238d9254f5, type: 3}
+  m_Script: {fileID: 11500000, guid: e8df74cc4e025c245904696ff81700bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   phonemePanel: {fileID: 2127582240}
@@ -58890,7 +58653,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -61413,7 +61176,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -63458,7 +63221,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -64362,7 +64125,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -64559,7 +64322,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -65806,7 +65569,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 6675190759561332594}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 39450f052511973cfbfc095bf682d235, type: 3}
+  m_Script: {fileID: 11500000, guid: 1c31de6297c54274791b52513352c4fc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FeedbackPanel
   feedbackPanelGO: {fileID: 6675190759561332594}
@@ -66702,7 +66465,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -67594,7 +67357,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -69341,7 +69104,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -69909,7 +69672,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -71888,7 +71651,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: AdvancePanel, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -75018,6 +74781,5 @@ SceneRoots:
   m_Roots:
   - {fileID: 519420032}
   - {fileID: 77432319}
-  - {fileID: 222325987}
   - {fileID: 983078108}
   - {fileID: 560760995}

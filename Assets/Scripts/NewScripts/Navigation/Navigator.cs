@@ -1,0 +1,493 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+namespace SaySuomi.Navigation
+{
+    /// <summary>
+    /// The single owner of navigation: the current tab, the stack above it, and back.
+    /// See docs/NEW/NAVIGATION.md.
+    /// </summary>
+    // Runs before other scripts, so an old screen's Escape handler has not yet closed it when
+    // LegacyBackHandlerOpen looks. Otherwise one press would close the screen and then act again.
+    [DefaultExecutionOrder(-100)]
+    public sealed class Navigator : MonoBehaviour
+    {
+        const string InstructionPanelName = "PopUpPanel";
+
+        static Navigator instance;
+
+        readonly Dictionary<Type, AppScreen> screens = new Dictionary<Type, AppScreen>();
+        readonly List<AppScreen> stack = new List<AppScreen>();
+
+        TransitionRunner transition;
+        ModalHost modalHost;
+        AppScreen home;
+        MonoBehaviour[] legacyBackHandlers;
+        int handledBackFrame = -1;
+
+        /// <summary>Raised after the new tab is active, so its OnEnable has already run.</summary>
+        public event Action<AppScreen> TabChanged;
+
+        public AppScreen CurrentTab { get; private set; }
+
+        /// <summary>
+        /// True when this frame's Escape already closed something here. Screens that still read
+        /// Escape themselves check this, so one press cannot also close them. Temporary, like
+        /// ILegacyBackHandler.
+        /// </summary>
+        public bool HandledBackThisFrame => handledBackFrame == Time.frameCount;
+
+        AppScreen Top => stack.Count > 0 ? stack[stack.Count - 1] : CurrentTab;
+
+        public static Navigator GetManager()
+        {
+            return instance;
+        }
+
+        // After scene load, so tab bars and screens exist. This runs in every scene, and Awake
+        // removes it from any that has no AppScreen.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        static void CreateAtLaunch()
+        {
+            var host = new GameObject(nameof(Navigator));
+            DontDestroyOnLoad(host);
+            host.AddComponent<Navigator>();
+        }
+
+        void Awake()
+        {
+            AppScreen[] found = FindObjectsByType<AppScreen>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+            if (found.Length == 0)
+            {
+                // Disabled as well, because Destroy waits for the end of the frame and Update
+                // would otherwise run once on a Navigator that was never set up.
+                enabled = false;
+                Destroy(gameObject);
+                return;
+            }
+
+            instance = this;
+            transition = new TransitionRunner(this);
+            modalHost = gameObject.AddComponent<ModalHost>();
+
+            foreach (AppScreen screen in found)
+            {
+                screens[screen.GetType()] = screen;
+            }
+
+            legacyBackHandlers = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None)
+                .Where(behaviour => behaviour is ILegacyBackHandler)
+                .ToArray();
+
+            home = Get<FreestyleScreen>();
+
+            GameObject instructionPanel = FindInCanvas(home, InstructionPanelName);
+            if (instructionPanel != null)
+            {
+                screens[typeof(InstructionModal)] = instructionPanel.AddComponent<InstructionModal>();
+            }
+
+            // Disabled before its Start can run, which would hide the popup that was just opened
+            // and leave the dim up with nothing above it. Temporary: the object can be deleted
+            // from the scene, and this goes when the old class does.
+            PopUpManager oldPopUpManager = FindAnyObjectByType<PopUpManager>();
+            if (oldPopUpManager != null)
+            {
+                oldPopUpManager.enabled = false;
+            }
+
+            foreach (AppScreen screen in found)
+            {
+                if (screen.IsTabRoot && screen != home)
+                {
+                    screen.gameObject.SetActive(false);
+                }
+            }
+
+            NetworkManager.SurveyDue += ShowSurvey;
+
+            CurrentTab = home;
+            home.Prepare();
+
+            // Off first, so its OnEnable runs now that popups can open. It may be active in the
+            // scene, in which case that already ran before this object existed.
+            home.gameObject.SetActive(false);
+            home.gameObject.SetActive(true);
+        }
+
+        void OnDestroy()
+        {
+            NetworkManager.SurveyDue -= ShowSurvey;
+
+            if (instance == this)
+            {
+                instance = null;
+            }
+        }
+
+        void ShowSurvey()
+        {
+            Open<SurveyModal>();
+        }
+
+        void Update()
+        {
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard == null || !keyboard.escapeKey.wasPressedThisFrame)
+            {
+                return;
+            }
+
+            // Anything on the stack is in front of an old screen, so it takes the press first.
+            if (stack.Count > 0 || !LegacyBackHandlerOpen())
+            {
+                handledBackFrame = Time.frameCount;
+                Back();
+            }
+        }
+
+        /// <summary>Finds an object by name anywhere under a screen's root Canvas.</summary>
+        internal static GameObject FindInCanvas(Component within, string objectName)
+        {
+            foreach (Transform child in within.transform.root.GetComponentsInChildren<Transform>(true))
+            {
+                if (child.name == objectName)
+                {
+                    return child.gameObject;
+                }
+            }
+
+            Debug.LogError($"Navigator: no object named '{objectName}' under the root Canvas.");
+            return null;
+        }
+
+        public T Get<T>()
+            where T : AppScreen
+        {
+            if (screens.TryGetValue(typeof(T), out AppScreen screen))
+            {
+                return (T)screen;
+            }
+
+            Debug.LogError($"Navigator: no {typeof(T).Name} in the scene.");
+            return null;
+        }
+
+        /// <summary>Opens a screen. Returns it, active, so the caller can give it data.</summary>
+        public T Push<T>()
+            where T : AppScreen
+        {
+            T screen = Get<T>();
+            if (screen == null)
+            {
+                return null;
+            }
+
+            FinishTransition();
+
+            if (stack.Contains(screen))
+            {
+                Debug.LogWarning($"Navigator: {typeof(T).Name} is already open.");
+                return screen;
+            }
+
+            AppScreen below = Top;
+            below.Prepare();
+            screen.Prepare();
+
+            // On the stack before it activates, because its OnEnable may open a modal above it.
+            stack.Add(screen);
+            screen.gameObject.SetActive(true);
+
+            below.Group.blocksRaycasts = false;
+            screen.Group.blocksRaycasts = false;
+
+            if (screen.Layer == ScreenLayer.Overlay)
+            {
+                transition.Play(
+                    ScreenTransitions.ScreenSeconds,
+                    ScreenTransitions.SlideVertical(screen, opening: true),
+                    () =>
+                    {
+                        screen.ResetVisuals();
+                        below.ResetVisuals();
+                    }
+                );
+                return screen;
+            }
+
+            transition.Play(
+                ScreenTransitions.ScreenSeconds,
+                ScreenTransitions.Slide(below, screen, forward: true),
+                () =>
+                {
+                    screen.ResetVisuals();
+                    HideEverythingBelow(screen);
+                }
+            );
+            return screen;
+        }
+
+        public T Open<T>()
+            where T : ModalScreen
+        {
+            T modal = Get<T>();
+            if (modal != null)
+            {
+                Open(modal);
+            }
+
+            return modal;
+        }
+
+        public void Open(ModalScreen modal)
+        {
+            FinishTransition();
+
+            if (stack.Contains(modal))
+            {
+                return;
+            }
+
+            modal.Prepare();
+            stack.Add(modal);
+            modal.gameObject.SetActive(true);
+            modalHost.Show(modal);
+        }
+
+        /// <summary>The one route for back, whether from a key press or a button.</summary>
+        public void Back()
+        {
+            FinishTransition();
+
+            AppScreen top = Top;
+            if (top.HandleBack())
+            {
+                return;
+            }
+
+            if (stack.Count > 0)
+            {
+                if (!(top is ModalScreen modal) || modal.Dismissible)
+                {
+                    PopTop();
+                }
+
+                return;
+            }
+
+            if (CurrentTab != home)
+            {
+                SelectTab(home);
+                return;
+            }
+
+            // Does nothing in the Editor, so this line is how to tell it was reached there.
+            Debug.Log("Navigator: back on the home tab, quitting.");
+            Application.Quit();
+        }
+
+        /// <summary>Returns to a screen on the stack, or to the tab root if T is the current tab.</summary>
+        public void PopTo<T>()
+            where T : AppScreen
+        {
+            T screen = Get<T>();
+            if (screen == null)
+            {
+                return;
+            }
+
+            if (screen == CurrentTab)
+            {
+                PopToRoot();
+                return;
+            }
+
+            int index = stack.IndexOf(screen);
+            if (index < 0)
+            {
+                Debug.LogWarning($"Navigator: {typeof(T).Name} is not open.");
+                return;
+            }
+
+            PopDownTo(index + 1);
+        }
+
+        public void PopToRoot()
+        {
+            PopDownTo(0);
+        }
+
+        /// <summary>
+        /// Shows a tab root, clearing the stack.
+        ///
+        /// Selecting the current tab re-runs its lifecycle, because Flashcards and Advanced
+        /// close their unmigrated sub-screens in OnEnable. After Stage 5 this becomes a no-op
+        /// on the tab's root.
+        /// </summary>
+        public void SelectTab(AppScreen tabRoot)
+        {
+            FinishTransition();
+
+            // Cleared first, as the new tab may open a popup of its own in OnEnable.
+            ClearStack();
+
+            AppScreen previous = CurrentTab;
+            if (previous == tabRoot)
+            {
+                tabRoot.gameObject.SetActive(false);
+                tabRoot.gameObject.SetActive(true);
+                TabChanged?.Invoke(tabRoot);
+                return;
+            }
+
+            previous.Prepare();
+            tabRoot.Prepare();
+            CurrentTab = tabRoot;
+            tabRoot.gameObject.SetActive(true);
+            TabChanged?.Invoke(tabRoot);
+
+            previous.Group.blocksRaycasts = false;
+            tabRoot.Group.blocksRaycasts = false;
+
+            transition.Play(
+                ScreenTransitions.TabSeconds,
+                ScreenTransitions.Crossfade(previous, tabRoot),
+                () =>
+                {
+                    tabRoot.ResetVisuals();
+                    Deactivate(previous);
+                }
+            );
+        }
+
+        bool LegacyBackHandlerOpen()
+        {
+            foreach (MonoBehaviour handler in legacyBackHandlers)
+            {
+                if (handler != null && handler.isActiveAndEnabled)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        void FinishTransition()
+        {
+            transition.Snap();
+            modalHost.Snap();
+        }
+
+        /// <summary>Closes everything above count entries, animating only the top one.</summary>
+        void PopDownTo(int count)
+        {
+            FinishTransition();
+
+            if (stack.Count <= count)
+            {
+                return;
+            }
+
+            for (int i = stack.Count - 2; i >= count; i--)
+            {
+                Deactivate(stack[i]);
+                stack.RemoveAt(i);
+            }
+
+            PopTop();
+        }
+
+        void PopTop()
+        {
+            AppScreen top = stack[stack.Count - 1];
+            stack.RemoveAt(stack.Count - 1);
+
+            if (top is ModalScreen modal)
+            {
+                modalHost.Hide(modal, Top as ModalScreen);
+                return;
+            }
+
+            top.Group.blocksRaycasts = false;
+
+            if (top.Layer == ScreenLayer.Overlay)
+            {
+                transition.Play(
+                    ScreenTransitions.ScreenSeconds,
+                    ScreenTransitions.SlideVertical(top, opening: false),
+                    () => Deactivate(top)
+                );
+                return;
+            }
+
+            AppScreen below = Top;
+            RevealVisibleEntries();
+            below.Group.blocksRaycasts = false;
+
+            transition.Play(
+                ScreenTransitions.ScreenSeconds,
+                ScreenTransitions.Slide(top, below, forward: false),
+                () =>
+                {
+                    below.ResetVisuals();
+                    Deactivate(top);
+                }
+            );
+        }
+
+        /// <summary>
+        /// Reactivates what a closing Screen layer entry was hiding: the nearest Screen layer
+        /// entry and any overlays above it, bottom-up, so each OnEnable sees the one below.
+        /// </summary>
+        void RevealVisibleEntries()
+        {
+            int first = stack.Count - 1;
+            while (first >= 0 && stack[first].Layer != ScreenLayer.Screen)
+            {
+                first--;
+            }
+
+            AppScreen floor = first >= 0 ? stack[first] : CurrentTab;
+            floor.Prepare();
+            floor.gameObject.SetActive(true);
+
+            for (int i = first + 1; i < stack.Count; i++)
+            {
+                stack[i].Prepare();
+                stack[i].gameObject.SetActive(true);
+            }
+        }
+
+        void HideEverythingBelow(AppScreen screen)
+        {
+            for (int i = stack.IndexOf(screen) - 1; i >= 0; i--)
+            {
+                Deactivate(stack[i]);
+            }
+
+            Deactivate(CurrentTab);
+        }
+
+        void ClearStack()
+        {
+            for (int i = stack.Count - 1; i >= 0; i--)
+            {
+                Deactivate(stack[i]);
+            }
+
+            stack.Clear();
+            modalHost.HideDim();
+        }
+
+        static void Deactivate(AppScreen screen)
+        {
+            screen.ResetVisuals();
+            screen.gameObject.SetActive(false);
+        }
+    }
+}
