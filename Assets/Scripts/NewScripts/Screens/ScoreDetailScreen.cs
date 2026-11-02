@@ -12,13 +12,20 @@ namespace SaySuomi.Navigation
         [SerializeField]
         GameObject detailScorePrefab; // Refer to ListDetailPanel prefab
 
+        [SerializeField]
         GameObject resultPanelGO;
+        [SerializeField]
         GameObject sampleButtonGO; // Replay sample audio
+        [SerializeField]
         GameObject replayButtonGO; // Replay recorded audio
         Animator animator;
+        [SerializeField]
         GameObject detailContent; // Content store the list of detail score
+        [SerializeField]
         ScrollRect scrollRectWarning; // Use this to reset scroll of WarningScroll
+        [SerializeField]
         ScrollRect scrollRectDetail; // Use this to reset scroll of DetailScoreScroll
+        [SerializeField]
         TMPro.TextMeshProUGUI warningText;
 
         int warningNo = 0; // number of warning of the ASRResult
@@ -29,33 +36,23 @@ namespace SaySuomi.Navigation
 
         List<GameObject> listScrollItems = new List<GameObject>(); // To store item from scroll list and delete after inactive
 
+        [SerializeField]
+        TMPro.TextMeshProUGUI resultText;
+
+        [SerializeField]
+        Button[] closeButtons;
+
         protected override void Bind()
         {
-            resultPanelGO = FindObject("ResultPanel");
-            sampleButtonGO = FindObject("ResultPanel/SampleButton");
-            replayButtonGO = FindObject("ResultPanel/ReplayButton");
             animator = GetComponent<Animator>();
-            detailContent = FindObject("DetailPanel/Scroll View Detail/Viewport/Content");
-            scrollRectWarning = Find<ScrollRect>("WarningPanel/Scroll View Warning");
-            scrollRectDetail = Find<ScrollRect>("DetailPanel/Scroll View Detail");
-            warningText = Find<TMPro.TextMeshProUGUI>(
-                "WarningPanel/Scroll View Warning/Viewport/Content/WarningText"
-            );
 
             ButtonWiring.SwitchOffInspectorEntries(scrollRectDetail.onValueChanged);
             scrollRectDetail.onValueChanged.AddListener(OnDetailScoreScroll);
 
             // Three ways to close: the two tap-away areas, and the close button itself.
-            foreach (
-                string path in new[]
-                {
-                    "ClosePanel",
-                    "ClosePanel/Button",
-                    "DetailPanel/Scroll View Detail/Viewport/ClosePanel",
-                }
-            )
+            foreach (Button closeButton in closeButtons)
             {
-                ButtonWiring.Replace(Find<Button>(path), () => Navigator.GetManager().Back());
+                ButtonWiring.Replace(closeButton, () => Navigator.GetManager().Back());
             }
         }
 
@@ -66,8 +63,7 @@ namespace SaySuomi.Navigation
             // Set result text with color
             asrResult = NetworkManager.GetManager().asrResult;
             string textResult = TextUtils.FormatTextResult(transcript, asrResult.score);
-            resultPanelGO.transform.Find("ResultText").GetComponent<TMPro.TextMeshProUGUI>().text =
-                textResult;
+            resultText.text = textResult;
 
             // Set sampleclip and replay clip
             // Set SampleClip

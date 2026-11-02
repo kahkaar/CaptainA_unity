@@ -1,3 +1,4 @@
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace SaySuomi.Navigation
@@ -6,11 +7,17 @@ namespace SaySuomi.Navigation
     {
         public override ScreenLayer Layer => ScreenLayer.Overlay;
 
+        [SerializeField]
+        Button backButton;
+
+        [SerializeField]
+        Button secretButton;
+
         protected override void Bind()
         {
-            ButtonWiring.Replace(Find<Button>("AboutTextBG/BackButton"), () => Navigator.GetManager().Back());
+            ButtonWiring.Replace(backButton, () => Navigator.GetManager().Back());
             ButtonWiring.Replace(
-                Find<Button>("AboutTextBG/SecretButton"),
+                secretButton,
                 () => Navigator.GetManager().Open<SecretModal>()
             );
         }

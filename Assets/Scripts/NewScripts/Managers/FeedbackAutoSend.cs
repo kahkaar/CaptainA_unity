@@ -82,7 +82,10 @@ namespace SaySuomi.Navigation
                     // true for the one being chosen. Only the second one is an answer.
                     if (isOn)
                     {
-                        Send(chosen.name, readComment == null ? "" : readComment());
+                        Send(
+                            chosen.GetComponent<OptionValue>().value,
+                            readComment == null ? "" : readComment()
+                        );
                     }
                 });
             }
@@ -118,7 +121,7 @@ namespace SaySuomi.Navigation
 
                 if (chosen != null)
                 {
-                    Send(chosen.name, comment);
+                    Send(chosen.GetComponent<OptionValue>().value, comment);
                 }
             });
         }
@@ -128,7 +131,7 @@ namespace SaySuomi.Navigation
         /// screen's own button, which is therefore free of charge when nothing has changed
         /// since the tap.
         /// </summary>
-        /// <param name="grade">The toggle's name - its last character is the 1-5 value.</param>
+        /// <param name="grade">The toggle's OptionValue - its last character is the 1-5 value.</param>
         public void Send(string grade, string comment)
         {
             if (string.IsNullOrEmpty(grade))

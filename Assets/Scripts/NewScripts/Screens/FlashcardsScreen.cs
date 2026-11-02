@@ -12,35 +12,29 @@ namespace SaySuomi.Navigation
     /// The Card Deck Panel is the panel that contains all the card decks
     /// The card deck is the list of cards that the user want to study
     /// <para>
-    /// Remember to update the variable FLASH_CARD_DICT in the Const.cs file when you add a new card deck
+    /// To add a card deck, add a FlashcardDeck component to its object
     /// </para>
     /// </summary>
     public class FlashcardsScreen : AppScreen
     {
         public override bool IsTabRoot => true;
 
-        const string ContentPath = "Scroll View/Viewport/Content";
-        const string SecretFlashCardPath = ContentPath + "/FlashCard_HA_FIN_FIN";
+        List<FlashcardDeck> decks = new List<FlashcardDeck>();
 
-        // Every deck on the panel: the children named in Const.FLASH_CARD_DICT.
-        List<GameObject> flashCardsGO = new List<GameObject>();
-
-        GameObject secretFlashCardGO;
+        FlashcardDeck secretDeck;
 
         private bool pointerDown;
         private float pointerDownTimer;
 
         protected override void Bind()
         {
-            foreach (Transform deck in FindObject(ContentPath).transform)
-            {
-                if (Const.FLASH_CARD_DICT.ContainsKey(deck.name))
-                {
-                    flashCardsGO.Add(deck.gameObject);
-                }
-            }
+            decks.AddRange(GetComponentsInChildren<FlashcardDeck>(true));
+            secretDeck = decks.Find(deck => deck.IsSecret);
 
-            secretFlashCardGO = FindObject(SecretFlashCardPath);
+            foreach (FlashcardDeck deck in decks)
+            {
+                MissingReferences.Report(deck);
+            }
         }
 
         void OnEnable()
@@ -56,17 +50,17 @@ namespace SaySuomi.Navigation
 
             if (secretText == Secret.SECRET_TEXT)
             {
-                secretFlashCardGO.SetActive(true);
-                if (!flashCardsGO.Contains(secretFlashCardGO))
+                secretDeck.gameObject.SetActive(true);
+                if (!decks.Contains(secretDeck))
                 {
-                    flashCardsGO.Add(secretFlashCardGO);
+                    decks.Add(secretDeck);
                 }
             }
             else
             {
-                secretFlashCardGO.SetActive(false);
+                secretDeck.gameObject.SetActive(false);
                 // If the user does not have a secret flash card, remove the secret flash card from the list
-                flashCardsGO.Remove(secretFlashCardGO);
+                decks.Remove(secretDeck);
             }
 
             LoadFlashCards();
@@ -80,11 +74,10 @@ namespace SaySuomi.Navigation
         void LoadFlashCards()
         {
             // Populate the decks into the Panel
-            foreach (GameObject flashCardGO in flashCardsGO)
+            foreach (FlashcardDeck deck in decks)
             {
-                // Get the name of the component
-                string cardGOName = flashCardGO.name;
-                string deckName = Const.FLASH_CARD_DICT[cardGOName];
+                GameObject flashCardGO = deck.gameObject;
+                string deckName = deck.DeckName;
                 SaveData.UpdateFlashCard(deckName); // Update the flashcard if needed
                 FlashCard flashCard = SaveData.LoadFlashCard(deckName);
 
@@ -148,22 +141,10 @@ namespace SaySuomi.Navigation
                 newCards = Math.Min(newCards, flashCard.maxNewCard);
                 dueCards = Math.Min(dueCards, flashCard.maxReviewCard);
 
-                flashCardGO
-                    .transform.Find("ProgressPanel")
-                    .transform.Find("ProgressBar")
-                    .GetComponent<Image>()
-                    .fillAmount = flashCard.progress / 100f;
-                flashCardGO
-                    .transform.Find("ProgressPanel")
-                    .transform.Find("ProgressText")
-                    .GetComponent<TMPro.TextMeshProUGUI>()
-                    .text = flashCard.progress + "%";
+                deck.ProgressBar.fillAmount = flashCard.progress / 100f;
+                deck.ProgressText.text = flashCard.progress + "%";
 
-                flashCardGO
-                    .transform.Find("DeckPanel")
-                    .transform.Find("CardInfoText")
-                    .GetComponent<TMPro.TextMeshProUGUI>()
-                    .text = TextUtils.FormatCardTypeNumber(newCards, learnCards, dueCards);
+                deck.CardInfoText.text = TextUtils.FormatCardTypeNumber(newCards, learnCards, dueCards);
 
                 // Pass phoneme value to EventTrigger function
                 // We need EventTrigger to detect long press and short press

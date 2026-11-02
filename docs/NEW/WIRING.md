@@ -1,35 +1,33 @@
 # UI Wiring
 
-How screens connect to their UI, and how to add a new one. Wiring is done in code wherever
-possible.
+How screens connect to their UI, and how to add a new one. Scene objects are assigned in the
+Inspector, and behaviour such as button clicks is wired in code.
 
 ## Rules
 
 | Need                   | Do this                                                              |
 | ---------------------- | -------------------------------------------------------------------- |
-| Child object or component | `Find<T>("Path/To/Child")` or `FindObject("Path/To/Child")` in `Bind` |
+| Child object or component | A `[SerializeField]` field, assigned in the Inspector                |
 | Button click           | `ButtonWiring.Replace(button, Handler)` once, in `Bind`              |
 | Back control           | Your own button calling `Navigator.Back`, or override `ShowsBackButton` to get the shared one |
 | Localized text         | `new LocalizedString(table, key)`                                    |
 | Another screen         | Ask `Navigator` by type. Never hold a reference to a screen.         |
 | Screen layer           | Override `Layer`                                                     |
-| Object outside the screen | `Navigator.FindInCanvas(this, "ObjectName")`, for a shared popup  |
+| Object outside the screen | Give it a class, and ask `Navigator` for it or look for it with `GetComponentInChildren` |
+| Value carried by an object | A component holding the value, such as `OptionValue` or `FlashcardDeck`. Never read it from the object's name. |
 | Popup with no logic    | `ModalScreen.Attach(popupGO, dismissible)` from the owning screen    |
-| Popup waiting on the server | `ModalScreen.Attach<LoadingModal>(popupGO, false)`, which spins its `LoadingIcon` |
+| Popup waiting on the server | A `LoadingModal` component on the popup, with its `icon` assigned, which it spins |
 | Reset on closing a popup | `modal.OnBack`, so every way out behaves the same                  |
 | Drop-down error message | `ErrorBanner.Show` and `ErrorBanner.Hide`                           |
 | Durations and constants | Constants in code                                                   |
 
-`Find<T>` and `FindObject` are `AppScreen` methods built on `transform.Find`, which also
-finds inactive children. Paths are relative to the screen root, and a modal's own `Find` works
-after `Attach` has lifted it.
+A serialized reference keeps working when its object is renamed or moved.
 
 **Wire buttons in `Bind`, not `OnEnable`.** `OnEnable` runs every time a screen reopens, and a
 repeated `AddListener` makes one tap run its handler several times.
 
-`Navigator` calls `Bind` once for every screen at launch, while most are inactive. Only find
-objects and connect events there. Anything that depends on the screen being open belongs in
-`OnEnable`.
+`Navigator` calls `Bind` once for every screen at launch, while most are inactive. Only connect
+events there. Anything that depends on the screen being open belongs in `OnEnable`.
 
 `ButtonWiring.Replace` also switches off any Inspector `OnClick` entries while the app runs,
 so a migrated button can't fire twice and its entries don't have to be cleared by hand.
@@ -38,8 +36,14 @@ so a migrated button can't fire twice and its entries don't have to be cleared b
 
 - Script components on screen roots and on the tab bar
 - Prefab references, such as `ListItemPanel` and `ListDetailPanel`
+- Every screen's and modal's references to its objects
 - `ASATaskScreen.tasks`, because it holds sprites
 - `AudioManager.recordNotif`, because it is an audio clip
+- `TabButton`: its screen and its two icons
+- `FlashcardDeck`: its deck file name, whether it is the secret deck, and its text and
+  progress bar
+- `OptionValue`: the value a toggle sends to the server
+- `ModalDim`: its colour and transparency, on its `Image`, which also needs Raycast Target on
 - Layout and visual values on UI components
 
 `NetworkManager` needs nothing assigned, because it contains no UI.
@@ -48,35 +52,41 @@ so a migrated button can't fire twice and its entries don't have to be cleared b
 
 | Change                                | Effect                               |
 | ------------------------------------- | ------------------------------------ |
-| Move a whole screen in the hierarchy  | Safe: its paths are relative         |
-| Rename or move a child inside a screen | Breaks its path, so update the string |
-| Rename a tab button                   | Breaks `TabBar`, which finds it by name, and its icon lookup |
+| Rename or move anything in the scene  | Safe: references and classes don't depend on names |
+| Delete an object a field points to    | Logged at launch as an unassigned field |
+| Rename a child inside a runtime prefab | Breaks its `transform.Find`, because those are still paths |
 
-A broken path logs an error naming the screen and the path. `Bind` runs for every screen at
-launch, so the error appears in every Play session, even if that screen is never opened.
+`MissingReferences` logs an error naming the class and the field for any that is empty. It runs
+for every screen at launch, so the error appears in every Play session, even if that screen is
+never opened.
 
 ## Hierarchy
 
-Sibling order sets draw order, so this order keeps tabs below overlays and modals. Everything
-is a direct child of the root Canvas, in this order:
+Sibling order sets draw order, so this order keeps tabs below overlays and modals:
 
 ```text
 Canvas
-├── Tab roots          MainPanel, CardDeckPanel, AdvancePanel, ProfilePanel
-├── Pushed screens     TaskPanel, ASAPanel, FeedbackPanel, ASAProfilePanel,
-│                      SuperMemoPanel, NumberGamePanel
-├── NavigationBar      TabBar
-├── NewFeatureBadgeGO
-├── Overlays           DetailScorePanel, PhonemePanel, InfoPanel
-└── Modals             PopUpPanel, SurveyPopUpPanel, SecretPopUpPanel
+├── Tabs       FreestyleScreen, FlashcardsScreen, AdvancedScreen, ProgressScreen
+├── Screens    FlashcardSessionScreen, NumberGameScreen, ASATaskListScreen, ASATaskScreen,
+│              ASAResultsScreen, ASAProfileScreen
+├── TabBar     Freestyle, Flashcard, Advanced (holds NewFeatureBadgeGO), Progress
+├── Overlays   ScoreDetailScreen, PhonemeScreen, InfoScreen
+└── Modals     ModalDim, then every popup
 ```
 
-Scene objects keep their old names, because `TabBar`, `Find` paths and `FindInCanvas` look them
-up by name. Only the classes on them were renamed.
+`Tabs`, `Screens`, `Overlays` and `Modals` are plain groups that only hold other objects. Each
+must stay active, and its `RectTransform` must stretch to fill the Canvas, or the screens inside
+it are hidden or sized wrongly.
 
-`Navigator`, `ModalHost`, the shared dim, and each screen's nested Canvas are all created
-from code, so they do not appear in the scene. Popups owned by a screen stay under it in the
-scene, and each lifts to the top of the Canvas the first time it opens.
+Each screen root and app-wide modal is named after its class. `Canvas` must stay the scene root,
+because `ErrorBanner` relies on `transform.root`.
+
+`Navigator`, `ModalHost` and each screen's nested Canvas are all created
+from code, so they do not appear in the scene.
+
+Every popup goes directly under `Modals`, never under a screen or in a group inside `Modals`.
+`ModalHost` only orders a popup among its siblings, so one in a group could draw over a newer
+popup. Popups used by one screen start with that screen's name, such as `ASAProfileSettingsModal`.
 
 ## Naming
 
@@ -89,14 +99,25 @@ scene, and each lifts to the top of the Canvas the first time it opens.
   file-level `using` loses to a global class of the same name, so the old `NetworkManager`
   would be picked silently.
 
+## Finding objects
+
+| Object | Found by |
+| ------ | -------- |
+| Screens and app-wide modals | Class, through `Navigator` |
+| Tab buttons | `TabButton`, in hierarchy order, so adding a tab needs no code change |
+| New-feature dot | `NewFeatureDot` |
+| Objects inside a screen or modal | `[SerializeField]` fields, checked at launch |
+| Children of a prefab created at runtime | `transform.Find` on the new instance, because it isn't in the scene |
+
 ## Adding a screen
 
-1. Create the GameObject as a direct child of the Canvas, and leave it inactive. Place it before
-   `NavigationBar` for a `Screen` layer entry, or after it for an overlay.
+1. Create the GameObject under `Screens` for a `Screen` layer entry, or under `Overlays` for an
+   overlay, and leave it inactive. Name it after its class.
 2. Add a class and attach it to the root:
 
    ```csharp
    using TMPro;
+   using UnityEngine;
    using UnityEngine.UI;
 
    namespace SaySuomi.Navigation
@@ -106,12 +127,15 @@ scene, and each lifts to the top of the Canvas the first time it opens.
            // Omit this for the default Screen layer.
            public override ScreenLayer Layer => ScreenLayer.Overlay;
 
+           [SerializeField]
            TextMeshProUGUI titleText;
+
+           [SerializeField]
+           Button backButton;
 
            protected override void Bind()
            {
-               titleText = Find<TextMeshProUGUI>("Content/TitleText");
-               ButtonWiring.Replace(Find<Button>("BackButton"), () => Navigator.GetManager().Back());
+               ButtonWiring.Replace(backButton, () => Navigator.GetManager().Back());
            }
 
            public void Show(string title)
@@ -122,13 +146,15 @@ scene, and each lifts to the top of the Canvas the first time it opens.
    }
    ```
 
-3. Open it from the caller:
+3. Assign its fields in the Inspector.
+
+4. Open it from the caller:
 
    ```csharp
    Navigator.GetManager().Push<ExampleScreen>().Show("Hello");
    ```
 
-4. Add it to [Screens](SCREENS.md).
+5. Add it to [Screens](SCREENS.md).
 
 There is no Escape handling or registration to add. `Navigator` finds the screen and
 handles back.

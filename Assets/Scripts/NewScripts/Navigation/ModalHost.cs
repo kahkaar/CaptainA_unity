@@ -1,5 +1,4 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace SaySuomi.Navigation
 {
@@ -9,15 +8,18 @@ namespace SaySuomi.Navigation
     /// </summary>
     internal sealed class ModalHost : MonoBehaviour
     {
-        static readonly Color DimColor = new Color(0.2901961f, 0.3137255f, 0.37254903f);
-        const float DimAlpha = 0.19607843f;
-
-        Image dim;
+        ModalDim dim;
         TransitionRunner transition;
 
         void Awake()
         {
             transition = new TransitionRunner(this);
+
+            dim = FindAnyObjectByType<ModalDim>(FindObjectsInactive.Include);
+            if (dim == null)
+            {
+                Debug.LogError("ModalHost: no ModalDim in the scene, so modals have no dim.");
+            }
         }
 
         public void Snap()
@@ -27,9 +29,9 @@ namespace SaySuomi.Navigation
 
         public void Show(ModalScreen modal)
         {
-            bool dimAlreadyShowing = dim != null && dim.gameObject.activeSelf;
+            bool dimAlreadyShowing = dim != null && dim.IsShowing;
 
-            // The newest modal is always on top, whichever screen owned it in the scene.
+            // The newest modal is always on top.
             modal.transform.SetAsLastSibling();
             PlaceDimBelow(modal);
 
@@ -43,13 +45,13 @@ namespace SaySuomi.Navigation
                     animate(t);
                     if (!dimAlreadyShowing)
                     {
-                        SetDimAlpha(DimAlpha * t);
+                        SetDimAmount(t);
                     }
                 },
                 () =>
                 {
                     modal.ResetVisuals();
-                    SetDimAlpha(DimAlpha);
+                    SetDimAmount(1f);
                 }
             );
         }
@@ -72,7 +74,7 @@ namespace SaySuomi.Navigation
                     animate(t);
                     if (next == null)
                     {
-                        SetDimAlpha(DimAlpha * (1f - t));
+                        SetDimAmount(1f - t);
                     }
                 },
                 () =>
@@ -91,50 +93,24 @@ namespace SaySuomi.Navigation
         {
             if (dim != null)
             {
-                dim.gameObject.SetActive(false);
+                dim.Hide();
             }
         }
 
-        /// <summary>
-        /// Puts the dim directly below the modal, in the modal's own parent, because sibling
-        /// order is what sets draw order.
-        /// </summary>
         void PlaceDimBelow(ModalScreen modal)
-        {
-            if (dim == null)
-            {
-                dim = CreateDim();
-            }
-
-            dim.transform.SetParent(modal.transform.parent, false);
-            dim.transform.SetAsLastSibling();
-            dim.transform.SetSiblingIndex(modal.transform.GetSiblingIndex());
-            dim.gameObject.SetActive(true);
-        }
-
-        void SetDimAlpha(float alpha)
         {
             if (dim != null)
             {
-                dim.color = new Color(DimColor.r, DimColor.g, DimColor.b, alpha);
+                dim.ShowBelow(modal.transform);
             }
         }
 
-        static Image CreateDim()
+        void SetDimAmount(float amount)
         {
-            var dimObject = new GameObject("ModalDim", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
-
-            var rect = (RectTransform)dimObject.transform;
-            rect.anchorMin = Vector2.zero;
-            rect.anchorMax = Vector2.one;
-            rect.offsetMin = Vector2.zero;
-            rect.offsetMax = Vector2.zero;
-
-            // A raycast target, so it blocks taps on everything below, including the tab bar.
-            Image image = dimObject.GetComponent<Image>();
-            image.raycastTarget = true;
-            image.color = new Color(0f, 0f, 0f, 0f);
-            return image;
+            if (dim != null)
+            {
+                dim.SetAmount(amount);
+            }
         }
     }
 }

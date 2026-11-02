@@ -9,28 +9,34 @@ namespace SaySuomi.Navigation
     {
         public override ScreenLayer Layer => ScreenLayer.Overlay;
 
+        [SerializeField]
         TextMeshProUGUI explainText;
+        [SerializeField]
         Image frontMouth1;
+        [SerializeField]
         Image frontMouth2;
+        [SerializeField]
         Image sideMouth1;
+        [SerializeField]
         Image sideMouth2;
+        [SerializeField]
         TextMeshProUGUI creditText;
         Animation mouthAnimation;
 
         SOPhonemeHelper phonemeSO;
 
+        [SerializeField]
+        Button backButton;
+
+        [SerializeField]
+        Button videoButton;
+
         protected override void Bind()
         {
-            explainText = Find<TextMeshProUGUI>("ExplainPanel/ExplainText");
-            frontMouth1 = Find<Image>("FrontPanel/FrontMouth");
-            frontMouth2 = Find<Image>("FrontPanel/FrontMouth/FrontMouth2");
-            sideMouth1 = Find<Image>("SidePanel/SideMouth");
-            sideMouth2 = Find<Image>("SidePanel/SideMouth/SideMouth2");
-            creditText = Find<TextMeshProUGUI>("CreditPanel/CreditText");
             mouthAnimation = GetComponent<Animation>();
 
-            ButtonWiring.Replace(Find<Button>("backPanel/backButton"), () => Navigator.GetManager().Back());
-            ButtonWiring.Replace(Find<Button>("VideoPanel/VideoButton"), OnVideoButtonClick);
+            ButtonWiring.Replace(backButton, () => Navigator.GetManager().Back());
+            ButtonWiring.Replace(videoButton, OnVideoButtonClick);
         }
 
         public void Show(string phoneme)

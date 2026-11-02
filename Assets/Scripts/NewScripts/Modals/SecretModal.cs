@@ -6,13 +6,19 @@ namespace SaySuomi.Navigation
 {
     public class SecretModal : ModalScreen
     {
+        [SerializeField]
         TextMeshProUGUI secretTextTMP;
+
+        [SerializeField]
+        Button okButton;
+
+        [SerializeField]
+        Button laterButton;
 
         protected override void Bind()
         {
-            secretTextTMP = Find<TextMeshProUGUI>("SurveyBox/Text (TMP)/secretInput/Text Area/Text");
-            ButtonWiring.Replace(Find<Button>("SurveyBox/Panel/Ok"), OnYesButtonClick);
-            ButtonWiring.Replace(Find<Button>("SurveyBox/Panel/Later"), () => Navigator.GetManager().Back());
+            ButtonWiring.Replace(okButton, OnYesButtonClick);
+            ButtonWiring.Replace(laterButton, () => Navigator.GetManager().Back());
         }
 
         void OnYesButtonClick()

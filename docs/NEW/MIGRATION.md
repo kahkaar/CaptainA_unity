@@ -46,12 +46,20 @@ off its Inspector `OnClick` entries while the app runs, so they don't need clear
 ## Hierarchy
 
 Opening a `Screen` layer entry hides the tab root, which would also hide its children, so pushed
-screens are siblings of the tab roots. `Navigator` logs an error naming any that aren't. Popups
-stay under their owners in the scene, because each lifts to the top the first time it opens.
-The order is in [Wiring](WIRING.md#hierarchy).
+screens sit under `Screens`, not inside a tab root. `Navigator` logs an error naming any that
+are. Popups moved from under their screens to `Modals`. The order is in
+[Wiring](WIRING.md#hierarchy).
 
-Two kinds of object are no longer used and can be deleted to tidy up: `Manager/PopUpManager`,
-which `Navigator` disables at launch, and the five old `DimPanel` objects.
+`Manager/PopUpManager` has been deleted from `TESTING_SCENE`.
+
+### Tidy up later
+
+These objects in `TESTING_SCENE` are still there, are harmless, and will be deleted by hand
+later. No script finds them by path, but check for Inspector references first:
+
+- [ ] `RecordButtonOld` under `FreestyleScreen`
+- [ ] `GreyBackground` under `ASATaskScreen`
+- [ ] The inactive `TopPanel` objects, except the one under `FreestyleScreen`, which is used
 
 ## Stage 1 scene update
 
@@ -185,8 +193,8 @@ This happens only on explicit go-ahead:
    [backend checks](#checks-waiting-on-the-backend) against the real server, and test on an Android
    device, including back, recording, transitions and exiting the app.
 2. Make `TESTING_SCENE` the build scene.
-3. Delete the old scripts and move the contents of `NewScripts` as needed. Remove the
-   `PopUpManager` lines from `Navigator.Awake` at the same time.
+3. Delete the old scripts and move the contents of `NewScripts` as needed. Remove
+   `Const.FLASH_CARD_DICT` at the same time, because only `CardDeckPanel` still uses it.
 4. Merge `docs/NEW/` with `docs/`, including replacing `docs/USER_BEHAVIOUR.md` with its
    updated copy.
 5. Update this file.

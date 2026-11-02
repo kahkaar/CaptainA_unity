@@ -5,20 +5,22 @@ using UnityEngine.UI;
 namespace SaySuomi.Navigation
 {
     /// <summary>
-    /// The first-time instruction and what's-new popup. Added to PopUpPanel by Navigator, so it
-    /// needs no scene changes. Only OK marks it as seen: leaving any other way shows it again
-    /// on the next visit.
+    /// The first-time instruction and what's-new popup. Only OK marks it as seen: leaving any
+    /// other way shows it again on the next visit.
     /// </summary>
     public sealed class InstructionModal : ModalScreen
     {
+        [SerializeField]
         TextMeshProUGUI messageText;
         string prefsKey;
         int saveInt;
 
+        [SerializeField]
+        Button okButton;
+
         protected override void Bind()
         {
-            messageText = Find<TextMeshProUGUI>("TextPanel/MessageText");
-            ButtonWiring.Replace(Find<Button>("TextPanel/OkButton"), OnOkClicked);
+            ButtonWiring.Replace(okButton, OnOkClicked);
         }
 
         public static void Show(string prefsKey, string message, int saveInt = 1)

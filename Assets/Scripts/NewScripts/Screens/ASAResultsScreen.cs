@@ -22,8 +22,10 @@ namespace SaySuomi.Navigation
 
         // Shown above the score rows when the server's relevance check flagged the recording,
         // for both off_topic and partial.
+        [SerializeField]
         GameObject relevanceWarningGO;
 
+        [SerializeField]
         TextMeshProUGUI relevanceWarningText;
 
         private LocalizedString answerOffTopicNotice;
@@ -36,6 +38,7 @@ namespace SaySuomi.Navigation
         // seeing even on a good result: it is the only way a learner can tell a low score
         // apart from a misheard word, and it is what makes an off_topic verdict checkable
         // rather than something they have to take on trust.
+        [SerializeField]
         TextMeshProUGUI transcriptText;
 
         private LocalizedString emptyTranscriptNotice;
@@ -45,6 +48,7 @@ namespace SaySuomi.Navigation
         // Hidden while a relevance notice is showing. The two occupy the same band, and the
         // notice is the more urgent of the two - InfoText explains how to read the scores,
         // which matters less than being told the scores may not mean what they appear to.
+        [SerializeField]
         GameObject infoTextGO;
 
         // The ScrollRect's Content, and the transcript box inside it. Both are resized at
@@ -59,8 +63,10 @@ namespace SaySuomi.Navigation
         // with a region the learner could not scroll away from. Cull Transparent Mesh must
         // stay off too: a culled mesh reports depth -1 and GraphicRaycaster skips those, which
         // would quietly undo the fix.
+        [SerializeField]
         RectTransform scrollContent;
 
+        [SerializeField]
         RectTransform transcriptGroup;
 
         // Geometry of the transcript box, matching how it is built in the prefab.
@@ -70,18 +76,25 @@ namespace SaySuomi.Navigation
         const float CONTENT_TAIL = 40f; // breathing room under the box
         const float MIN_CONTENT_HEIGHT = 1620f; // never shrink below the fixed layout above
 
+        [SerializeField]
         FeedbackRow proficiencyScore;
 
+        [SerializeField]
         FeedbackRow pronunciationScore;
 
+        [SerializeField]
         FeedbackRow rangeScore;
 
+        [SerializeField]
         FeedbackRow accuracyScore;
 
+        [SerializeField]
         FeedbackRow fluencyScore;
 
+        [SerializeField]
         ToggleGroup accuracyRatingOptions;
 
+        [SerializeField]
         ToggleGroup understandingRatingOptions;
 
         // Post each emoji on tap rather than waiting for Send. Built once and kept: they
@@ -90,20 +103,28 @@ namespace SaySuomi.Navigation
         private FeedbackAutoSend accuracyFeedback;
         private FeedbackAutoSend understandingFeedback;
 
+        [SerializeField]
         TMP_InputField accuracyFeedbackTextGO;
 
+        [SerializeField]
         TMP_InputField understandingFeedbackTextGO;
 
+        [SerializeField]
         GameObject proficiencyTitleGO;
 
+        [SerializeField]
         GameObject pronunciationTitleGO;
 
+        [SerializeField]
         GameObject rangeTitleGO;
 
+        [SerializeField]
         GameObject accuracyTitleGO;
 
+        [SerializeField]
         GameObject fluencyTitleGO;
 
+        [SerializeField]
         GameObject errorPopupGO;
 
         public class PopupAttributes
@@ -114,8 +135,10 @@ namespace SaySuomi.Navigation
 
         private PopupAttributes[] panels;
 
+        [SerializeField]
         private TextMeshProUGUI titleTextGO;
 
+        [SerializeField]
         private TextMeshProUGUI popupTextGO;
 
         private LocalizedTextHelper popupTitleTextHelper;
@@ -123,6 +146,39 @@ namespace SaySuomi.Navigation
         private LocalizedTextHelper popupTextHelper;
 
         private int currentPopupOpen = -1;
+
+        [SerializeField]
+        Button newTaskButton;
+
+        [SerializeField]
+        Button popupBackButton;
+
+        [SerializeField]
+        Button infoButton;
+
+        [SerializeField]
+        Button infoBackButton;
+
+        [SerializeField]
+        Button feedbackButton;
+
+        [SerializeField]
+        Button feedbackBackButton;
+
+        [SerializeField]
+        Button feedbackSendButton;
+
+        [SerializeField]
+        GameObject popupPanelGO;
+
+        [SerializeField]
+        GameObject infoPopupGO;
+
+        [SerializeField]
+        GameObject feedbackPopUpGO;
+
+        [SerializeField]
+        Button[] scoreInfoButtons;
 
         protected override void Bind()
         {
@@ -144,48 +200,25 @@ namespace SaySuomi.Navigation
                 Popup(2951772987392, 6939780145152),
             };
 
-            relevanceWarningGO = FindObject(Content + "RelevanceWarning");
-            relevanceWarningText = Find<TextMeshProUGUI>(Content + "RelevanceWarning/WarningText");
-            transcriptText = Find<TextMeshProUGUI>(Content + "TranscriptGroup/TranscriptText");
-            infoTextGO = FindObject(Content + "InfoText");
-            scrollContent = Find<RectTransform>("ScrollView/Viewport/Content");
-            transcriptGroup = Find<RectTransform>(Content + "TranscriptGroup");
-            proficiencyScore = Find<FeedbackRow>(Content + "ScoreGroup/ScoreRow1");
-            pronunciationScore = Find<FeedbackRow>(Content + "ScoreGroup/ScoreRow2");
-            rangeScore = Find<FeedbackRow>(Content + "ScoreGroup/ScoreRow3");
-            accuracyScore = Find<FeedbackRow>(Content + "ScoreGroup/ScoreRow4");
-            fluencyScore = Find<FeedbackRow>(Content + "ScoreGroup/ScoreRow5");
-            accuracyRatingOptions = Find<ToggleGroup>("FeedbackPopUp/AccuracyRatingGroup");
-            understandingRatingOptions = Find<ToggleGroup>("FeedbackPopUp/UnderstandRatingGroup");
-            accuracyFeedbackTextGO = Find<TMP_InputField>("FeedbackPopUp/AccuracyFeedbackTextField");
-            understandingFeedbackTextGO = Find<TMP_InputField>("FeedbackPopUp/UnderstandFeedbackTextField");
-            proficiencyTitleGO = FindObject(Content + "TitleGroup/ProficiencyText");
-            pronunciationTitleGO = FindObject(Content + "TitleGroup/PronunciationText");
-            rangeTitleGO = FindObject(Content + "TitleGroup/RangeText");
-            accuracyTitleGO = FindObject(Content + "TitleGroup/AccuracyText");
-            fluencyTitleGO = FindObject(Content + "TitleGroup/FluencyText");
-            errorPopupGO = FindObject("FeedbackPopUp/ErrorPopup");
-            titleTextGO = Find<TextMeshProUGUI>("PopupPanel/PopupTitle");
-            popupTextGO = Find<TextMeshProUGUI>("PopupPanel/PopupText");
 
             Navigator navigator = Navigator.GetManager();
 
-            ButtonWiring.Replace(Find<Button>(Content + "NewTaskButton"), () => navigator.PopTo<ASATaskListScreen>());
-            ButtonWiring.Replace(Find<Button>(Content + "ProficiencyButton"), () => OpenPopup(0));
-            ButtonWiring.Replace(Find<Button>(Content + "PronunciationButton"), () => OpenPopup(1));
-            ButtonWiring.Replace(Find<Button>(Content + "RangeButton"), () => OpenPopup(2));
-            ButtonWiring.Replace(Find<Button>(Content + "AccuracyButton"), () => OpenPopup(3));
-            ButtonWiring.Replace(Find<Button>(Content + "FluencyButton"), () => OpenPopup(4));
-            ButtonWiring.Replace(Find<Button>("PopupPanel/PopupBackButton"), () => navigator.Back());
-            ButtonWiring.Replace(Find<Button>("InfoButton"), () => navigator.Open(infoModal));
-            ButtonWiring.Replace(Find<Button>("InfoPopup/InfoBackButton"), () => navigator.Back());
-            ButtonWiring.Replace(Find<Button>(Content + "FeedbackButton"), OpenFeedback);
-            ButtonWiring.Replace(Find<Button>("FeedbackPopUp/FeedbackBackButton"), () => navigator.Back());
-            ButtonWiring.Replace(Find<Button>("FeedbackPopUp/FeedbackSendButton"), SendFeedback);
+            ButtonWiring.Replace(newTaskButton, () => navigator.PopTo<ASATaskListScreen>());
+            for (int i = 0; i < scoreInfoButtons.Length; i++)
+            {
+                int popup = i;
+                ButtonWiring.Replace(scoreInfoButtons[i], () => OpenPopup(popup));
+            }
+            ButtonWiring.Replace(popupBackButton, () => navigator.Back());
+            ButtonWiring.Replace(infoButton, () => navigator.Open(infoModal));
+            ButtonWiring.Replace(infoBackButton, () => navigator.Back());
+            ButtonWiring.Replace(feedbackButton, OpenFeedback);
+            ButtonWiring.Replace(feedbackBackButton, () => navigator.Back());
+            ButtonWiring.Replace(feedbackSendButton, SendFeedback);
 
-            popupModal = ModalScreen.Attach(FindObject("PopupPanel"));
-            infoModal = ModalScreen.Attach(FindObject("InfoPopup"));
-            feedbackModal = ModalScreen.Attach(FindObject("FeedbackPopUp"));
+            popupModal = ModalScreen.Attach(popupPanelGO);
+            infoModal = ModalScreen.Attach(infoPopupGO);
+            feedbackModal = ModalScreen.Attach(feedbackPopUpGO);
 
             // Reset feedback form and go back
             feedbackModal.OnBack = () =>
@@ -277,11 +310,14 @@ namespace SaySuomi.Navigation
             // chosen, and any tap made before the assessment id existed.
             if (accuracy != null)
             {
-                accuracyFeedback.Send(accuracy.name, comment_accuracy);
+                accuracyFeedback.Send(accuracy.GetComponent<OptionValue>().value, comment_accuracy);
             }
             if (understanding != null)
             {
-                understandingFeedback.Send(understanding.name, comment_understanding);
+                understandingFeedback.Send(
+                    understanding.GetComponent<OptionValue>().value,
+                    comment_understanding
+                );
             }
 
             // OnBack resets the form.

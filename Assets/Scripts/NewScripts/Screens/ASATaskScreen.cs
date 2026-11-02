@@ -10,22 +10,36 @@ namespace SaySuomi.Navigation
 {
     public class ASATaskScreen : AppScreen
     {
+        [SerializeField]
         GameObject recordButtonGO;
+        [SerializeField]
         GameObject pauseButtonGO;
+        [SerializeField]
         GameObject sendButtonGO;
+        [SerializeField]
         GameObject replayButtonGO;
+        [SerializeField]
         GameObject replayBarGO;
+        [SerializeField]
         GameObject progressBarBackgroundGO;
+        [SerializeField]
         GameObject progressBarGO;
 
-        LoadingModal loadingModal;
+        TaskSendingModal loadingModal;
+        [SerializeField]
         GameObject loadingIconGO;
+        [SerializeField]
         GameObject resultsButtonGO;
+        [SerializeField]
         GameObject errorTextGO;
+        [SerializeField]
         GameObject backButtonGO;
+        [SerializeField]
         GameObject errorPopupGO;
+        [SerializeField]
         TextMeshProUGUI loadingTitleText;
 
+        [SerializeField]
         ToggleGroup ratingOptions;
 
         // Posts the self-assessment emoji on tap rather than waiting for Results. Built once
@@ -33,6 +47,7 @@ namespace SaySuomi.Navigation
         // the Results button re-sending an answer that has not changed.
         private FeedbackAutoSend selfAssessmentFeedback;
 
+        [SerializeField]
         TMP_InputField feedbackTextGO;
 
         [System.Serializable]
@@ -47,6 +62,7 @@ namespace SaySuomi.Navigation
         [SerializeField]
         private TaskAttributes[] tasks;
 
+        [SerializeField]
         private TextMeshProUGUI taskTextGO;
 
         private LocalizedTextHelper taskTextHelper;
@@ -55,6 +71,7 @@ namespace SaySuomi.Navigation
 
         private LocalizedTextHelper loadingErrorHelper;
 
+        [SerializeField]
         private Image taskImageGO;
 
         private bool isRecording = false;
@@ -80,31 +97,16 @@ namespace SaySuomi.Navigation
 
         private AudioClip recording;
 
+        /// <summary>The button ScreenBackButton copies, so all back buttons look the same.</summary>
+        internal GameObject BackButtonTemplate => taskBackButton.gameObject;
+
+        [SerializeField]
+        Button taskBackButton;
+
         protected override void Bind()
         {
-            recordButtonGO = FindObject("RecordButton");
-            pauseButtonGO = FindObject("PauseButton");
-            sendButtonGO = FindObject("SendButton");
-            replayButtonGO = FindObject("ReplayButton");
-            replayBarGO = FindObject("ReplayBar");
-            progressBarBackgroundGO = FindObject("ProgressBarBackground");
-            progressBarGO = FindObject("ProgressBar");
-            taskTextGO = Find<TextMeshProUGUI>("TaskText");
-            taskImageGO = Find<Image>("TaskImage");
 
-            // Found by name, because AdvancedScreen owned it in the scene but this uses it.
-            loadingModal = ModalScreen.Attach<LoadingModal>(
-                Navigator.FindInCanvas(this, "LoadingPopUp"),
-                dismissible: false
-            );
-            loadingIconGO = loadingModal.FindObject("LoadingIcon");
-            resultsButtonGO = loadingModal.FindObject("ResultsButton");
-            errorTextGO = loadingModal.FindObject("ErrorText");
-            backButtonGO = loadingModal.FindObject("BackButton");
-            errorPopupGO = loadingModal.FindObject("ErrorPopup");
-            loadingTitleText = loadingModal.Find<TextMeshProUGUI>("Title");
-            ratingOptions = loadingModal.Find<ToggleGroup>("RatingGroup");
-            feedbackTextGO = loadingModal.Find<TMP_InputField>("FeedbackTextField");
+            loadingModal = Navigator.GetManager().Get<TaskSendingModal>();
 
             Navigator navigator = Navigator.GetManager();
 
@@ -112,7 +114,7 @@ namespace SaySuomi.Navigation
             ButtonWiring.Replace(pauseButtonGO.GetComponent<Button>(), StopRecord);
             ButtonWiring.Replace(sendButtonGO.GetComponent<Button>(), OnSendButtonClicked);
             ButtonWiring.Replace(replayButtonGO.GetComponent<Button>(), OnReplayButtonClicked);
-            ButtonWiring.Replace(Find<Button>("BackButton"), () => navigator.Back());
+            ButtonWiring.Replace(taskBackButton, () => navigator.Back());
             ButtonWiring.Replace(resultsButtonGO.GetComponent<Button>(), OnResultsButtonClicked);
             ButtonWiring.Replace(backButtonGO.GetComponent<Button>(), () => navigator.Back());
 
@@ -439,7 +441,10 @@ namespace SaySuomi.Navigation
                 // Usually a no-op by now: the emoji posted itself when it was tapped. It still
                 // matters when a comment was typed afterwards, and when the tap happened
                 // before the assessment id existed.
-                selfAssessmentFeedback.Send(self_rating.name, comment_self_rating);
+                selfAssessmentFeedback.Send(
+                    self_rating.GetComponent<OptionValue>().value,
+                    comment_self_rating
+                );
             }
         }
 

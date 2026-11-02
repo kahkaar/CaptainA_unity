@@ -8,47 +8,67 @@ namespace SaySuomi.Navigation
     {
         public override bool IsTabRoot => true;
 
+        [SerializeField]
         GameObject topPanelGO;
 
+        [SerializeField]
         GameObject topPanelBigGO;
 
+        [SerializeField]
         GameObject topPanelSmallGO;
 
+        [SerializeField]
         GameObject dropShadowLGO;
 
+        [SerializeField]
         GameObject dropShadowBGO;
 
+        [SerializeField]
         GameObject dropShadowRGO;
 
+        [SerializeField]
         GameObject textInputPanelGO;
 
+        [SerializeField]
         GameObject debugTextGO;
 
+        [SerializeField]
         GameObject startButtonGO;
 
+        [SerializeField]
         GameObject againButtonGO;
 
+        [SerializeField]
         TMPro.TMP_InputField inputText;
 
+        [SerializeField]
         GameObject stopButtonPanelGO;
 
+        [SerializeField]
         GameObject stopButtonPanelBackgroundGO;
 
+        [SerializeField]
         GameObject stopButtonGO;
 
+        [SerializeField]
         GameObject waitIconGO;
 
+        [SerializeField]
         GameObject recordButtonGO;
 
         // There are two functions for hiding the buttons when user try new words
         // 1. When users first open the app, the buttons are hidden: SetUpStartUI()
         // 2. Hide the buttons when the user focus on the input text: SetupFocusTextUI()
+        [SerializeField]
         GameObject replayButtonGO;
 
+        [SerializeField]
         GameObject sampleButtonGO; // Play sample audio
 
+        [SerializeField]
         GameObject detailButtonGO; // Display detail feedback
 
+        [SerializeField]
         GameObject illustrationGO; // Illustration
 
         AudioClip sampleClip;
@@ -57,28 +77,14 @@ namespace SaySuomi.Navigation
         private float currentTime = 2.0f;
         private string transcript;
 
+        [SerializeField]
+        TMPro.TextMeshProUGUI promptText;
+
+        [SerializeField]
+        TMPro.TextMeshProUGUI readAloudText;
+
         protected override void Bind()
         {
-            topPanelGO = FindObject("TopPanel");
-            topPanelBigGO = FindObject("TopPanelBig");
-            topPanelSmallGO = FindObject("TopPanelSmall");
-            dropShadowLGO = FindObject("DropShadowL");
-            dropShadowBGO = FindObject("DropShadowB");
-            dropShadowRGO = FindObject("DropShadowR");
-            textInputPanelGO = FindObject("TextInputPanel");
-            debugTextGO = FindObject("DebugText");
-            startButtonGO = FindObject("TextInputPanel/ButtonPanel/StartButton");
-            againButtonGO = FindObject("TextInputPanel/ButtonPanel/AgainButton");
-            inputText = Find<TMPro.TMP_InputField>("TextInputPanel/InputText");
-            stopButtonPanelGO = FindObject("StopButtonPanel");
-            stopButtonPanelBackgroundGO = FindObject("SopButtonPanelBackground");
-            stopButtonGO = FindObject("StopButtonGO");
-            waitIconGO = FindObject("WaitIconGO");
-            recordButtonGO = FindObject("RecordButton");
-            replayButtonGO = FindObject("TextInputPanel/ButtonPanel/ReplayButton");
-            sampleButtonGO = FindObject("TextInputPanel/ButtonPanel/SampleButton");
-            detailButtonGO = FindObject("TextInputPanel/ButtonPanel/DetailButton");
-            illustrationGO = FindObject("Illustration");
 
             // This is for testing purposes
             // PlayerPrefs.SetInt("BackgroundFormCompleted", 0);
@@ -381,10 +387,7 @@ namespace SaySuomi.Navigation
             // original code.
             // Use GetParsedText(): This returns the plain text content with all rich text formatting removed.
             // Since we are format result with richtext, this is the best method to use. (in case user record after the result is shown)
-            transcript = textInputPanelGO
-                .transform.Find("ReadAloudText")
-                .GetComponent<TMPro.TextMeshProUGUI>()
-                .GetParsedText();
+            transcript = readAloudText.GetParsedText();
             // Debug.Log("Transcript: " + transcript);
 
             // Santinize the text
@@ -431,7 +434,7 @@ namespace SaySuomi.Navigation
             startButtonGO.GetComponent<Button>().interactable = true;
 
             // Disable the ReadAloudTextGO
-            textInputPanelGO.transform.Find("ReadAloudText").gameObject.SetActive(false);
+            readAloudText.gameObject.SetActive(false);
 
             // Disable the recording button
             recordButtonGO.SetActive(false);
@@ -482,7 +485,7 @@ namespace SaySuomi.Navigation
             inputText.gameObject.SetActive(true);
 
             // Disable the text prompt of PromptText
-            textInputPanelGO.transform.Find("ReadAloudText").gameObject.SetActive(false);
+            readAloudText.gameObject.SetActive(false);
 
             // Disable the start button button, not GO
             // Disable the button will change its color to gray and make it unclickable (set in the Editor)
@@ -550,19 +553,13 @@ namespace SaySuomi.Navigation
             string finnishText = inputText.text;
             finnishText = TextUtils.SantinizeText(finnishText).ToLower();
 
-            textInputPanelGO.transform.Find("ReadAloudText").gameObject.SetActive(true);
-            textInputPanelGO
-                .transform.Find("ReadAloudText")
-                .GetComponent<TMPro.TextMeshProUGUI>()
-                .text = finnishText;
+            readAloudText.gameObject.SetActive(true);
+            readAloudText.text = finnishText;
 
             // Set ReadAloudText to normal following design guideline
             // ReadAloudText is the text that will be read aloud
             // It will be set to bold when the result is shown
-            textInputPanelGO
-                .transform.Find("ReadAloudText")
-                .GetComponent<TMPro.TextMeshProUGUI>()
-                .fontStyle = TMPro.FontStyles.Normal;
+            readAloudText.fontStyle = TMPro.FontStyles.Normal;
 
             // Try to find the illustration and display it
             ShowSampleIllustration(finnishText);
@@ -644,13 +641,6 @@ namespace SaySuomi.Navigation
         {
             // PromptText doubles as this panel's status line: it is always visible and shows
             // either the prompt, the result banner, or an error.
-            TMPro.TextMeshProUGUI promptText = textInputPanelGO
-                .transform.Find("PromptText")
-                .GetComponent<TMPro.TextMeshProUGUI>();
-            TMPro.TextMeshProUGUI readAloudText = textInputPanelGO
-                .transform.Find("ReadAloudText")
-                .GetComponent<TMPro.TextMeshProUGUI>();
-
             // Toggle the loading
             waitIconGO.SetActive(true);
 

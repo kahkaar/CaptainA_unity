@@ -143,13 +143,12 @@ stay correct when back selects Freestyle.
 place. `ModalHost`, which `Navigator` adds to its own object, only handles how they are
 presented:
 
-- It puts the newest modal on top, then creates one shared dim in code and keeps it directly
-  below that modal. The dim blocks input to everything beneath it, including the tab bar.
+- It puts the newest modal on top, then keeps the scene's one `ModalDim` directly below that
+  modal. The dim blocks input to everything beneath it, including the tab bar.
 - It runs the modal open and close animations.
 
-The first time a popup opens, it lifts from the screen that owns it in the scene to the top of
-the root Canvas, keeping its position. Only there can it draw above the tab bar. So a popup
-appears under its owner in the Editor, but not while the app runs after it first opens.
+Every popup lives under `Canvas/Modals`, which draws after the tab bar and everything else. A
+screen that opens one holds a reference to it, so a popup can be used from any screen.
 
 `ModalScreen.OnBack` runs whenever back closes a popup, including from its own back button if
 that calls `Navigator.Back`. It is the place to reset a form or record a decline, so every way
@@ -167,16 +166,16 @@ shows an error, so back can leave a failed request but not one in progress.
 does, and finds every `AppScreen` in the scene, including inactive ones. It calls `Bind` on each
 one, then hides the other tab roots and shows Freestyle with no animation.
 
-Because of this, a broken path appears in the Console in every Play session, even for a screen
-that is never opened. If a screen's `Bind` fails, the rest are still set up and all failures are
+Because of this, an unassigned field appears in the Console in every Play session, even for a
+screen that is never opened. If a screen's `Bind` fails, the rest are still set up and all failures are
 logged together, and the app still opens.
 
 Leave tab roots other than Freestyle inactive in the scene. `Navigator` runs after scene
 objects are enabled, so an active root's `OnEnable` would already have run. For Advanced,
 that clears the new-feature dot at launch.
 
-`Navigator` also disables the old `PopUpManager` if it is still in the scene, because its
-`Start` would hide the instruction popup while it is open. These lines go at cutover.
+The old `PopUpManager` must not be in the scene, because its `Start` would hide the instruction
+popup while it is open.
 
 That launch hook runs in every scene. If a scene has no `AppScreen`, `Navigator` removes
 itself and does nothing, so scenes using the old panels are unaffected.

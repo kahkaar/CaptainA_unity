@@ -45,9 +45,9 @@ namespace SaySuomi.Navigation
         }
 
         /// <summary>
-        /// Finds this screen's objects and wires its buttons. Navigator calls this for every
-        /// screen at launch, inactive ones included, so a broken path is reported in every Play
-        /// session rather than when that screen is first opened.
+        /// Wires this screen's buttons. Navigator calls this for every screen at launch,
+        /// inactive ones included, so an unassigned field is reported in every Play session
+        /// rather than when that screen is first opened.
         /// </summary>
         protected virtual void Bind() { }
 
@@ -59,6 +59,7 @@ namespace SaySuomi.Navigation
             }
 
             bound = true;
+            MissingReferences.Report(this);
             Bind();
         }
 
@@ -112,37 +113,6 @@ namespace SaySuomi.Navigation
             Group.blocksRaycasts = true;
             Rect.anchoredPosition = homePosition;
             Rect.localScale = Vector3.one;
-        }
-
-        /// <summary>Finds a child by a path relative to this screen, including inactive ones.</summary>
-        public GameObject FindObject(string path)
-        {
-            Transform child = transform.Find(path);
-            if (child == null)
-            {
-                Debug.LogError($"{GetType().Name}: no child at '{path}'.", this);
-                return null;
-            }
-
-            return child.gameObject;
-        }
-
-        /// <summary>Finds a component on a child by a path relative to this screen.</summary>
-        public T Find<T>(string path)
-            where T : Component
-        {
-            GameObject child = FindObject(path);
-            if (child == null)
-            {
-                return null;
-            }
-
-            if (!child.TryGetComponent(out T component))
-            {
-                Debug.LogError($"{GetType().Name}: no {typeof(T).Name} on '{path}'.", this);
-            }
-
-            return component;
         }
     }
 }

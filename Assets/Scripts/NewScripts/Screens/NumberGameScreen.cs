@@ -12,15 +12,24 @@ namespace SaySuomi.Navigation
     {
         public override bool ShowsBackButton => true;
 
+        [SerializeField]
         GameObject recordButtonGO;
+        [SerializeField]
         GameObject progressBarGO;
         NGTaskType taskType = NGTaskType.EASY;
+        [SerializeField]
         Toggle easyToggle;
+        [SerializeField]
         Toggle mediumToggle;
+        [SerializeField]
         Toggle hardToggle;
+        [SerializeField]
         Toggle rankToggle;
+        [SerializeField]
         GameObject numberLabelGO;
+        [SerializeField]
         GameObject errorTextGO;
+        [SerializeField]
         GameObject replayButtonGO;
 
         AudioClip replayClip;
@@ -30,20 +39,14 @@ namespace SaySuomi.Navigation
 
         private string number = "999";
 
+        [SerializeField]
+        Button newButton;
+
         protected override void Bind()
         {
-            recordButtonGO = FindObject("RecordButton");
-            progressBarGO = FindObject("ProgressBar");
-            easyToggle = Find<Toggle>("TaskTypePanel/DifficultToggleGroup/EasyToggle");
-            mediumToggle = Find<Toggle>("TaskTypePanel/DifficultToggleGroup/MediumToggle");
-            hardToggle = Find<Toggle>("TaskTypePanel/DifficultToggleGroup/HardToggle");
-            rankToggle = Find<Toggle>("TaskTypePanel/DifficultToggleGroup/RankToggle");
-            numberLabelGO = FindObject("NumberLabel");
-            errorTextGO = FindObject("ErrorText");
-            replayButtonGO = FindObject("ReplayButton");
 
-            ButtonWiring.Replace(Find<Button>("RecordButton"), OnRecordButtonClicked);
-            ButtonWiring.Replace(Find<Button>("NewButton"), OnNewButtonClick);
+            ButtonWiring.Replace(recordButtonGO.GetComponent<Button>(), OnRecordButtonClicked);
+            ButtonWiring.Replace(newButton, OnNewButtonClick);
         }
 
         private void Start()

@@ -7,48 +7,62 @@ namespace SaySuomi.Navigation
 {
     public class ASATaskListScreen : AppScreen
     {
-        const string OverallPopUp = "OverallFeedbackPopUp/";
-
+        [SerializeField]
         GameObject errorPopupGO;
+        [SerializeField]
         GameObject loadingIconGO;
+        [SerializeField]
         GameObject profileLoadingBackButtonGO;
+        [SerializeField]
         GameObject profileLoadingErrorTextGO;
+        [SerializeField]
         TMP_InputField overallFeedbackTextGO;
+        [SerializeField]
         ToggleGroup overallRatingOptions;
 
+        [SerializeField]
         LoadingModal profileLoadingModal;
         ModalScreen overallFeedbackModal;
 
         LocalizedTextHelper profileErrorHelper;
 
+        [SerializeField]
+        Button backButton;
+
+        [SerializeField]
+        Button profileButton;
+
+        [SerializeField]
+        Button feedbackSendButton;
+
+        [SerializeField]
+        Button feedbackBackButton;
+
+        [SerializeField]
+        GameObject overallFeedbackPopUpGO;
+
+        [SerializeField]
+        Button[] taskButtons;
+
         protected override void Bind()
         {
-            errorPopupGO = FindObject("ErrorPopup");
-            loadingIconGO = FindObject("LoadingPopUpProfile/LoadingIcon");
-            profileLoadingBackButtonGO = FindObject("LoadingPopUpProfile/BackButton");
-            profileLoadingErrorTextGO = FindObject("LoadingPopUpProfile/ErrorText");
-            overallFeedbackTextGO = Find<TMP_InputField>(OverallPopUp + "OverallFeedbackTextField");
-            overallRatingOptions = Find<ToggleGroup>(OverallPopUp + "OverallRatingGroup");
 
             Navigator navigator = Navigator.GetManager();
 
-            ButtonWiring.Replace(Find<Button>("BackButton"), () => navigator.Back());
-            ButtonWiring.Replace(Find<Button>("Task1"), () => OpenTask(0));
-            ButtonWiring.Replace(Find<Button>("Task2"), () => OpenTask(1));
-            ButtonWiring.Replace(Find<Button>("Task3"), () => OpenTask(2));
-            ButtonWiring.Replace(Find<Button>("Task4"), () => OpenTask(3));
-            ButtonWiring.Replace(Find<Button>("Task5"), () => OpenTask(4));
-            ButtonWiring.Replace(Find<Button>("ProfileButton"), LoadProfile);
-            ButtonWiring.Replace(Find<Button>("LoadingPopUpProfile/BackButton"), () => navigator.Back());
-            ButtonWiring.Replace(Find<Button>(OverallPopUp + "FeedbackSendButton"), SendOverallFeedback);
-            ButtonWiring.Replace(Find<Button>(OverallPopUp + "FeedbackBackButton"), () => navigator.Back());
+            ButtonWiring.Replace(backButton, () => navigator.Back());
+            for (int i = 0; i < taskButtons.Length; i++)
+            {
+                int task = i;
+                ButtonWiring.Replace(taskButtons[i], () => OpenTask(task));
+            }
+            ButtonWiring.Replace(profileButton, LoadProfile);
+            ButtonWiring.Replace(profileLoadingBackButtonGO.GetComponent<Button>(), () => navigator.Back());
+            ButtonWiring.Replace(feedbackSendButton, SendOverallFeedback);
+            ButtonWiring.Replace(feedbackBackButton, () => navigator.Back());
 
-            profileLoadingModal = ModalScreen.Attach<LoadingModal>(
-                FindObject("LoadingPopUpProfile"),
-                dismissible: false
-            );
+            profileLoadingModal.Dismissible = false;
 
-            overallFeedbackModal = ModalScreen.Attach(FindObject("OverallFeedbackPopUp"));
+            overallFeedbackModal = ModalScreen.Attach(overallFeedbackPopUpGO);
 
             // Declining restarts the count, exactly as answering does. It used to only
             // hide the window and write nothing, so every return to the task list
@@ -93,7 +107,7 @@ namespace SaySuomi.Navigation
                     .ServerPost_feedback(
                         POSTType.USER_ASA_FEEDBACK,
                         "overall_experience",
-                        overallRating.name,
+                        overallRating.GetComponent<OptionValue>().value,
                         comment_overall
                     )
             );

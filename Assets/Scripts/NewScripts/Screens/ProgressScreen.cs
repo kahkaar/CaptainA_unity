@@ -12,14 +12,17 @@ namespace SaySuomi.Navigation
         [SerializeField]
         GameObject phonemeScorePrefab; // Refer to ListItemPanel prefab
 
+        [SerializeField]
         GameObject content;
 
         List<GameObject> listItems = new List<GameObject>(); // To store item from scroll list and delete after inactive
 
+        [SerializeField]
+        Button infoButton;
+
         protected override void Bind()
         {
-            content = FindObject("Scroll View/Viewport/Content");
-            ButtonWiring.Replace(Find<Button>("InfoButton"), () => Navigator.GetManager().Push<InfoScreen>());
+            ButtonWiring.Replace(infoButton, () => Navigator.GetManager().Push<InfoScreen>());
         }
 
         void OnEnable()

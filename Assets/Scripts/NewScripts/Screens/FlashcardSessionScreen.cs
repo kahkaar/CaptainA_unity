@@ -25,25 +25,45 @@ namespace SaySuomi.Navigation
     {
         public override bool ShowsBackButton => true;
 
+        [SerializeField]
         TMPro.TextMeshProUGUI frontCardText; // Front card
+        [SerializeField]
         TMPro.TextMeshProUGUI backCardText; // Back card
+        [SerializeField]
         TMPro.TextMeshProUGUI etymoText; // Etymology card
+        [SerializeField]
         GameObject warningImageFrontGO; // Front card
+        [SerializeField]
         GameObject warningImageBackGO; // Back card
+        [SerializeField]
         TMPro.TextMeshProUGUI intervalText_again; // Interval text for AGAIN button
+        [SerializeField]
         TMPro.TextMeshProUGUI intervalText_hard; // Interval text for HARD button
+        [SerializeField]
         TMPro.TextMeshProUGUI intervalText_good; // Interval text for GOOD button
+        [SerializeField]
         TMPro.TextMeshProUGUI intervalText_easy; // Interval text for EASY button
+        [SerializeField]
         GameObject showAnswerGO; // Show answer GO
+        [SerializeField]
         GameObject qualityBarGO; // Quality bar GO
+        [SerializeField]
         GameObject recordButtonGO;
+        [SerializeField]
         GameObject progressBarGO; // Progress bar
+        [SerializeField]
         GameObject errorTextGO;
+        [SerializeField]
         GameObject sampleButtonGO; // Replay sample audio
+        [SerializeField]
         GameObject replayButtonGO; // Replay recorded audio
+        [SerializeField]
         Toggle autoPlayToggle; // Auto play audio
+        [SerializeField]
         Toggle hideFinnishToggle; // Hide Finnish text
+        [SerializeField]
         GameObject illustrationGO; // Illustration
+        [SerializeField]
         TMPro.TextMeshProUGUI predictionDebugText;
 
         TMPro.TextMeshProUGUI finnishCardText; // The text of the card that is in Finnish
@@ -56,35 +76,27 @@ namespace SaySuomi.Navigation
         AudioClip replayClip;
         AudioClip sampleClip;
 
+        [SerializeField]
+        Button againButton;
+
+        [SerializeField]
+        Button hardButton;
+
+        [SerializeField]
+        Button goodButton;
+
+        [SerializeField]
+        Button easyButton;
+
         protected override void Bind()
         {
-            frontCardText = Find<TMPro.TextMeshProUGUI>("FlashCardText/FrontCardText");
-            backCardText = Find<TMPro.TextMeshProUGUI>("FlashCardText/BackCardText");
-            etymoText = Find<TMPro.TextMeshProUGUI>("FlashCardText/Etymology");
-            warningImageFrontGO = FindObject("FlashCardText/WarningImageFront");
-            warningImageBackGO = FindObject("FlashCardText/WarningImageBack");
-            intervalText_again = Find<TMPro.TextMeshProUGUI>("QualityBar/Again/intervalTextAgain");
-            intervalText_hard = Find<TMPro.TextMeshProUGUI>("QualityBar/Hard/intervalTextHard");
-            intervalText_good = Find<TMPro.TextMeshProUGUI>("QualityBar/Good/intervalTextGood");
-            intervalText_easy = Find<TMPro.TextMeshProUGUI>("QualityBar/Easy/intervalTextEasy");
-            showAnswerGO = FindObject("ShowAnswer");
-            qualityBarGO = FindObject("QualityBar");
-            recordButtonGO = FindObject("RecordButton");
-            progressBarGO = FindObject("ProgressBar");
-            errorTextGO = FindObject("ErrorText");
-            sampleButtonGO = FindObject("FlashCardText/SampleButton");
-            replayButtonGO = FindObject("FlashCardText/ReplayButton");
-            autoPlayToggle = Find<Toggle>("AudioTextOption/AutoPlay");
-            hideFinnishToggle = Find<Toggle>("AudioTextOption/HideText");
-            illustrationGO = FindObject("Illustration");
-            predictionDebugText = Find<TMPro.TextMeshProUGUI>("PredictionText");
 
-            ButtonWiring.Replace(Find<Button>("ShowAnswer"), DisplayAnswer);
-            ButtonWiring.Replace(Find<Button>("RecordButton"), OnRecordButtonClick);
-            ButtonWiring.Replace(Find<Button>("QualityBar/Again"), () => OnSubmitButtonClick(0));
-            ButtonWiring.Replace(Find<Button>("QualityBar/Hard"), () => OnSubmitButtonClick(3));
-            ButtonWiring.Replace(Find<Button>("QualityBar/Good"), () => OnSubmitButtonClick(4));
-            ButtonWiring.Replace(Find<Button>("QualityBar/Easy"), () => OnSubmitButtonClick(5));
+            ButtonWiring.Replace(showAnswerGO.GetComponent<Button>(), DisplayAnswer);
+            ButtonWiring.Replace(recordButtonGO.GetComponent<Button>(), OnRecordButtonClick);
+            ButtonWiring.Replace(againButton, () => OnSubmitButtonClick(0));
+            ButtonWiring.Replace(hardButton, () => OnSubmitButtonClick(3));
+            ButtonWiring.Replace(goodButton, () => OnSubmitButtonClick(4));
+            ButtonWiring.Replace(easyButton, () => OnSubmitButtonClick(5));
 
             ButtonWiring.SwitchOffInspectorEntries(autoPlayToggle.onValueChanged);
             autoPlayToggle.onValueChanged.AddListener(OnAutoPlayToogle);

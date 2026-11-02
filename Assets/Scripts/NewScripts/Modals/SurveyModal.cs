@@ -5,10 +5,16 @@ namespace SaySuomi.Navigation
 {
     public class SurveyModal : ModalScreen
     {
+        [SerializeField]
+        Button okButton;
+
+        [SerializeField]
+        Button laterButton;
+
         protected override void Bind()
         {
-            ButtonWiring.Replace(Find<Button>("SurveyBox/Panel/Ok"), OnYesButtonClick);
-            ButtonWiring.Replace(Find<Button>("SurveyBox/Panel/Later"), () => Navigator.GetManager().Back());
+            ButtonWiring.Replace(okButton, OnYesButtonClick);
+            ButtonWiring.Replace(laterButton, () => Navigator.GetManager().Back());
         }
 
         void OnYesButtonClick()

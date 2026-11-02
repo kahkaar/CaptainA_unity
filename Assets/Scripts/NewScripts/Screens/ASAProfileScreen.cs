@@ -15,14 +15,19 @@ namespace SaySuomi.Navigation
 
         static readonly Guid Table = new Guid("850ceabc4262bb1acb39b8a91b2fcf93");
 
+        [SerializeField]
         GameObject levelBarGO;
 
+        [SerializeField]
         private TextMeshProUGUI levelText;
 
+        [SerializeField]
         private TextMeshProUGUI performanceText;
 
+        [SerializeField]
         private TextMeshProUGUI rankText;
 
+        [SerializeField]
         private TextMeshProUGUI positionText;
 
         ModalScreen settingsModal;
@@ -30,10 +35,13 @@ namespace SaySuomi.Navigation
         ModalScreen feedbackModal;
 
         // Data deletion, run from the app so nobody has to service requests by hand.
+        [SerializeField]
         GameObject deleteConfirmButtonGO;
 
+        [SerializeField]
         GameObject deleteCancelButtonGO;
 
+        [SerializeField]
         TextMeshProUGUI deleteStatusText;
 
         private LocalizedString deleteWarningText;
@@ -48,26 +56,37 @@ namespace SaySuomi.Navigation
 
         // The cancel button doubles as "OK" once the deletion has run, because by then
         // there is nothing left to cancel.
+        [SerializeField]
         TextMeshProUGUI deleteCancelLabel;
 
+        [SerializeField]
         TextMeshProUGUI deleteOkLabel;
 
+        [SerializeField]
         GameObject feedbackButtonGO;
 
+        [SerializeField]
         GameObject performanceInfo;
 
+        [SerializeField]
         GameObject rankInfo;
 
+        [SerializeField]
         GameObject revertLevelButtonGO;
 
+        [SerializeField]
         GameObject advanceLevelButtonGO;
 
+        [SerializeField]
         GameObject insufficientDataNoticeGO;
 
+        [SerializeField]
         GameObject levelTextGO;
 
+        [SerializeField]
         GameObject levelDescriptionTextGO;
 
+        [SerializeField]
         private TextMeshProUGUI levelDescriptionText;
 
         private LocalizedString levelDescriptionA1;
@@ -82,10 +101,13 @@ namespace SaySuomi.Navigation
 
         private LocalizedTextHelper levelDescriptionHelper;
 
+        [SerializeField]
         GameObject errorPopupGO;
 
+        [SerializeField]
         TMP_InputField comparisonFeedbackTextGO;
 
+        [SerializeField]
         TextMeshProUGUI insufficientDataNotice;
 
         [System.Serializable]
@@ -193,11 +215,43 @@ namespace SaySuomi.Navigation
             public int cohort_size;
         }
 
+        [SerializeField]
         TMP_Text guidTextGO;
 
+        [SerializeField]
         ToggleGroup comparisonRatingOptions;
 
         string guid;
+
+        [SerializeField]
+        Button profileBackButton;
+
+        [SerializeField]
+        Button settingsButton;
+
+        [SerializeField]
+        Button settingsBackButton;
+
+        [SerializeField]
+        Button guidCopyButton;
+
+        [SerializeField]
+        Button deleteDataButton;
+
+        [SerializeField]
+        Button feedbackBackButton;
+
+        [SerializeField]
+        Button feedbackSendButton;
+
+        [SerializeField]
+        GameObject settingsPopupGO;
+
+        [SerializeField]
+        GameObject deleteConfirmPopupGO;
+
+        [SerializeField]
+        GameObject feedbackPopUpGO;
 
         protected override void Bind()
         {
@@ -221,52 +275,28 @@ namespace SaySuomi.Navigation
             rankUnavailableNotice = new LocalizedString(Table, 20288265871360);
             rankUnavailableGeneralNotice = new LocalizedString(Table, 20790462472192);
 
-            levelBarGO = FindObject(Content + "LevelBar");
-            levelText = Find<TextMeshProUGUI>(Content + "LevelText");
-            performanceText = Find<TextMeshProUGUI>(Content + "Performance/PerformanceText");
-            rankText = Find<TextMeshProUGUI>(Content + "GlobalRank/RankText");
-            positionText = Find<TextMeshProUGUI>(Content + "GlobalRank/PositionText");
-            deleteConfirmButtonGO = FindObject("DeleteConfirmPopup/DeleteConfirmButton");
-            deleteCancelButtonGO = FindObject("DeleteConfirmPopup/DeleteCancelButton");
-            deleteStatusText = Find<TextMeshProUGUI>("DeleteConfirmPopup/StatusText");
-            deleteCancelLabel = Find<TextMeshProUGUI>("DeleteConfirmPopup/DeleteCancelButton/CancelLabel");
-            deleteOkLabel = Find<TextMeshProUGUI>("DeleteConfirmPopup/DeleteCancelButton/OkLabel");
-            feedbackButtonGO = FindObject(Content + "FeedbackButton");
-            performanceInfo = FindObject(Content + "Performance");
-            rankInfo = FindObject(Content + "GlobalRank");
-            revertLevelButtonGO = FindObject(Content + "RevertLevel");
-            advanceLevelButtonGO = FindObject(Content + "AdvanceLevel");
-            insufficientDataNoticeGO = FindObject(Content + "InsufficientDataNotice");
-            levelTextGO = FindObject(Content + "LevelText");
-            levelDescriptionTextGO = FindObject(Content + "DescriptionText");
-            levelDescriptionText = Find<TextMeshProUGUI>(Content + "DescriptionText");
-            errorPopupGO = FindObject("ErrorPopup");
-            comparisonFeedbackTextGO = Find<TMP_InputField>("FeedbackPopUp/ComparisonFeedbackTextField");
-            insufficientDataNotice = Find<TextMeshProUGUI>(Content + "InsufficientDataNotice/InsufficientDataText");
-            guidTextGO = Find<TMP_Text>("SettingsPopup/GuidText");
-            comparisonRatingOptions = Find<ToggleGroup>("FeedbackPopUp/ComparisonRatingGroup");
 
             Navigator navigator = Navigator.GetManager();
 
-            ButtonWiring.Replace(Find<Button>(Content + "ProfileBackButton"), () => navigator.Back());
-            ButtonWiring.Replace(Find<Button>("SettingsButton"), () => navigator.Open(settingsModal));
-            ButtonWiring.Replace(Find<Button>("SettingsPopup/SettingsBackButton"), () => navigator.Back());
+            ButtonWiring.Replace(profileBackButton, () => navigator.Back());
+            ButtonWiring.Replace(settingsButton, () => navigator.Open(settingsModal));
+            ButtonWiring.Replace(settingsBackButton, () => navigator.Back());
             ButtonWiring.Replace(
-                Find<Button>("SettingsPopup/GuidCopyButton"),
+                guidCopyButton,
                 () => GUIUtility.systemCopyBuffer = guid
             );
-            ButtonWiring.Replace(Find<Button>("SettingsPopup/DeleteDataButton"), OpenDeleteConfirm);
+            ButtonWiring.Replace(deleteDataButton, OpenDeleteConfirm);
             ButtonWiring.Replace(deleteCancelButtonGO.GetComponent<Button>(), () => navigator.Back());
             ButtonWiring.Replace(deleteConfirmButtonGO.GetComponent<Button>(), DeleteData);
             ButtonWiring.Replace(feedbackButtonGO.GetComponent<Button>(), () => navigator.Open(feedbackModal));
-            ButtonWiring.Replace(Find<Button>("FeedbackPopUp/FeedbackBackButton"), () => navigator.Back());
-            ButtonWiring.Replace(Find<Button>("FeedbackPopUp/FeedbackSendButton"), SendFeedback);
+            ButtonWiring.Replace(feedbackBackButton, () => navigator.Back());
+            ButtonWiring.Replace(feedbackSendButton, SendFeedback);
             ButtonWiring.Replace(advanceLevelButtonGO.GetComponent<Button>(), () => ChangeLevel(1));
             ButtonWiring.Replace(revertLevelButtonGO.GetComponent<Button>(), () => ChangeLevel(-1));
 
-            settingsModal = ModalScreen.Attach(FindObject("SettingsPopup"));
-            deleteConfirmModal = ModalScreen.Attach(FindObject("DeleteConfirmPopup"));
-            feedbackModal = ModalScreen.Attach(FindObject("FeedbackPopUp"));
+            settingsModal = ModalScreen.Attach(settingsPopupGO);
+            deleteConfirmModal = ModalScreen.Attach(deleteConfirmPopupGO);
+            feedbackModal = ModalScreen.Attach(feedbackPopUpGO);
 
             // Cancelled, this returns to the settings popup underneath. Deleted, there is no
             // account left to show a profile or a guid for, so everything closes back to
@@ -328,7 +358,7 @@ namespace SaySuomi.Navigation
                     .ServerPost_feedback(
                         POSTType.USER_ASA_FEEDBACK,
                         "comparison_ui",
-                        helpful.name,
+                        helpful.GetComponent<OptionValue>().value,
                         comment_helpful
                     )
             );

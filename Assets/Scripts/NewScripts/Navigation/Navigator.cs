@@ -11,8 +11,6 @@ namespace SaySuomi.Navigation
     /// </summary>
     public sealed class Navigator : MonoBehaviour
     {
-        const string InstructionPanelName = "PopUpPanel";
-
         static Navigator instance;
 
         readonly Dictionary<Type, AppScreen> screens = new Dictionary<Type, AppScreen>();
@@ -67,21 +65,6 @@ namespace SaySuomi.Navigation
 
             home = Get<FreestyleScreen>();
 
-            GameObject instructionPanel = FindInCanvas(home, InstructionPanelName);
-            if (instructionPanel != null)
-            {
-                screens[typeof(InstructionModal)] = instructionPanel.AddComponent<InstructionModal>();
-            }
-
-            // Disabled before its Start can run, which would hide the popup that was just opened
-            // and leave the dim up with nothing above it. Temporary: the object can be deleted
-            // from the scene, and this goes when the old class does.
-            PopUpManager oldPopUpManager = FindAnyObjectByType<PopUpManager>();
-            if (oldPopUpManager != null)
-            {
-                oldPopUpManager.enabled = false;
-            }
-
             BindAllScreens();
             AddBackButtons();
 
@@ -127,7 +110,7 @@ namespace SaySuomi.Navigation
 
         void AddBackButtons()
         {
-            GameObject template = Get<ASATaskScreen>().FindObject("BackButton");
+            GameObject template = Get<ASATaskScreen>().BackButtonTemplate;
 
             foreach (AppScreen screen in screens.Values)
             {
@@ -160,21 +143,6 @@ namespace SaySuomi.Navigation
             {
                 Back();
             }
-        }
-
-        /// <summary>Finds an object by name anywhere under a screen's root Canvas.</summary>
-        internal static GameObject FindInCanvas(Component within, string objectName)
-        {
-            foreach (Transform child in within.transform.root.GetComponentsInChildren<Transform>(true))
-            {
-                if (child.name == objectName)
-                {
-                    return child.gameObject;
-                }
-            }
-
-            Debug.LogError($"Navigator: no object named '{objectName}' under the root Canvas.");
-            return null;
         }
 
         public T Get<T>()
@@ -214,11 +182,14 @@ namespace SaySuomi.Navigation
             }
 
             // Hiding the tab root would hide this too, leaving a blank screen with no other clue.
-            if (screen.Layer == ScreenLayer.Screen && screen.transform.IsChildOf(CurrentTab.transform))
+            if (
+                screen.Layer == ScreenLayer.Screen
+                && screen.transform.IsChildOf(CurrentTab.transform)
+            )
             {
                 Debug.LogError(
                     $"Navigator: {screen.name} is inside the tab root {CurrentTab.name}. "
-                        + "Move it to be a sibling of the tab roots, before the tab bar."
+                        + "Move it under Screens."
                 );
             }
 
@@ -278,13 +249,6 @@ namespace SaySuomi.Navigation
             if (stack.Contains(modal))
             {
                 return;
-            }
-
-            // Before Prepare, which records where a transition should return it to.
-            if (!modal.Lifted)
-            {
-                modal.Lifted = true;
-                modal.LiftToCanvas();
             }
 
             modal.Prepare();

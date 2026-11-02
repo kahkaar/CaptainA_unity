@@ -9,48 +9,63 @@ namespace SaySuomi.Navigation
 {
     public class AdvancedScreen : AppScreen
     {
-        const string BackgroundContent = "BackgroundPopUp/Viewport/Content/";
-
         public override bool IsTabRoot => true;
 
         ModalScreen consentModal;
         ModalScreen backgroundModal;
+        [SerializeField]
         Button acceptButton;
 
         // "I have read and understood the Privacy Notice." on the consent sheet.
         // Continue stays disabled until this is ticked, so consent cannot be given by
         // reflex-tapping the primary button.
+        [SerializeField]
         Toggle consentReadToggle;
 
+        [SerializeField]
         Button sendButton;
 
         // Other languages is now one open-ended field, and unlike the rest of the form it is
         // optional - leaving it blank is a valid answer.
+        [SerializeField]
         TMP_InputField languageOtherField;
+        [SerializeField]
         TMP_InputField motherTongueOptions;
+        [SerializeField]
         TextMeshProUGUI errorMessage;
+        [SerializeField]
         ToggleGroup genderOptions;
+        [SerializeField]
         ToggleGroup ageOptions;
+        [SerializeField]
         ToggleGroup selfAssessmentOptions;
+
+        [SerializeField]
+        Button numberGameButton;
+
+        [SerializeField]
+        Button asaButton;
+
+        [SerializeField]
+        Button refuseButton;
+
+        [SerializeField]
+        Button linkButton;
+
+        [SerializeField]
+        GameObject consentPopUpGO;
+
+        [SerializeField]
+        GameObject backgroundPopUpGO;
 
         protected override void Bind()
         {
-            acceptButton = Find<Button>("ConsentPopUp/PopupPanel/AcceptButton");
-            consentReadToggle = Find<Toggle>("ConsentPopUp/PopupPanel/ConsentToggle");
-            sendButton = Find<Button>(BackgroundContent + "SendButton");
-            languageOtherField = Find<TMP_InputField>(BackgroundContent + "OtherLanguagesOptions/InputField");
-            motherTongueOptions = Find<TMP_InputField>(BackgroundContent + "MotherTongueOptions/InputField");
-            errorMessage = Find<TextMeshProUGUI>(BackgroundContent + "ErrorMessage");
-            genderOptions = Find<ToggleGroup>(BackgroundContent + "GenderOptions");
-            ageOptions = Find<ToggleGroup>(BackgroundContent + "AgeOptions");
-            selfAssessmentOptions = Find<ToggleGroup>(BackgroundContent + "SelfAssessmentOptions");
 
-            ButtonWiring.Replace(Find<Button>("NumberGameButton"), () => OnNumberGameButtonClicked());
-            ButtonWiring.Replace(Find<Button>("ASAButton"), ProceedToASA);
+            ButtonWiring.Replace(numberGameButton, () => OnNumberGameButtonClicked());
+            ButtonWiring.Replace(asaButton, ProceedToASA);
             ButtonWiring.Replace(acceptButton, AcceptConsent);
-            ButtonWiring.Replace(Find<Button>("ConsentPopUp/PopupPanel/RefuseButton"), RefuseConsent);
-            ButtonWiring.Replace(Find<Button>("ConsentPopUp/PopupDimCatcher"), RefuseConsent);
-            ButtonWiring.Replace(Find<Button>("ConsentPopUp/PopupPanel/LinkButton"), LinkButtonPressed);
+            ButtonWiring.Replace(refuseButton, RefuseConsent);
+            ButtonWiring.Replace(linkButton, LinkButtonPressed);
             ButtonWiring.Replace(sendButton, GetUserInput);
 
             // Continue follows the checkbox rather than being live from the start. Consent
@@ -58,8 +73,8 @@ namespace SaySuomi.Navigation
             // the disabled button is what tells the user why nothing happened.
             consentReadToggle.onValueChanged.AddListener(isOn => acceptButton.interactable = isOn);
 
-            consentModal = ModalScreen.Attach(FindObject("ConsentPopUp"));
-            backgroundModal = ModalScreen.Attach(FindObject("BackgroundPopUp"));
+            consentModal = ModalScreen.Attach(consentPopUpGO);
+            backgroundModal = ModalScreen.Attach(backgroundPopUpGO);
         }
 
         void OnEnable()

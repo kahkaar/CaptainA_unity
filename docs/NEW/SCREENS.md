@@ -29,7 +29,7 @@ Every screen and modal in the app, and how they connect.
 | Secret                | `SecretModal`          | Info               | Closes                     |
 | Consent               | `ModalScreen.Attach`   | Advanced           | Same as Refuse             |
 | Background form       | `ModalScreen.Attach`   | Advanced           | Closes, blocked while sending |
-| Task loading          | `LoadingModal`         | Task               | Blocked until an error     |
+| Task loading          | `TaskSendingModal`     | Task               | Blocked until an error     |
 | Profile loading       | `LoadingModal`         | Task list, profile | Blocked until an error     |
 | Overall feedback      | `ModalScreen.Attach`   | Task list          | Closes, counts as declining |
 | Results info          | `ModalScreen.Attach`   | Results            | Closes                     |
@@ -81,7 +81,7 @@ flowchart TD
     gate -- "Both complete" --> list["Task list"]
 
     consent -- "Accept" --> form
-    consent -- "Refuse, dim tap or back" --> advanced
+    consent -- "Refuse or back" --> advanced
     form -- "Server confirms user" --> list
     form -- "Back" --> advanced
 

@@ -11,8 +11,6 @@ namespace SaySuomi.Navigation
     {
         public override ScreenLayer Layer => ScreenLayer.Overlay;
 
-        internal bool Lifted { get; set; }
-
         /// <summary>False ignores back, such as for a loading popup waiting on the server.</summary>
         public bool Dismissible { get; set; } = true;
 
@@ -45,19 +43,6 @@ namespace SaySuomi.Navigation
             modal.Dismissible = dismissible;
             modal.EnsureBound();
             return modal;
-        }
-
-        /// <summary>
-        /// Moves the popup out of the screen that owns it, to the top of the root Canvas. Only
-        /// there can it and the shared dim draw above the tab bar. It keeps its position on
-        /// screen.
-        ///
-        /// Done when it first opens rather than at launch. Keeping its position relies on its
-        /// parent's size, and an object that has never been active may not have the right one.
-        /// </summary>
-        internal void LiftToCanvas()
-        {
-            transform.SetParent(transform.root, true);
         }
     }
 }
