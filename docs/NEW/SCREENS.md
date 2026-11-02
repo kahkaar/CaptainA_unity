@@ -2,8 +2,9 @@
 
 Every screen and modal in the app, and how they connect.
 
-> **Status: in progress.** Tabs, overlays and the Instruction, Survey and Secret modals are
-> implemented. The rest of this describes the intended design until later stages finish.
+> **Status: in progress.** Tabs, overlays, flashcard sessions, NumberGame and the Instruction,
+> Survey and Secret modals are implemented. The ASA flow describes the intended design until
+> Stage 5 finishes.
 
 ## Screens and overlays
 
@@ -111,7 +112,7 @@ flowchart TD
 | -------------------------- | --------------------------------------------------------- |
 | Tab button                 | `SelectTab(tabRoot)`                                      |
 | Open a deck                | `Push<FlashcardSessionScreen>()`                          |
-| Session queue empty        | `Back()`                                                  |
+| Session queue empty        | `PopTo<FlashcardsScreen>()`                               |
 | Open a task                | `Push<ASATaskScreen>().DisplayTask(task)`                 |
 | Open results               | `Push<ASAResultsScreen>()`                                |
 | New Task                   | `PopTo<ASATaskListScreen>()`                              |

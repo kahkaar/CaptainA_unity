@@ -8,39 +8,17 @@ using UnityEngine.UI;
 
 namespace SaySuomi.Navigation
 {
-    public class NumberGameScreen : MonoBehaviour, ILegacyBackHandler
+    public class NumberGameScreen : AppScreen
     {
-        [SerializeField]
         GameObject recordButtonGO;
-
-        [SerializeField]
         GameObject progressBarGO;
-
-        [SerializeField]
-        NGTaskType taskType;
-
-        [SerializeField]
+        NGTaskType taskType = NGTaskType.EASY;
         Toggle easyToggle;
-
-        [SerializeField]
         Toggle mediumToggle;
-
-        [SerializeField]
         Toggle hardToggle;
-
-        [SerializeField]
         Toggle rankToggle;
-
-        [SerializeField]
-        GameObject newButtonGO;
-
-        [SerializeField]
         GameObject numberLabelGO;
-
-        [SerializeField]
         GameObject errorTextGO;
-
-        [SerializeField]
         GameObject replayButtonGO;
 
         AudioClip replayClip;
@@ -49,6 +27,24 @@ namespace SaySuomi.Navigation
         private float currentTime = Const.MAX_REC_NUMBERGAME_EASY;
 
         private string number = "999";
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            recordButtonGO = FindObject("RecordButton");
+            progressBarGO = FindObject("ProgressBar");
+            easyToggle = Find<Toggle>("TaskTypePanel/DifficultToggleGroup/EasyToggle");
+            mediumToggle = Find<Toggle>("TaskTypePanel/DifficultToggleGroup/MediumToggle");
+            hardToggle = Find<Toggle>("TaskTypePanel/DifficultToggleGroup/HardToggle");
+            rankToggle = Find<Toggle>("TaskTypePanel/DifficultToggleGroup/RankToggle");
+            numberLabelGO = FindObject("NumberLabel");
+            errorTextGO = FindObject("ErrorText");
+            replayButtonGO = FindObject("ReplayButton");
+
+            ButtonWiring.Replace(Find<Button>("RecordButton"), OnRecordButtonClicked);
+            ButtonWiring.Replace(Find<Button>("NewButton"), OnNewButtonClick);
+        }
 
         private void Start()
         {
@@ -82,19 +78,13 @@ namespace SaySuomi.Navigation
                 }
             );
 
-            Debug.Log("NumberGamePanel Start()");
+            Debug.Log("NumberGameScreen Start()");
             easyToggle.isOn = true;
-
-            // Add listener to record button
-            recordButtonGO.GetComponent<Button>().onClick.AddListener(OnRecordButtonClicked);
-
-            // Add listener to new button
-            newButtonGO.GetComponent<Button>().onClick.AddListener(OnNewButtonClick);
         }
 
         void OnEnable()
         {
-            Debug.Log("NumberGamePanel OnEnable()");
+            Debug.Log("NumberGameScreen OnEnable()");
 
             // Hide the progress bar
             if (taskType == NGTaskType.EASY)
@@ -117,6 +107,20 @@ namespace SaySuomi.Navigation
 
         void OnDisable()
         {
+            // The progress bar is only up while recording. Without this the microphone keeps
+            // running behind the next screen, with nothing left on screen to stop it.
+            if (progressBarGO != null && progressBarGO.activeSelf)
+            {
+                progressBarGO.SetActive(false);
+                recordButtonGO.SetActive(true);
+
+                AudioManager audioManager = AudioManager.GetManager();
+                if (audioManager != null)
+                {
+                    audioManager.CancelRecording();
+                }
+            }
+
             // Reset the toogles to the default state
             easyToggle.isOn = true;
         }
@@ -205,15 +209,6 @@ namespace SaySuomi.Navigation
             {
                 UpdateProgressBar();
             }
-
-            if (
-                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame
-                && !Navigator.GetManager().HandledBackThisFrame
-            )
-            {
-                // Disable this panel
-                gameObject.SetActive(false);
-            }
         }
 
         void UpdateProgressBar()
@@ -232,10 +227,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        public void OnRecordButtonClicked()
-        /*
-        *   This function also attached to RecordButton OnClick() in Unity
-        */
+        void OnRecordButtonClicked()
         {
             progressBarGO.SetActive(true);
             // Start recording

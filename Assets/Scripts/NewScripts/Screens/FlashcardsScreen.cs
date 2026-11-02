@@ -19,33 +19,34 @@ namespace SaySuomi.Navigation
     {
         public override bool IsTabRoot => true;
 
-        [SerializeField]
-        GameObject deckListPrefab; // Refer to ListCardDeck prefab
+        const string ContentPath = "Scroll View/Viewport/Content";
+        const string SecretFlashCardPath = ContentPath + "/FlashCard_HA_FIN_FIN";
 
-        [SerializeField]
-        GameObject content;
-
-        [SerializeField]
-        GameObject cardDeckPanelGO;
-
-        [SerializeField]
-        GameObject superMemoPanelGO;
-
-        //Create a list of GameObject to store all the card deck in the panel
-        //You need to assign this list manually in the Unity Editor
-        [SerializeField]
+        // Every deck on the panel: the children named in Const.FLASH_CARD_DICT.
         List<GameObject> flashCardsGO = new List<GameObject>();
 
-        [SerializeField]
-        GameObject secretFlashCardGO; // Refer to SecretFlashCard
+        GameObject secretFlashCardGO;
 
         private bool pointerDown;
         private float pointerDownTimer;
 
+        protected override void Awake()
+        {
+            base.Awake();
+
+            foreach (Transform deck in FindObject(ContentPath).transform)
+            {
+                if (Const.FLASH_CARD_DICT.ContainsKey(deck.name))
+                {
+                    flashCardsGO.Add(deck.gameObject);
+                }
+            }
+
+            secretFlashCardGO = FindObject(SecretFlashCardPath);
+        }
+
         void OnEnable()
         {
-            superMemoPanelGO.SetActive(false);
-
             // Check if the user has a secret flash card
             string secretText = PlayerPrefs.GetString(Const.PREF_SECRET_TEXT);
             secretText = secretText.Replace("\r", "").Replace("\n", "").Trim();
@@ -58,6 +59,10 @@ namespace SaySuomi.Navigation
             if (secretText == Secret.SECRET_TEXT)
             {
                 secretFlashCardGO.SetActive(true);
+                if (!flashCardsGO.Contains(secretFlashCardGO))
+                {
+                    flashCardsGO.Add(secretFlashCardGO);
+                }
             }
             else
             {
@@ -74,7 +79,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        public void LoadFlashCards()
+        void LoadFlashCards()
         {
             // Populate the decks into the Panel
             foreach (GameObject flashCardGO in flashCardsGO)
@@ -249,7 +254,15 @@ namespace SaySuomi.Navigation
             Debug.Log("Start study deck: " + deckFileName);
             FlashCard flashCard = SaveData.LoadFlashCard(deckFileName);
             CardQueueManager.GetQueueManager.MakeQueue(flashCard, newCards, dueCards);
-            superMemoPanelGO.SetActive(true);
+
+            // A long press on a finished deck can leave nothing to study, and the session closes
+            // itself as soon as it opens with an empty queue.
+            if (CardQueueManager.GetQueueManager.GetCount() == 0)
+            {
+                return;
+            }
+
+            Navigator.GetManager().Push<FlashcardSessionScreen>();
         }
     }
 }

@@ -2,8 +2,9 @@
 
 How the app moves from the old panels to the new navigation system.
 
-> **Status: in progress.** Code for Stages 1 to 3 is written and compiles. The hierarchy move
-> is still to do. `MainScene` and the original scripts stay untouched until cutover.
+> **Status: in progress.** Stages 1 to 4 are complete and have passed in Unity, with server
+> paths tested against the fake server only. `MainScene` and the original scripts stay untouched
+> until cutover.
 
 | Stage                  | Code     | Scene work                         | Play mode check |
 | ---------------------- | -------- | ---------------------------------- | --------------- |
@@ -11,7 +12,7 @@ How the app moves from the old panels to the new navigation system.
 | 1: Move scripts        | Done     | Done                               | Passed, against the fake server |
 | 2: Core and tabs       | Done     | Done                               | Passed          |
 | 3: Overlays and modals | Done     | None required                      | Passed          |
-| 4: Flashcards, NumberGame | Not started | Sub-screens must leave their tab roots | –     |
+| 4: Flashcards, NumberGame | Done  | Done                               | Passed          |
 | 5: ASA flow            | Not started | Sub-screens must leave their tab roots | –        |
 
 ## Approach
@@ -40,10 +41,9 @@ off its Inspector `OnClick` entries while the app runs, so they don't need clear
 
 ## Inspector fields still to move
 
-`FreestyleScreen`, `FlashcardsScreen` and `AdvancedScreen` became `AppScreen`s in Stage 2 but
-still use their Inspector fields. `AdvancedScreen` moves to code with the ASA flow in Stage 5,
-and `FlashcardsScreen` with Stage 4. `FreestyleScreen` has no stage of its own yet, so it
-needs a pass before cutover.
+`FreestyleScreen` and `AdvancedScreen` became `AppScreen`s in Stage 2 but still use their
+Inspector fields. `AdvancedScreen` moves to code with the ASA flow in Stage 5. `FreestyleScreen`
+has no stage of its own yet, so it needs a pass before cutover.
 
 ## Hierarchy
 
@@ -53,9 +53,13 @@ are already siblings under the root Canvas. Its name doesn't matter to the code.
 `Manager/PopUpManager` can be deleted from the scene. `Navigator` disables it at launch, so
 this is only tidying.
 
-Stages 4 and 5 need more. `SuperMemoPanel`, `NumberGamePanel` and the ASA screens are children
-of tab roots, and pushing a `Screen` layer entry hides the tab root, which would hide its
-children too. They must become siblings of the tab roots before those stages can be tested.
+Stages 4 and 5 need more. Opening a `Screen` layer entry hides the tab root, which would also
+hide its children, so those screens must become siblings of the tab roots. `Navigator` logs an
+error naming any screen that hasn't moved.
+
+For Stage 4, make `CardDeckPanel/SuperMemoPanel` and `AdvancePanel/NumberGamePanel` direct
+children of the root Canvas, placed before `NavigationBar` so the tab bar draws on top. Stage 5
+does the same for the ASA screens.
 
 ## Stage 1 scene update
 
@@ -152,11 +156,12 @@ assigning. `ASATaskScreen` finds the popup's `Title` by path. See
 - **Tab bar:** can no longer be tapped through a modal.
 - **First-run popup on Freestyle:** should appear at cold start. Today it appears to be
   hidden by `PopUpManager.Start`.
-- **Recording:** leaving Freestyle cancels any recording, matching what `ASAPanel.OnDisable`
-  already does. Flashcard sessions and NumberGame follow in Stage 4.
+- **Recording:** leaving Freestyle, a flashcard session or NumberGame cancels any recording,
+  matching what `ASAPanel.OnDisable` already does.
+- **Finished decks:** a long press that leaves nothing to study no longer opens the session.
 - **`OnDisable` timing:** runs when the transition ends, up to 250 ms after navigating.
-- **Listeners:** wired once in `Awake`, which ends the listener stacking in
-  `AdvancePanel.OnEnable`.
+- **Listeners:** Advanced's main buttons no longer stack listeners in `OnEnable`, so one Send
+  tap posts the onboarding form once.
 - **Profile retry:** after a failed profile request, retrying shows the spinner and hides the
   back button. Today the spinner stays hidden and the back button stays visible.
 - **Level change:** the spinner now rotates while the level is sent and the profile reloads.

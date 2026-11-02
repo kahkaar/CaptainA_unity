@@ -2,9 +2,9 @@
 
 How the app moves between screens, overlays and modals.
 
-> **Status: in progress.** Tabs, overlays and app-wide modals are on the new system. Stage 3
-> has not been run in Unity yet. Flashcard sessions, NumberGame and the ASA flow join in later
-> stages, so parts of this describe the finished design.
+> **Status: in progress.** Tabs, overlays, app-wide modals, flashcard sessions and NumberGame
+> are on the new system and have been run in Unity. The ASA flow joins in Stage 5, so parts of
+> this describe the finished design.
 > See [temporary behaviour](#temporary-behaviour).
 
 Related: [Screens](SCREENS.md), [Transitions](TRANSITIONS.md), [Wiring](WIRING.md),
@@ -165,10 +165,10 @@ goes when the listed stage finishes.
 
 | Temporary code                        | Why it exists                                                       | Removed in     |
 | ------------------------------------- | ------------------------------------------------------------------- | -------------- |
-| `ILegacyBackHandler`                  | An old screen that reads Escape keeps the press, so `Navigator` stays out of it | Stages 4 and 5 |
-| `HandledBackThisFrame`                | An old screen below the stack must not also close when the stack took the press | Stages 4 and 5 |
+| `ILegacyBackHandler`                  | An old screen that reads Escape keeps the press, so `Navigator` stays out of it | Stage 5 |
+| `HandledBackThisFrame`                | An old screen below the stack must not also close when the stack took the press | Stage 5 |
 | `AdvancedScreen.HandleBack` and the `OnBackPressed` methods it calls | Back matches the visible back control on Advanced's unmigrated screens, and can't jump to another tab from behind them | Stage 5 |
-| Re-selecting a tab re-runs its lifecycle | Flashcards and Advanced close unmigrated sub-screens in `OnEnable` | Stage 5        |
+| Re-selecting a tab re-runs its lifecycle | Advanced closes its unmigrated sub-screens in `OnEnable` | Stage 5        |
 | Disabling `PopUpManager` at launch    | Its `Start` would hide the instruction popup while it is open       | Cutover        |
 
 `Navigator` runs before other scripts, using `[DefaultExecutionOrder(-100)]`. That way an old

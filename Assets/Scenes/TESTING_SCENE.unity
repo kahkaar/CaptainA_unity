@@ -986,9 +986,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   phonemeScorePrefab: {fileID: 6381064047084870250, guid: 5ca933ef40c59104e8460bb358522464, type: 3}
-  content: {fileID: 437257947}
-  phonemePanel: {fileID: 2127582246}
-  infoPanel: {fileID: 455336493}
 --- !u!1 &22486611
 GameObject:
   m_ObjectHideFlags: 0
@@ -3645,7 +3642,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 685, y: -50}
+  m_AnchoredPosition: {x: 654.76245, y: -50}
   m_SizeDelta: {x: 190, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &108821371
@@ -10503,7 +10500,6 @@ RectTransform:
   - {fileID: 480785147}
   - {fileID: 1149771552}
   - {fileID: 1704925814}
-  - {fileID: 1970130707}
   m_Father: {fileID: 983078108}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -10561,15 +10557,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 986d867514ebed8469f0111399a521ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deckListPrefab: {fileID: 7129993795368182319, guid: 7c95651e74bff814d8388a08ab6399cb, type: 3}
-  content: {fileID: 1014548827}
-  cardDeckPanelGO: {fileID: 430015518}
-  superMemoPanelGO: {fileID: 1970130706}
-  flashCardsGO:
-  - {fileID: 2941687562362410548}
-  - {fileID: 1948459707}
-  - {fileID: 1853835248}
-  secretFlashCardGO: {fileID: 1853835248}
 --- !u!1 &430137483
 GameObject:
   m_ObjectHideFlags: 0
@@ -11495,8 +11482,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f8b687789ac293e4f816c55c58b39cdd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  infoPanel: {fileID: 455336489}
-  secretPanel: {fileID: 2096764788}
 --- !u!1001 &456304805
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16480,7 +16465,7 @@ RectTransform:
   - {fileID: 449531611}
   - {fileID: 1918366999}
   - {fileID: 659432244}
-  m_Father: {fileID: 1164813425}
+  m_Father: {fileID: 983078108}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -16499,17 +16484,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1049368bc36ad6e4d995d6eda60e9c2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  recordButtonGO: {fileID: 582804857}
-  progressBarGO: {fileID: 1657250941}
-  taskType: 0
-  easyToggle: {fileID: 929714577}
-  mediumToggle: {fileID: 1506688291}
-  hardToggle: {fileID: 1029907252}
-  rankToggle: {fileID: 1896361410}
-  newButtonGO: {fileID: 1501365865}
-  numberLabelGO: {fileID: 172323778}
-  errorTextGO: {fileID: 449531610}
-  replayButtonGO: {fileID: 659432239}
 --- !u!1 &647791279
 GameObject:
   m_ObjectHideFlags: 0
@@ -26829,6 +26803,8 @@ RectTransform:
   - {fileID: 430015519}
   - {fileID: 1164813425}
   - {fileID: 19683656}
+  - {fileID: 1970130707}
+  - {fileID: 645107176}
   - {fileID: 215614417}
   - {fileID: 523084017}
   - {fileID: 1769915099}
@@ -27334,7 +27310,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 495, y: -50}
+  m_AnchoredPosition: {x: 464.76242, y: -50}
   m_SizeDelta: {x: 190, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &997665710
@@ -31559,7 +31535,6 @@ RectTransform:
   - {fileID: 1999144880}
   - {fileID: 1670868349}
   - {fileID: 1399056236}
-  - {fileID: 645107176}
   - {fileID: 474211610}
   - {fileID: 8725063672769402916}
   - {fileID: 7781987390033845378}
@@ -31628,7 +31603,6 @@ MonoBehaviour:
   advancePanelGO: {fileID: 1164813424}
   taskPanelGO: {fileID: 5856481543353187569}
   numberGameButtonGO: {fileID: 1399056235}
-  numberGamePanelGO: {fileID: 645107172}
   ASAButtonGO: {fileID: 1670868348}
   ASAPanelGO: {fileID: 474211609}
   consentPopUpGO: {fileID: 1117293438}
@@ -38539,7 +38513,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 305, y: -50}
+  m_AnchoredPosition: {x: 274.76242, y: -50}
   m_SizeDelta: {x: 190, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1450814044
@@ -47959,17 +47933,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0f3c9a372641ec443b6972edccf86082, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  detailScorePanel: {fileID: 1769915098}
-  phonemePanel: {fileID: 2127582246}
-  resultPanelGO: {fileID: 598297988}
-  sampleButtonGO: {fileID: 349715842}
-  replayButtonGO: {fileID: 1627551156}
-  animator: {fileID: 1769915103}
   detailScorePrefab: {fileID: 6179055369318197726, guid: f6d8f455823e95a41aacb353ac208e34, type: 3}
-  detailContent: {fileID: 1592132053}
-  scrollRectWarning: {fileID: 1070706064}
-  scrollRectDetail: {fileID: 1131507135}
-  warningText: {fileID: 785027210}
 --- !u!95 &1769915103
 Animator:
   serializedVersion: 7
@@ -48963,7 +48927,6 @@ MonoBehaviour:
   sampleButtonGO: {fileID: 1810623631}
   detailButtonGO: {fileID: 1800631086}
   illustrationGO: {fileID: 970776230}
-  detailScorePanel: {fileID: 1769915102}
 --- !u!1 &1810623631
 GameObject:
   m_ObjectHideFlags: 0
@@ -53240,7 +53203,7 @@ RectTransform:
   - {fileID: 928252230}
   - {fileID: 1552496471}
   - {fileID: 744232713}
-  m_Father: {fileID: 430015519}
+  m_Father: {fileID: 983078108}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
@@ -53297,30 +53260,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf0752f9285995f419a0d9a5b2efeee9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  frontCardText: {fileID: 156690638}
-  backCardText: {fileID: 263908114}
-  etymoText: {fileID: 1884848384}
-  warningImageFrontGO: {fileID: 653570286}
-  warningImageBackGO: {fileID: 1743011500}
-  intervalText_again: {fileID: 2028663499}
-  intervalText_hard: {fileID: 853590696}
-  intervalText_good: {fileID: 1285590528}
-  intervalText_easy: {fileID: 1185862044}
-  showAnswerGO: {fileID: 1552496470}
-  qualityBarGO: {fileID: 2071007347}
-  recordButtonGO: {fileID: 1189020896}
-  progressBarGO: {fileID: 744232710}
-  errorTextGO: {fileID: 928252227}
-  sampleButtonGO: {fileID: 323766451}
-  replayButtonGO: {fileID: 61625219}
-  autoPlayToggle: {fileID: 1828891352}
-  hideFinnishToggle: {fileID: 1675861931}
-  illustrationGO: {fileID: 2100567663}
-  superMemoPanel: {fileID: 1970130706}
-  cardDeckPanel: {fileID: 430015518}
-  predictionDebugText: {fileID: 146856544}
-  detailScorePanel: {fileID: 1769915102}
-  surveyPopUpPanelGO: {fileID: 1990495844}
 --- !u!1 &1977526020
 GameObject:
   m_ObjectHideFlags: 0
@@ -53703,7 +53642,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 70256a93716d3a14585a6dc378cec2c2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  surveyPopUpPanelGO: {fileID: 1990495844}
 --- !u!1 &1994821941
 GameObject:
   m_ObjectHideFlags: 0
@@ -55177,7 +55115,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 115, y: -50}
+  m_AnchoredPosition: {x: 84.76242, y: -50}
   m_SizeDelta: {x: 190, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2035904193
@@ -56923,8 +56861,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 07ff77f59e109824588d1acf56bed577, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  secretPopUpPanelGO: {fileID: 2096764788}
-  secretTextTMP: {fileID: 2003088293}
 --- !u!114 &2096764791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -57532,13 +57468,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e8df74cc4e025c245904696ff81700bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  phonemePanel: {fileID: 2127582240}
-  explainText: {fileID: 12913045}
-  frontMouth1: {fileID: 1727941859}
-  frontMouth2: {fileID: 68363054}
-  sideMouth1: {fileID: 592756984}
-  sideMouth2: {fileID: 1054781845}
-  creditText: {fileID: 1465469385}
 --- !u!1 &2130678398
 GameObject:
   m_ObjectHideFlags: 0

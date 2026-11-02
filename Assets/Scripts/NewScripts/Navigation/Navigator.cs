@@ -194,6 +194,15 @@ namespace SaySuomi.Navigation
                 return screen;
             }
 
+            // Hiding the tab root would hide this too, leaving a blank screen with no other clue.
+            if (screen.Layer == ScreenLayer.Screen && screen.transform.IsChildOf(CurrentTab.transform))
+            {
+                Debug.LogError(
+                    $"Navigator: {screen.name} is inside the tab root {CurrentTab.name}. "
+                        + "Move it to be a sibling of the tab roots, before the tab bar."
+                );
+            }
+
             AppScreen below = Top;
             below.Prepare();
             screen.Prepare();
@@ -324,9 +333,9 @@ namespace SaySuomi.Navigation
         /// <summary>
         /// Shows a tab root, clearing the stack.
         ///
-        /// Selecting the current tab re-runs its lifecycle, because Flashcards and Advanced
-        /// close their unmigrated sub-screens in OnEnable. After Stage 5 this becomes a no-op
-        /// on the tab's root.
+        /// Selecting the current tab re-runs its lifecycle, because Advanced closes its
+        /// unmigrated sub-screens in OnEnable. After Stage 5 this becomes a no-op on the tab's
+        /// root.
         /// </summary>
         public void SelectTab(AppScreen tabRoot)
         {

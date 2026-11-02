@@ -2,8 +2,8 @@
 
 How navigation is animated. The animations use coroutines, with no extra package.
 
-> **Status: in progress.** The tab crossfade, overlay slide and modal animations are in use,
-> but Stage 3 has not been run in Unity. The screen slide starts with Stage 4.
+> **Status: in progress.** All of these are in use and have been run in Unity. The ASA screens
+> start using them in Stage 5.
 
 ## Animations
 

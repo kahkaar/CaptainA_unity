@@ -21,72 +21,27 @@ namespace SaySuomi.Navigation
     /// <item><description>Optimized review scheduling based on the SuperMemo 2 algorithm.</description></item>
     /// </list>
     /// </summary>
-    public class FlashcardSessionScreen : MonoBehaviour, ILegacyBackHandler
+    public class FlashcardSessionScreen : AppScreen
     {
-        [SerializeField]
         TMPro.TextMeshProUGUI frontCardText; // Front card
-
-        [SerializeField]
         TMPro.TextMeshProUGUI backCardText; // Back card
-
-        [SerializeField]
         TMPro.TextMeshProUGUI etymoText; // Etymology card
-
-        [SerializeField]
         GameObject warningImageFrontGO; // Front card
-
-        [SerializeField]
         GameObject warningImageBackGO; // Back card
-
-        [SerializeField]
         TMPro.TextMeshProUGUI intervalText_again; // Interval text for AGAIN button
-
-        [SerializeField]
         TMPro.TextMeshProUGUI intervalText_hard; // Interval text for HARD button
-
-        [SerializeField]
         TMPro.TextMeshProUGUI intervalText_good; // Interval text for GOOD button
-
-        [SerializeField]
         TMPro.TextMeshProUGUI intervalText_easy; // Interval text for EASY button
-
-        [SerializeField]
         GameObject showAnswerGO; // Show answer GO
-
-        [SerializeField]
         GameObject qualityBarGO; // Quality bar GO
-
-        [SerializeField]
         GameObject recordButtonGO;
-
-        [SerializeField]
         GameObject progressBarGO; // Progress bar
-
-        [SerializeField]
         GameObject errorTextGO;
-
-        [SerializeField]
         GameObject sampleButtonGO; // Replay sample audio
-
-        [SerializeField]
         GameObject replayButtonGO; // Replay recorded audio
-
-        [SerializeField]
         Toggle autoPlayToggle; // Auto play audio
-
-        [SerializeField]
         Toggle hideFinnishToggle; // Hide Finnish text
-
-        [SerializeField]
         GameObject illustrationGO; // Illustration
-
-        [SerializeField]
-        GameObject superMemoPanel;
-
-        [SerializeField]
-        GameObject cardDeckPanel;
-
-        [SerializeField]
         TMPro.TextMeshProUGUI predictionDebugText;
 
         TMPro.TextMeshProUGUI finnishCardText; // The text of the card that is in Finnish
@@ -98,6 +53,44 @@ namespace SaySuomi.Navigation
         private string transcript;
         AudioClip replayClip;
         AudioClip sampleClip;
+
+        protected override void Awake()
+        {
+            base.Awake();
+
+            frontCardText = Find<TMPro.TextMeshProUGUI>("FlashCardText/FrontCardText");
+            backCardText = Find<TMPro.TextMeshProUGUI>("FlashCardText/BackCardText");
+            etymoText = Find<TMPro.TextMeshProUGUI>("FlashCardText/Etymology");
+            warningImageFrontGO = FindObject("FlashCardText/WarningImageFront");
+            warningImageBackGO = FindObject("FlashCardText/WarningImageBack");
+            intervalText_again = Find<TMPro.TextMeshProUGUI>("QualityBar/Again/intervalTextAgain");
+            intervalText_hard = Find<TMPro.TextMeshProUGUI>("QualityBar/Hard/intervalTextHard");
+            intervalText_good = Find<TMPro.TextMeshProUGUI>("QualityBar/Good/intervalTextGood");
+            intervalText_easy = Find<TMPro.TextMeshProUGUI>("QualityBar/Easy/intervalTextEasy");
+            showAnswerGO = FindObject("ShowAnswer");
+            qualityBarGO = FindObject("QualityBar");
+            recordButtonGO = FindObject("RecordButton");
+            progressBarGO = FindObject("ProgressBar");
+            errorTextGO = FindObject("ErrorText");
+            sampleButtonGO = FindObject("FlashCardText/SampleButton");
+            replayButtonGO = FindObject("FlashCardText/ReplayButton");
+            autoPlayToggle = Find<Toggle>("AudioTextOption/AutoPlay");
+            hideFinnishToggle = Find<Toggle>("AudioTextOption/HideText");
+            illustrationGO = FindObject("Illustration");
+            predictionDebugText = Find<TMPro.TextMeshProUGUI>("PredictionText");
+
+            ButtonWiring.Replace(Find<Button>("ShowAnswer"), DisplayAnswer);
+            ButtonWiring.Replace(Find<Button>("RecordButton"), OnRecordButtonClick);
+            ButtonWiring.Replace(Find<Button>("QualityBar/Again"), () => OnSubmitButtonClick(0));
+            ButtonWiring.Replace(Find<Button>("QualityBar/Hard"), () => OnSubmitButtonClick(3));
+            ButtonWiring.Replace(Find<Button>("QualityBar/Good"), () => OnSubmitButtonClick(4));
+            ButtonWiring.Replace(Find<Button>("QualityBar/Easy"), () => OnSubmitButtonClick(5));
+
+            ButtonWiring.SwitchOffInspectorEntries(autoPlayToggle.onValueChanged);
+            autoPlayToggle.onValueChanged.AddListener(OnAutoPlayToogle);
+            ButtonWiring.SwitchOffInspectorEntries(hideFinnishToggle.onValueChanged);
+            hideFinnishToggle.onValueChanged.AddListener(OnHideFinnishToogle);
+        }
 
         void OnEnable()
         {
@@ -117,23 +110,30 @@ namespace SaySuomi.Navigation
 
         void OnDisable()
         {
+            // The progress bar is only up while recording. Without this the microphone keeps
+            // running behind the next screen, with nothing left on screen to stop it.
+            if (progressBarGO != null && progressBarGO.activeSelf)
+            {
+                progressBarGO.SetActive(false);
+                recordButtonGO.SetActive(true);
+
+                AudioManager audioManager = AudioManager.GetManager();
+                if (audioManager != null)
+                {
+                    audioManager.CancelRecording();
+                }
+            }
+
             // Clear the answer from previous card
             clearOldCard();
             // Clear the cardqueue
             CardQueueManager.GetQueueManager.ClearQueue();
         }
 
-        public void FinnishFlashCard()
+        // OnDisable clears the session, and FlashcardsScreen refreshes its counts in OnEnable.
+        void FinnishFlashCard()
         {
-            // Clear the answer from previous card
-            clearOldCard();
-            // Clear the cardqueue
-            CardQueueManager.GetQueueManager.ClearQueue();
-
-            // toggle the panel to force update the flashcard info
-            FlashcardsScreen cardDeckPanel = GameObject.FindAnyObjectByType<FlashcardsScreen>();
-            cardDeckPanel.LoadFlashCards();
-            superMemoPanel.SetActive(false);
+            Navigator.GetManager().PopTo<FlashcardsScreen>();
         }
 
         public void ShowNextCard()
@@ -194,9 +194,6 @@ namespace SaySuomi.Navigation
         }
 
         public void DisplayAnswer()
-        /*
-        *   This function also attached to ShowAnswer OnClick() in Unity
-        */
         {
             if (currentCard.frontLanguage == "FI")
             {
@@ -377,7 +374,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        public void OnSubmitButtonClick(int quality)
+        void OnSubmitButtonClick(int quality)
         /*
         *   Quality is a number from 0 to 5, where 0 means complete blackout and 5 means perfect recall.
         *   https://www.supermemo.com/english/ol/sm2.htm
@@ -386,7 +383,7 @@ namespace SaySuomi.Navigation
         *   I'm not sure Anki algorithm use 0 to 3 or 0 to 5, but I think it's 0 to 3.
         *   I used [0,3,4,5] in CaptainA because the formular is based on SuperMemo 2 algorithm.
         *
-        *   The quality is from the OnClick event of the button in the FlashcardSessionScreen.
+        *   The quality is set per button in Awake.
         */
         {
             (float newInterval, float newEaseFactor) = cardManager.GetCarNewIntervalEase(
@@ -427,10 +424,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        public void OnRecordButtonClick()
-        /*
-        *   This function also attached to RecordButton OnClick() in Unity
-        */
+        void OnRecordButtonClick()
         {
             transcript =
                 currentCard.frontLanguage == "FI" ? currentCard.frontText : currentCard.backText;
@@ -458,18 +452,12 @@ namespace SaySuomi.Navigation
             }
         }
 
-        public void OnAutoPlayToogle(bool isAutoPlay)
-        /*
-        *   This function also attached to AutoPlay OnValueChanged in Unity
-        */
+        void OnAutoPlayToogle(bool isAutoPlay)
         {
             cardManager.SetFlashCardAutoPlay(isAutoPlay);
         }
 
-        public void OnHideFinnishToogle(bool isHideText)
-        /*
-        *   This function also attached to AutoPlay OnValueChanged in Unity
-        */
+        void OnHideFinnishToogle(bool isHideText)
         {
             cardManager.SetFlashCardHideText(isHideText);
         }
@@ -503,14 +491,6 @@ namespace SaySuomi.Navigation
             if (progressBarGO.activeSelf == true)
             {
                 UpdateProgressBar();
-            }
-
-            if (
-                UnityEngine.InputSystem.Keyboard.current.escapeKey.wasPressedThisFrame
-                && !Navigator.GetManager().HandledBackThisFrame
-            )
-            {
-                FinnishFlashCard();
             }
         }
 

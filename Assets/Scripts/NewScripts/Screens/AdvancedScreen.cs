@@ -66,9 +66,6 @@ namespace SaySuomi.Navigation
         GameObject numberGameButtonGO;
 
         [SerializeField]
-        GameObject numberGamePanelGO;
-
-        [SerializeField]
         GameObject ASAButtonGO;
 
         [SerializeField]
@@ -138,10 +135,10 @@ namespace SaySuomi.Navigation
             refuseButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
             acceptButtonGO.GetComponent<Button>().onClick.RemoveAllListeners();
 
-            numberGameButtonGO
-                .GetComponent<Button>()
-                .onClick.AddListener(() => OnNumberGameButtonClicked());
-            ASAButtonGO.GetComponent<Button>().onClick.AddListener(() => OnASAButtonClicked());
+            // Rewire, because this screen now re-enables each time something closes above it. A
+            // plain AddListener would stack, and one Send tap would post the form several times.
+            ButtonUtils.Rewire(numberGameButtonGO, () => OnNumberGameButtonClicked());
+            ButtonUtils.Rewire(ASAButtonGO, OnASAButtonClicked);
 
             acceptButtonGO.GetComponent<Button>().onClick.AddListener(() => AcceptConsent());
             refuseButtonGO.GetComponent<Button>().onClick.AddListener(() => RefuseConsent());
@@ -156,7 +153,7 @@ namespace SaySuomi.Navigation
                 );
             }
 
-            sendButtonGO.GetComponent<Button>().onClick.AddListener(() => GetUserInput());
+            ButtonUtils.Rewire(sendButtonGO, GetUserInput);
 
             errorMessage.enabled = false;
 
@@ -166,7 +163,6 @@ namespace SaySuomi.Navigation
             // to guard the assessment.
 
             // Set the proper panels and game objects as inactive at first
-            numberGamePanelGO.SetActive(false);
             ASAPanelGO.SetActive(false);
             feedbackPanelGO.SetActive(false);
             taskPanelGO.SetActive(false);
@@ -192,12 +188,7 @@ namespace SaySuomi.Navigation
         public void OnNumberGameButtonClicked(NGTaskType taskType = NGTaskType.EASY)
         {
             // Go to number game (not very polished or functional for now)
-            numberGamePanelGO.SetActive(true);
-            NumberGameScreen numberGamePanel = numberGamePanelGO.GetComponent<NumberGameScreen>();
-            if (numberGamePanel != null)
-            {
-                numberGamePanel.SetTaskType(taskType);
-            }
+            Navigator.GetManager().Push<NumberGameScreen>().SetTaskType(taskType);
         }
 
         public void OnASAButtonClicked()
@@ -428,7 +419,6 @@ namespace SaySuomi.Navigation
         void OnDisable()
         // Need to destroy all game objects in the list to avoid creating a duplicate scorelist
         {
-            numberGamePanelGO.SetActive(false);
             ASAPanelGO.SetActive(false);
         }
     }
