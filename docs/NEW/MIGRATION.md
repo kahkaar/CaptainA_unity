@@ -17,6 +17,7 @@ How the app moves from the old panels to the new navigation system.
 | Freestyle code wiring                          | Done                 | None       | Not run                         |
 | Launch binding, shared back button             | Done                 | None       | Not run                         |
 | Language dropdown and text fitting from `main` | Done                 | Waiting    | Not run                         |
+| Task 6 from `main`                             | Done                 | Waiting    | Not run                         |
 | 6: Update the documentation                    | Done                 | –          | –                               |
 | 7: Cutover                                     | Waiting for go-ahead | –          | –                               |
 
@@ -76,6 +77,37 @@ later. No script finds them by path, but check for Inspector references first:
 After cutover, rename the serialized fields that still have older names, such as a `GO` suffix or
 "popup".
 
+### Matching the look of `MainScene`
+
+`TESTING_SCENE` was copied before the text fitting in `825c97f` reached `MainScene`. **Tools > Match
+MainScene Look** copies those values across, and can also restore the older modal layout. It only
+runs with `TESTING_SCENE` open, changes nothing if any object is missing, and does not save the
+scene. One undo reverts a whole run.
+
+| Group          | Default | What it changes                                                        |
+| -------------- | ------- | ---------------------------------------------------------------------- |
+| Text           | On      | Font sizes, alignment and the `InsufficientDataText` material          |
+| Screens        | On      | Positions and sizes inside the screens                                 |
+| Modal contents | On      | Positions and sizes inside the modals                                  |
+| Modal layout   | Off     | Modal positions and sizes. This reverts the modal changes in `666ce4f` |
+| Dim and dot    | Off     | The `ModalDim` colour and the position of the new feature dot          |
+
+Layout groups recalculate the other differences. The tool does not restore a separate dim strength
+for each modal, because `ModalDim` has one colour.
+
+Delete `MainSceneLookWindow` once this is done.
+
+### Task 6 scene update
+
+The experimental task from `6889c94` is ported to the scripts. `TESTING_SCENE` still needs:
+
+1. Duplicate `Task5` under `ASATaskListScreen`, name it `Task6`, and keep it directly after `Task5`.
+2. Set its Pos Y to -1216, and set the entry on `ASAText`'s `LocalizeStringEvent` to
+   `taskPanel.task6Title`.
+3. Add it as the last entry of `ASATaskListScreen`'s Task Buttons.
+4. Add a sixth entry to `ASATaskScreen`'s Tasks, with no image, a recording time of 60, and the
+   text `ASAPanel.task6Text`.
+
 ## Stage 1 scene update
 
 Copying a script gives it a new GUID, so `TESTING_SCENE` has to point at the copies. A
@@ -103,7 +135,7 @@ what the real one sends:
 - **Pronunciation:** a score appears in Freestyle and on a flashcard, including the warning icon.
 - **Number game:** a result appears.
 - **ASA:** onboarding creates a user, a send reaches results, and the loading title moves to
-  completed. Repeat with a second task.
+  completed. Repeat with a second task, and with task 6, which has no picture.
 - **Profile:** opens with stats, retries after a failure, and reloads after a level change.
 - **Survey:** appears on every 50th successful recording.
 - **Account deletion:** confirmed by the server, then the onboarding gate runs again.

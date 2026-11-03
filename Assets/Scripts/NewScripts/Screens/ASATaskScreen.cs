@@ -22,6 +22,10 @@ namespace SaySuomi.Navigation
         [SerializeField]
         private Image taskImageGO;
 
+        [Tooltip("Pos Y of the task text when the task has no picture.")]
+        [SerializeField]
+        private float taskTextPosYWithoutImage = 0f;
+
         [Tooltip("Also the template for the back button on screens that have none of their own.")]
         [SerializeField]
         private Button taskBackButton;
@@ -96,6 +100,10 @@ namespace SaySuomi.Navigation
 
         private LocalizedTextHelper loadingErrorHelper;
 
+        // The scene's own position for the text, read on the first DisplayTask so tasks with a
+        // picture are put back exactly where the scene has them.
+        private float? taskTextPosYWithImage;
+
         private bool isRecording = false;
 
         private bool isReplaying = false;
@@ -107,8 +115,8 @@ namespace SaySuomi.Navigation
         /// <summary>
         /// The id the DTA server knows this task by. Its task ids start at 1
         /// (inference/assets/task_id_map.json: 1 = the friend borrowing money, 2 = cannot come
-        /// to work, ... 5), while currentTaskSelected is an index into the tasks array above
-        /// and starts at 0.
+        /// to work, ... 5, and 6 = the experimental "An Important Place", DTA task 04_a), while
+        /// currentTaskSelected is an index into the tasks array above and starts at 0.
         ///
         /// Sending the index unshifted made task 1 fail with 400 "Unknown task_id 0" and -
         /// far worse - scored tasks 2 to 5 against the PREVIOUS task's prompt, which returns
@@ -242,6 +250,15 @@ namespace SaySuomi.Navigation
             {
                 taskImageGO.gameObject.SetActive(false);
             }
+
+            // The text sits below the picture. Without one that gap is wasted, and a long prompt
+            // runs into the record button. Only task 6 has no picture today.
+            RectTransform textRect = taskTextGO.rectTransform;
+            taskTextPosYWithImage ??= textRect.anchoredPosition.y;
+            textRect.anchoredPosition = new Vector2(
+                textRect.anchoredPosition.x,
+                task.taskImage != null ? taskTextPosYWithImage.Value : taskTextPosYWithoutImage
+            );
         }
 
         public void OnRecordButtonClicked()

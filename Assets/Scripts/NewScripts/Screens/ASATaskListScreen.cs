@@ -219,7 +219,7 @@ namespace SaySuomi.Navigation
             PlayerPrefs.Save();
         }
 
-        // The five task buttons differ only by index.
+        // The task buttons differ only by index.
         private void OpenTask(int taskIndex)
         {
             Navigator.GetManager().Push<ASATaskScreen>().DisplayTask(taskIndex);

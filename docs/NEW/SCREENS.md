@@ -86,7 +86,7 @@ flowchart TD
     form -- "Back" --> advanced
 
     list -- "Back" --> advanced
-    list -- "Task 1 to 5" --> task["Task"]
+    list -- "Task 1 to 6" --> task["Task"]
     list -. "Automatic after 10 tasks" .-> overall["Overall feedback (modal)"]
     list -- "Profile button" --> profileloading["Profile loading (modal)"]
 
