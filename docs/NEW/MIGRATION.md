@@ -6,18 +6,19 @@ How the app moves from the old panels to the new navigation system.
 > tested against the fake server only. `MainScene` and the original scripts stay untouched until
 > cutover.
 
-| Stage                  | Code     | Scene work | Play mode check                 |
-| ---------------------- | -------- | ---------- | ------------------------------- |
-| 0: Documentation       | Done     | –          | –                               |
-| 1: Move scripts        | Done     | Done       | Passed, against the fake server |
-| 2: Core and tabs       | Done     | Done       | Passed                          |
-| 3: Overlays and modals | Done     | None       | Passed                          |
-| 4: Flashcards, NumberGame | Done  | Done       | Passed                          |
-| 5: ASA flow            | Done     | Done       | Passed                          |
-| Freestyle code wiring  | Done     | None       | Not run                         |
-| Launch binding, shared back button | Done | None | Not run                         |
-| 6: Update the documentation | Done | –         | –                               |
-| 7: Cutover             | Waiting for go-ahead | – | –                            |
+| Stage                                          | Code                 | Scene work | Play mode check                 |
+| ---------------------------------------------- | -------------------- | ---------- | ------------------------------- |
+| 0: Documentation                               | Done                 | –          | –                               |
+| 1: Move scripts                                | Done                 | Done       | Passed, against the fake server |
+| 2: Core and tabs                               | Done                 | Done       | Passed                          |
+| 3: Overlays and modals                         | Done                 | None       | Passed                          |
+| 4: Flashcards, NumberGame                      | Done                 | Done       | Passed                          |
+| 5: ASA flow                                    | Done                 | Done       | Passed                          |
+| Freestyle code wiring                          | Done                 | None       | Not run                         |
+| Launch binding, shared back button             | Done                 | None       | Not run                         |
+| Language dropdown and text fitting from `main` | Done                 | Waiting    | Not run                         |
+| 6: Update the documentation                    | Done                 | –          | –                               |
+| 7: Cutover                                     | Waiting for go-ahead | –          | –                               |
 
 ## Approach
 
@@ -95,28 +96,28 @@ what the real one sends:
 
 ## Class mapping
 
-| Old                           | New                      | Layer    |
-| ----------------------------- | ------------------------ | -------- |
-| `MainPanel`                   | `FreestyleScreen`        | Tab root |
-| `CardDeckPanel`               | `FlashcardsScreen`       | Tab root |
-| `AdvancePanel`                | `AdvancedScreen`         | Tab root |
-| `ProfilePanel`                | `ProgressScreen`         | Tab root |
-| `SuperMemoPanel`              | `FlashcardSessionScreen` | Screen   |
-| `NumberGamePanel`             | `NumberGameScreen`       | Screen   |
-| `TaskPanel`                   | `ASATaskListScreen`      | Screen   |
-| `ASAPanel`                    | `ASATaskScreen`          | Screen   |
-| `FeedbackPanel`               | `ASAResultsScreen`       | Screen   |
-| `ASAProfilePanel`             | `ASAProfileScreen`       | Screen   |
-| `DetailScorePanel`            | `ScoreDetailScreen`      | Overlay  |
-| `PhonemePanel`                | `PhonemeScreen`          | Overlay  |
-| `InfoPanel`                   | `InfoScreen`             | Overlay  |
-| `SurveyPopUpPanel`            | `SurveyModal`            | Modal    |
-| `SecretPopUpPanel`            | `SecretModal`            | Modal    |
-| `PopUpManager` + `PopUpPanel` | `InstructionModal`       | Modal    |
-| `NavigationBar`               | `TabBar`                 | –        |
-| `NetworkManager`              | `NetworkManager` (copy)  | –        |
-| `AudioManager`                | `AudioManager` (copy)    | –        |
-| `FeedbackAutoSend`            | `FeedbackAutoSend` (copy) | –       |
+| Old                           | New                       | Layer    |
+| ----------------------------- | ------------------------- | -------- |
+| `MainPanel`                   | `FreestyleScreen`         | Tab root |
+| `CardDeckPanel`               | `FlashcardsScreen`        | Tab root |
+| `AdvancePanel`                | `AdvancedScreen`          | Tab root |
+| `ProfilePanel`                | `ProgressScreen`          | Tab root |
+| `SuperMemoPanel`              | `FlashcardSessionScreen`  | Screen   |
+| `NumberGamePanel`             | `NumberGameScreen`        | Screen   |
+| `TaskPanel`                   | `ASATaskListScreen`       | Screen   |
+| `ASAPanel`                    | `ASATaskScreen`           | Screen   |
+| `FeedbackPanel`               | `ASAResultsScreen`        | Screen   |
+| `ASAProfilePanel`             | `ASAProfileScreen`        | Screen   |
+| `DetailScorePanel`            | `ScoreDetailScreen`       | Overlay  |
+| `PhonemePanel`                | `PhonemeScreen`           | Overlay  |
+| `InfoPanel`                   | `InfoScreen`              | Overlay  |
+| `SurveyPopUpPanel`            | `SurveyModal`             | Modal    |
+| `SecretPopUpPanel`            | `SecretModal`             | Modal    |
+| `PopUpManager` + `PopUpPanel` | `InstructionModal`        | Modal    |
+| `NavigationBar`               | `TabBar`                  | –        |
+| `NetworkManager`              | `NetworkManager` (copy)   | –        |
+| `AudioManager`                | `AudioManager` (copy)     | –        |
+| `FeedbackAutoSend`            | `FeedbackAutoSend` (copy) | –        |
 
 These scripts all move together because they depend on each other. For example, the old
 `NetworkManager` holds fields typed to four panels, and several panels call
@@ -128,10 +129,10 @@ code calls `NetworkManager`, which would otherwise resolve to the old class.
 The copy's Inspector fields, UI types and screen references are gone, and the screens took
 over that work. The new supporting classes are:
 
-| Class                | Role                                                           |
-| -------------------- | -------------------------------------------------------------- |
-| `ServerError`        | Status code and server wording from a failed request           |
-| `ServerNotices`      | Localized request text, defined in code from the same table entries |
+| Class                | Role                                                                   |
+| -------------------- | ---------------------------------------------------------------------- |
+| `ServerError`        | Status code and server wording from a failed request                   |
+| `ServerNotices`      | Localized request text, defined in code from the same table entries    |
 | `BackgroundFormData` | Moved out of `AdvancedScreen` so `NetworkManager` needs no screen type |
 
 See [Network responses](NAVIGATION.md#network-responses).
@@ -172,6 +173,9 @@ See [Network responses](NAVIGATION.md#network-responses).
 - **Level change:** the spinner now rotates while the level is sent and the profile reloads.
 - **Number game failure:** reports through its callback and logs an error, instead of throwing
   inside the coroutine. The learner sees the same message.
+- **Language dropdown:** rebuilds each time Advanced is shown, including on return from a screen
+  above it. Today `AdvancePanel` stays active under those screens, so it only rebuilds when the
+  tab opens.
 
 ## Known gaps carried over
 
@@ -182,6 +186,9 @@ These match the old code and were left as they were:
 - **Onboarding gate:** consent missing with the form marked complete has no branch, so the ASA
   button does nothing in that state.
 - **Instruction popup:** one reusable popup with no queue, so the last caller wins.
+- **Saved language:** only applied when Advanced opens, so after a restart the app uses the
+  phone's language until then. If no language was ever picked, opening Advanced switches the app
+  to English.
 - **User behaviour events:** still not called from the screens. See
   [the wiring notes](USER_BEHAVIOUR.md#wiring).
 

@@ -8,7 +8,7 @@ Every screen and modal in the app, and how they connect.
 | ------------------------ | --------------- | ----------------------------- |
 | `FreestyleScreen`        | Tab root        | Freestyle pronunciation       |
 | `FlashcardsScreen`       | Tab root        | Flashcard deck list           |
-| `AdvancedScreen`         | Tab root        | Advanced home                 |
+| `AdvancedScreen`         | Tab root        | Advanced home and language    |
 | `ProgressScreen`         | Tab root        | Phoneme progress              |
 | `FlashcardSessionScreen` | Screen          | A flashcard session           |
 | `NumberGameScreen`       | Screen          | Number game                   |

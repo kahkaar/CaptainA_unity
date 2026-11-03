@@ -1,8 +1,11 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Localization;
+using UnityEngine.Localization.Settings;
 using UnityEngine.UI;
 
 namespace SaySuomi.Navigation
@@ -13,6 +16,7 @@ namespace SaySuomi.Navigation
 
         ModalScreen consentModal;
         ModalScreen backgroundModal;
+
         [SerializeField]
         Button acceptButton;
 
@@ -29,14 +33,19 @@ namespace SaySuomi.Navigation
         // optional - leaving it blank is a valid answer.
         [SerializeField]
         TMP_InputField languageOtherField;
+
         [SerializeField]
         TMP_InputField motherTongueOptions;
+
         [SerializeField]
         TextMeshProUGUI errorMessage;
+
         [SerializeField]
         ToggleGroup genderOptions;
+
         [SerializeField]
         ToggleGroup ageOptions;
+
         [SerializeField]
         ToggleGroup selfAssessmentOptions;
 
@@ -58,9 +67,13 @@ namespace SaySuomi.Navigation
         [SerializeField]
         GameObject backgroundPopUpGO;
 
+        [SerializeField]
+        TMP_Dropdown languageDropdown;
+
+        readonly List<Locale> dropdownLocales = new();
+
         protected override void Bind()
         {
-
             ButtonWiring.Replace(numberGameButton, () => OnNumberGameButtonClicked());
             ButtonWiring.Replace(asaButton, ProceedToASA);
             ButtonWiring.Replace(acceptButton, AcceptConsent);
@@ -75,10 +88,15 @@ namespace SaySuomi.Navigation
 
             consentModal = ModalScreen.Attach(consentPopUpGO);
             backgroundModal = ModalScreen.Attach(backgroundPopUpGO);
+
+            languageDropdown.onValueChanged.AddListener(SwitchLanguage);
         }
 
         void OnEnable()
         {
+            languageDropdown.gameObject.SetActive(false);
+            StartCoroutine(InitializeLanguageDropdown());
+
             errorMessage.enabled = false;
 
             // Opening the tab is what clears its new-feature dot - the learner has now seen
@@ -147,7 +165,9 @@ namespace SaySuomi.Navigation
 
         void LinkButtonPressed()
         {
-            Application.OpenURL("https://aalto-speech.github.io/privacy-notices/saysuomi-privacy.html");
+            Application.OpenURL(
+                "https://aalto-speech.github.io/privacy-notices/saysuomi-privacy.html"
+            );
         }
 
         void AcceptConsent()
@@ -304,6 +324,80 @@ namespace SaySuomi.Navigation
             }
             errorMessage.enabled = true;
             return false;
+        }
+
+        IEnumerator InitializeLanguageDropdown()
+        {
+            yield return LocalizationSettings.InitializationOperation;
+
+            var locales = LocalizationSettings.AvailableLocales.Locales;
+            var languageOptions = new List<string>();
+            dropdownLocales.Clear();
+
+            string selectedLanguage = PlayerPrefs.GetString("SelectedLanguage", "en");
+            int currentIndex = -1;
+
+            for (int i = 0; i < locales.Count; i++)
+            {
+                // Temporarily disable Bangla and Persian
+                if (locales[i].Identifier.Code == "bn" || locales[i].Identifier.Code == "fa")
+                {
+                    continue;
+                }
+
+                languageOptions.Add(
+                    locales[i].Identifier.Code switch
+                    {
+                        // "bn" => "Bangla",
+                        "zh" => "Chinese",
+                        "en" => "English",
+                        "et" => "Estonian",
+                        "fi" => "Finnish",
+                        // "fa" => "Persian",
+                        "ru" => "Russian",
+                        "sv" => "Swedish",
+                        "uk" => "Ukrainian",
+                        "vi" => "Vietnamese",
+                        _ => locales[i].name,
+                    }
+                );
+
+                dropdownLocales.Add(locales[i]);
+
+                if (locales[i].Identifier.Code == selectedLanguage)
+                {
+                    currentIndex = languageOptions.Count - 1;
+                }
+            }
+
+            if (currentIndex < 0)
+            {
+                currentIndex = dropdownLocales.FindIndex(locale => locale.Identifier.Code == "en");
+            }
+
+            if (currentIndex < 0)
+            {
+                currentIndex = 0;
+            }
+
+            LocalizationSettings.SelectedLocale = dropdownLocales[currentIndex];
+
+            languageDropdown.ClearOptions();
+            languageDropdown.AddOptions(languageOptions);
+
+            languageDropdown.SetValueWithoutNotify(currentIndex);
+            languageDropdown.RefreshShownValue();
+
+            languageDropdown.gameObject.SetActive(true);
+        }
+
+        void SwitchLanguage(int currentIndex)
+        {
+            var locale = dropdownLocales[currentIndex];
+            LocalizationSettings.SelectedLocale = locale;
+
+            PlayerPrefs.SetString("SelectedLanguage", locale.Identifier.Code);
+            PlayerPrefs.Save();
         }
     }
 }
