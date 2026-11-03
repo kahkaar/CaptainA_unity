@@ -33,6 +33,18 @@ To go back to a real backend, restore your real values in `Secret.cs`.
 To test a first launch, use **Tools > Delete All PlayerPrefs** in the Editor. Fake server users
 are separate: restarting the server forgets them.
 
+## Running it from Unity
+
+**Tools > Fake Server** opens a window that starts and stops the server and changes its settings
+while it runs, so no terminal or browser is needed. It runs the server on the default port, using
+the Python command shown in the window. Change that command if `python` is not the right one on
+your computer.
+
+A server started from this window stops when Unity closes. One started from a terminal keeps
+running, but the window can still change its settings and stop it.
+
+The window warns you if `Secret.cs` does not point at the server.
+
 ## Testing scenarios
 
 Change behaviour while the app runs by opening a URL in a browser. The response shows the
@@ -42,7 +54,7 @@ current settings, and <http://127.0.0.1:8765/__fake/> shows them without changin
 | ----------------------------- | -------------------------------------------- |
 | A request failing             | `fail=assess:503`                            |
 | Several failures              | `fail=assess:503,profile:500`                |
-| Slow responses and spinners   | `delay=5`                                    |
+| How long responses take       | `delay=1-3`, `delay=5` or `delay=0`          |
 | Off-topic or partial answers  | `relevance=off_topic` or `relevance=partial` |
 | No relevance check ran        | `relevance=none`                             |
 | Advance button on the profile | `profile=top`                                |
@@ -52,6 +64,11 @@ current settings, and <http://127.0.0.1:8765/__fake/> shows them without changin
 | Rank unavailable              | `profile=unavailable`                        |
 | Pronunciation warnings        | `warning=0,1`                                |
 | Back to normal                | `reset=1`                                    |
+
+Every request takes 2 to 5 seconds by default, so loading states can be seen. This includes requests
+set to fail. Use `delay=0` to turn it off.
+
+To stop the server, open <http://127.0.0.1:8765/__fake/stop>.
 
 Route names for `fail` are `assess`, `onboarding`, `feedback`, `profile`, `level`, `events`,
 `delete`, `mdd` and `number`.

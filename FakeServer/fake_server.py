@@ -9,6 +9,7 @@ parses, and it is not a copy of the real servers. Guide: docs/NEW/FAKE_SERVER.md
 
 import argparse
 import json
+import random
 import re
 import threading
 import time
@@ -30,6 +31,9 @@ ROUTES = {
 }
 RELEVANCE = ("on_topic", "partial", "off_topic", "none")
 PROFILES = ("ok", "top", "bottom", "insufficient", "cohort", "unavailable")
+
+# Seconds a response takes, so loading states stay on screen long enough to be seen.
+DEFAULT_DELAY = (2.0, 5.0)
 
 # Feedback about one recording must name it, and other feedback must not (the server's 422).
 ASSESSMENT_FEEDBACK = {"self_assessment", "result_accuracy", "result_understanding"}
@@ -68,7 +72,7 @@ class State:
         self.next_assessment_id = 1
         self.events_received = 0
         self.fail = {}
-        self.delay = 0.0
+        self.delay = DEFAULT_DELAY
         self.relevance = "on_topic"
         self.profile = "ok"
         self.warning = []
@@ -92,7 +96,7 @@ class State:
             if key == "fail":
                 changes[key] = parse_fail(value)
             elif key == "delay":
-                changes[key] = float(value)
+                changes[key] = parse_delay(value)
             elif key == "relevance":
                 changes[key] = choice(value, RELEVANCE, key)
             elif key == "profile":
@@ -100,7 +104,13 @@ class State:
             elif key == "warning":
                 changes[key] = [int(w) for w in value.split(",") if w and w != "none"]
             elif key == "reset":
-                changes.update(fail={}, delay=0.0, relevance="on_topic", profile="ok", warning=[])
+                changes.update(
+                    fail={},
+                    delay=DEFAULT_DELAY,
+                    relevance="on_topic",
+                    profile="ok",
+                    warning=[],
+                )
             else:
                 raise ValueError(f"Unknown setting: {key}")
         for key, value in changes.items():
@@ -125,6 +135,16 @@ def parse_fail(text):
             raise ValueError(f"Unknown route {route!r}. Routes: {', '.join(sorted(known))}")
         fail[route] = int(status)
     return fail
+
+
+def parse_delay(text):
+    """Reads '2-5' as a range of seconds, or a single number such as '0' as a fixed wait."""
+    low, _, high = text.partition("-")
+    low = float(low)
+    high = float(high) if high else low
+    if low < 0 or high < low:
+        raise ValueError("delay must be a number or a range such as 2-5")
+    return low, high
 
 
 def parse_form(content_type, body):
@@ -415,6 +435,11 @@ class Handler(BaseHTTPRequestHandler):
         url = urlsplit(self.path)
         with self.state.lock:
             try:
+                if url.path == "/__fake/stop":
+                    self.reply(200, {"stopping": True})
+                    # On another thread, because shutdown waits for this request to finish.
+                    threading.Thread(target=self.server.shutdown, daemon=True).start()
+                    return
                 if url.path == "/__fake/set":
                     query = {k: v[0] for k, v in parse_qs(url.query, keep_blank_values=True).items()}
                     self.state.apply(query)
@@ -436,8 +461,9 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         # Outside the lock, so a slow response does not hold up other requests.
-        if self.state.delay:
-            time.sleep(self.state.delay)
+        wait = random.uniform(*self.state.delay)
+        if wait:
+            time.sleep(wait)
 
         with self.state.lock:
             try:
@@ -505,7 +531,7 @@ def parse_args():
     parser.add_argument("--delete-key", default="fake-delete-key")
     parser.add_argument("--strict-users", action="store_true", help="answer 404 for guids that have not onboarded")
     parser.add_argument("--fail", default="", help="for example assess:503,profile:500")
-    parser.add_argument("--delay", type=float, default=0.0, help="seconds to wait before each response")
+    parser.add_argument("--delay", default="2-5", help="seconds to wait before each response, such as 2-5 or 0")
     parser.add_argument("--relevance", choices=RELEVANCE, default="on_topic")
     parser.add_argument("--profile", choices=PROFILES, default="ok")
     return parser.parse_args()
@@ -519,7 +545,14 @@ def main():
         return
 
     state = State(args.delete_key, args.strict_users)
-    state.apply({"fail": args.fail, "delay": str(args.delay), "relevance": args.relevance, "profile": args.profile})
+    state.apply(
+        {
+            "fail": args.fail,
+            "delay": args.delay,
+            "relevance": args.relevance,
+            "profile": args.profile,
+        }
+    )
 
     server = make_server(args.host, args.port, state)
     print(f"Fake server on http://{args.host}:{args.port}  (Ctrl+C to stop)", flush=True)

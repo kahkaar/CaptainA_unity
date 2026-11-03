@@ -9,8 +9,9 @@ import unittest
 import urllib.error
 import urllib.parse
 import urllib.request
+from unittest import mock
 
-from fake_server import API, ROUTES, State, make_server, secret_lines
+from fake_server import API, DEFAULT_DELAY, ROUTES, State, make_server, secret_lines
 
 BOUNDARY = "testBoundary123"
 
@@ -34,10 +35,12 @@ def multipart(fields, filename="answer.wav"):
 class FakeServerTest(unittest.TestCase):
     def setUp(self):
         self.state = State()
+        self.state.delay = (0.0, 0.0)  # Tests are not waiting on loading states.
         self.server = make_server("127.0.0.1", 0, self.state)
         self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
         self.server.RequestHandlerClass.log_message = lambda *args: None
-        threading.Thread(target=self.server.serve_forever, daemon=True).start()
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        self.thread.start()
 
     def tearDown(self):
         self.server.shutdown()
@@ -183,10 +186,37 @@ class FakeServerTest(unittest.TestCase):
         self.control("reset=1")
         self.assertEqual(self.upload(f"{API}/speech/assess", {"guid": "g", "task_id": 1})[0], 200)
 
+    def test_requests_wait_within_the_range_but_controls_do_not(self):
+        self.state.delay = DEFAULT_DELAY
+        with mock.patch("fake_server.time.sleep") as sleep:
+            self.upload(f"{API}/speech/assess", {"guid": "u", "task_id": "1"})
+            sleep.assert_called_once()
+            self.assertTrue(DEFAULT_DELAY[0] <= sleep.call_args.args[0] <= DEFAULT_DELAY[1])
+
+            sleep.reset_mock()
+            self.form("POST", f"{API}/analytics/comparison", {"guid": "u"})
+            sleep.assert_called_once()
+
+            sleep.reset_mock()
+            self.control("profile=top")
+            sleep.assert_not_called()
+
+    def test_delay_can_be_changed_and_reset(self):
+        self.assertEqual(self.control("delay=0")[1]["delay"], [0.0, 0.0])
+        self.assertEqual(self.control("delay=1-3")[1]["delay"], [1.0, 3.0])
+        self.assertEqual(self.control("delay=5")[1]["delay"], [5.0, 5.0])
+        self.assertEqual(self.control("delay=5-2")[0], 400)
+        self.assertEqual(self.control("reset=1")[1]["delay"], list(DEFAULT_DELAY))
+
     def test_bad_control_values_change_nothing(self):
         self.assertEqual(self.control("profile=top&relevance=nope")[0], 400)
         self.assertEqual(self.state.profile, "ok")
         self.assertEqual(self.control("fail=nope:500")[0], 400)
+
+    def test_stop_url_shuts_the_server_down(self):
+        self.assertEqual(self.request("GET", "/__fake/stop")[0], 200)
+        self.thread.join(5)
+        self.assertFalse(self.thread.is_alive())
 
     def test_unknown_path_is_404(self):
         self.assertEqual(self.request("POST", "/nothing", b"")[0], 404)
