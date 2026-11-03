@@ -217,12 +217,12 @@ def handle_assess(state, fields, files):
         raise ApiError(400, f"Filename must end in .wav: {audio[0]}")
 
     task_id = fields.get("task_id", "")
-    if task_id not in ("1", "2", "3", "4", "5"):
+    if task_id not in ("1", "2", "3", "4", "5", "6"):
         raise ApiError(400, f"Unknown task_id {task_id}")
     task_id = int(task_id)
 
     # A different band for each task, so all the star rows can be seen by changing task.
-    base = {1: 1.6, 2: 2.2, 3: 2.7, 4: 3.1, 5: 3.6}[task_id]
+    base = {1: 1.6, 2: 2.2, 3: 2.7, 4: 3.1, 5: 3.6, 6: 2.4}[task_id]
     scores = {
         "accuracy": round(base + 0.1, 2),
         "fluency": round(base - 0.3, 2),

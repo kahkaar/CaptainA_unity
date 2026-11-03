@@ -89,14 +89,14 @@ class FakeServerTest(unittest.TestCase):
         self.assertEqual(len(result["score"]), 2)
 
     def test_assess_echoes_task_and_uses_known_bands(self):
-        for task in range(1, 6):
+        for task in range(1, 7):
             status, result = self.upload(f"{API}/speech/assess", {"guid": "g", "task_id": task})
             self.assertEqual(status, 200)
             self.assertEqual(result["task_id"], task)
             self.assertIn(result["cefr_label_fine"], ("A1", "A2", "A2+", "B1"))
             self.assertNotIn("+", result["cefr_label"])
             self.assertEqual(set(result["dimension_labels"]), {"accuracy", "fluency", "pronunciation", "range"})
-        self.assertEqual(result["assessment_id"], 5)
+        self.assertEqual(result["assessment_id"], 6)
 
     def test_assess_rejects_what_the_real_server_rejects(self):
         status, result = self.upload(f"{API}/speech/assess", {"guid": "g", "task_id": 0})
