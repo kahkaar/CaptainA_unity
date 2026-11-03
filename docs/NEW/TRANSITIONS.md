@@ -65,4 +65,4 @@ transition. If a screen animates its root, move the animated content into a chil
 Animating children inside a screen is fine.
 
 `ScoreDetailScreen` and `PhonemeScreen` have these components on their roots, but no clip in
-the project writes to a screen root, so they don't conflict.
+the project writes to a screen root, so they do not conflict.

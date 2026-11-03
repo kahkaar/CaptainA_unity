@@ -3,7 +3,7 @@
 How the app moves between screens, overlays and modals.
 
 Related: [Screens](SCREENS.md), [Transitions](TRANSITIONS.md), [Wiring](WIRING.md),
-[Migration](MIGRATION.md).
+[Migration](MIGRATION.md), [Coding Standards](CODING_STANDARDS.md).
 
 ## Overview
 
@@ -12,29 +12,29 @@ they ask `Navigator` to open a screen by type, and it handles history, back, vis
 and animation. Code lives under `Assets/Scripts/NewScripts/` in the `Navigation`, `Screens`,
 `Modals` and `Managers` folders, all in the `SaySuomi.Navigation` namespace.
 
-| Class               | Role                                                                   |
-| ------------------- | ---------------------------------------------------------------------- |
-| `Navigator`         | Owns the stack, the current tab and back handling. Created at launch.  |
-| `AppScreen`         | Base class for every screen. Declares its layer and back behaviour.    |
-| `ModalScreen`       | `AppScreen` for popups. Adds `Attach`, `Dismissible` and `OnBack`.     |
-| `LoadingModal`      | `ModalScreen` for popups waiting on the server. Spins `LoadingIcon`.   |
-| `ModalHost`         | Presents modals: the shared dim and the modal animations.              |
-| `ScreenTransitions` | The animation curves and durations, and the runner that plays them.    |
-| `TabBar`            | Tab buttons, icons and the new-feature dot. Follows `TabChanged`.      |
-| `ErrorBanner`       | Shows and hides the drop-down error messages.                          |
-| `ButtonWiring`      | Connects buttons in code and switches off their Inspector entries.     |
-| `ScreenBackButton`  | Adds a back button to screens that have none. See [Back](#back).       |
+| Class               | Role                                                                  |
+| ------------------- | --------------------------------------------------------------------- |
+| `Navigator`         | Owns the stack, the current tab and back handling. Created at launch. |
+| `AppScreen`         | Base class for every screen. Declares its layer and back behaviour.   |
+| `ModalScreen`       | `AppScreen` for popups. Adds `Attach`, `Dismissible` and `OnBack`.    |
+| `LoadingModal`      | `ModalScreen` for popups waiting on the server. Spins `LoadingIcon`.  |
+| `ModalHost`         | Presents modals: the shared dim and the modal animations.             |
+| `ScreenTransitions` | The animation curves and durations, and the runner that plays them.   |
+| `TabBar`            | Tab buttons, icons and the new-feature dot. Follows `TabChanged`.     |
+| `ErrorBanner`       | Shows and hides the drop-down error messages.                         |
+| `ButtonWiring`      | Connects buttons in code and switches off their Inspector entries.    |
+| `ScreenBackButton`  | Adds a back button to screens that have none. See [Back](#back).      |
 
 ## Layers
 
 Each screen declares its layer in code by overriding `Layer`. Draw order comes from sibling
 order under the root Canvas, so a higher layer always covers a lower one.
 
-| Layer     | Examples                       | The screen below                                | Covers the tab bar |
-| --------- | ------------------------------ | ----------------------------------------------- | ------------------ |
-| `Screen`  | Task list, flashcard session   | Hidden, and refreshed by its `OnEnable` on return | No               |
-| `Overlay` | Score detail, phoneme, info    | Stays active, so its state stays in place       | Yes                |
-| Modal     | Survey, consent, loading       | Stays active, behind the shared dim             | Yes                |
+| Layer     | Examples                     | The screen below                                  | Covers the tab bar |
+| --------- | ---------------------------- | ------------------------------------------------- | ------------------ |
+| `Screen`  | Task list, flashcard session | Hidden, and refreshed by its `OnEnable` on return | No                 |
+| `Overlay` | Score detail, phoneme, info  | Stays active, so its state stays in place         | Yes                |
+| Modal     | Survey, consent, loading     | Stays active, behind the shared dim               | Yes                |
 
 Screens are hidden with `SetActive`, not by disabling their Canvas. They rely on
 `OnEnable` and `OnDisable` to load data, cancel recordings and remove listeners.
@@ -186,7 +186,7 @@ A screen's `OnEnable` can open a modal, as `PhonemeScreen` does for its first-ti
 instruction. `Push` and `Open` add an entry to the stack before activating it, so the modal
 lands above the screen that opened it.
 
-`InstructionModal.Show` does nothing if `Navigator` doesn't exist yet, which happens when a
+`InstructionModal.Show` does nothing if `Navigator` does not exist yet, which happens when a
 screen is active in the scene. `Navigator` then re-enables the home tab once it is ready, so
 that `OnEnable` runs again and the popup opens.
 
@@ -196,16 +196,16 @@ that `OnEnable` runs again and the popup opens.
 sends requests, stores results, and reports back through callbacks. The requesting screen
 then updates its own UI and decides where to go.
 
-| Request               | Callback receives     | On failure, read  | Handled by                 |
-| --------------------- | --------------------- | ----------------- | -------------------------- |
-| `ServerPost`          | `bool`                | `lastError`       | Freestyle, flashcard session |
-| `NumberGamePost`      | `bool`                | `lastError`       | `NumberGameScreen`         |
-| `ServerPost_ASA`      | `bool`                | `lastServerError` | `ASATaskScreen`            |
-| `ServerPost_profile`  | Response JSON, or `null` | `lastServerError` | `ASATaskListScreen`     |
-| `ServerPost_setLevel` | `bool`                | `lastServerError` | `ASAProfileScreen`         |
-| `ServerPost_guid`     | `bool`                | `lastError`, `lastErrorType` | `AdvancedScreen` |
-| `ServerPost_deleteUser` | `bool`              | `DataConfirmedDeleted` | `ASAProfileScreen`    |
-| `ServerPost_feedback` | `bool`, optional      | `lastError`       | Task list, profile, `FeedbackAutoSend` |
+| Request                 | Callback receives        | On failure, read             | Handled by                             |
+| ----------------------- | ------------------------ | ---------------------------- | -------------------------------------- |
+| `ServerPost`            | `bool`                   | `lastError`                  | Freestyle, flashcard session           |
+| `NumberGamePost`        | `bool`                   | `lastError`                  | `NumberGameScreen`                     |
+| `ServerPost_ASA`        | `bool`                   | `lastServerError`            | `ASATaskScreen`                        |
+| `ServerPost_profile`    | Response JSON, or `null` | `lastServerError`            | `ASATaskListScreen`                    |
+| `ServerPost_setLevel`   | `bool`                   | `lastServerError`            | `ASAProfileScreen`                     |
+| `ServerPost_guid`       | `bool`                   | `lastError`, `lastErrorType` | `AdvancedScreen`                       |
+| `ServerPost_deleteUser` | `bool`                   | `DataConfirmedDeleted`       | `ASAProfileScreen`                     |
+| `ServerPost_feedback`   | `bool`, optional         | `lastError`                  | Task list, profile, `FeedbackAutoSend` |
 
 - **Results:** read `asrResult` or `asrResultASA` from the callback. `ASAProfileScreen.ShowStats`
   parses profile JSON, so the data types stay with the screen.

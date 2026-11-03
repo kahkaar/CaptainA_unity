@@ -45,7 +45,7 @@ A panel event says _which_ panel and _what it shows_; the manager adds `active`.
 - `PanelEventWatcher.Attach(go, () => new LoadingModalToggled(id))` reports a script-less
   popup from its own enable/disable.
 - `ScrollDepthReporter.Attach(scrollRect, depth => ...)` reports scroll depth once a
-  learner's scroll comes to rest (0 = top, 1 = bottom). Programmatic resets don't count.
+  learner's scroll comes to rest (0 = top, 1 = bottom). Programmatic resets do not count.
 
 ## Events
 

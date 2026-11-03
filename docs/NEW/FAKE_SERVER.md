@@ -4,7 +4,7 @@ A local stand-in for the DTA and legacy pronunciation servers, so the app can be
 without a backend. It lives in [`FakeServer/`](../../FakeServer/), outside `Assets`, so Unity
 does not import it. It needs Python 3 and nothing else.
 
-**What it can't prove:** its responses are built from the app's response classes and the
+**What it cannot prove:** its responses are built from the app's response classes and the
 server rules noted in the client's comments, not from the real server. It tests how the app
 handles a response, not whether the real server sends that response. Run the
 [backend checks](MIGRATION.md#checks-waiting-on-the-backend) against the real server before
@@ -38,20 +38,20 @@ are separate: restarting the server forgets them.
 Change behaviour while the app runs by opening a URL in a browser. The response shows the
 current settings, and <http://127.0.0.1:8765/__fake/> shows them without changing anything.
 
-| To test                       | Open `http://127.0.0.1:8765/__fake/set?...` |
-| ----------------------------- | ------------------------------------------- |
-| A request failing             | `fail=assess:503`                           |
-| Several failures              | `fail=assess:503,profile:500`               |
-| Slow responses and spinners   | `delay=5`                                   |
+| To test                       | Open `http://127.0.0.1:8765/__fake/set?...`  |
+| ----------------------------- | -------------------------------------------- |
+| A request failing             | `fail=assess:503`                            |
+| Several failures              | `fail=assess:503,profile:500`                |
+| Slow responses and spinners   | `delay=5`                                    |
 | Off-topic or partial answers  | `relevance=off_topic` or `relevance=partial` |
-| No relevance check ran        | `relevance=none`                            |
-| Advance button on the profile | `profile=top`                               |
-| No position shown             | `profile=bottom`                            |
-| Too few assessments           | `profile=insufficient`                      |
-| Cohort too small              | `profile=cohort`                            |
-| Rank unavailable              | `profile=unavailable`                       |
-| Pronunciation warnings        | `warning=0,1`                               |
-| Back to normal                | `reset=1`                                   |
+| No relevance check ran        | `relevance=none`                             |
+| Advance button on the profile | `profile=top`                                |
+| No position shown             | `profile=bottom`                             |
+| Too few assessments           | `profile=insufficient`                       |
+| Cohort too small              | `profile=cohort`                             |
+| Rank unavailable              | `profile=unavailable`                        |
+| Pronunciation warnings        | `warning=0,1`                                |
+| Back to normal                | `reset=1`                                    |
 
 Route names for `fail` are `assess`, `onboarding`, `feedback`, `profile`, `level`, `events`,
 `delete`, `mdd` and `number`.
@@ -65,25 +65,25 @@ Most of these are also start-up options, such as `--profile top` or `--fail asse
 
 ## Endpoints
 
-| Method and path                   | `Secret.cs` constant    | Response                                     |
-| --------------------------------- | ----------------------- | -------------------------------------------- |
-| `POST /api/v1/speech/assess`      | `ASA_URL`               | Scores and labels. Each task gives a different band. |
-| `POST /api/v1/onboarding`         | `ASA_CONSENT_URL`       | Creates the user, or 409 if the guid exists  |
-| `POST /api/v1/feedback`           | `USER_ASA_FEEDBACK_URL` | Stored, or 422 if `assessment_id` is wrongly sent or missing |
-| `POST /api/v1/analytics/comparison` | `ASA_PROFILE_URL`     | Profile stats, depending on `profile`        |
-| `PATCH /api/v1/users/level`       | `ASA_SET_LEVEL_URL`     | Stores the level, which the profile then uses |
-| `POST /api/v1/analytics/events`   | `ASA_EVENTS_URL`        | Counts the batch, or 400 if malformed        |
-| `DELETE /api/v1/users`            | `DATA_DEL_REQUEST_URL`  | 204, or 403 if `X-Delete-Key` is wrong       |
-| `POST /asr_unity`                 | `AUDIO_URL`             | One score per character, with one mistake    |
-| `POST /asr_number`                | `NUMBER_AUDIO_URL`      | The same, for the number                     |
+| Method and path                     | `Secret.cs` constant    | Response                                                     |
+| ----------------------------------- | ----------------------- | ------------------------------------------------------------ |
+| `POST /api/v1/speech/assess`        | `ASA_URL`               | Scores and labels. Each task gives a different band.         |
+| `POST /api/v1/onboarding`           | `ASA_CONSENT_URL`       | Creates the user, or 409 if the guid exists                  |
+| `POST /api/v1/feedback`             | `USER_ASA_FEEDBACK_URL` | Stored, or 422 if `assessment_id` is wrongly sent or missing |
+| `POST /api/v1/analytics/comparison` | `ASA_PROFILE_URL`       | Profile stats, depending on `profile`                        |
+| `PATCH /api/v1/users/level`         | `ASA_SET_LEVEL_URL`     | Stores the level, which the profile then uses                |
+| `POST /api/v1/analytics/events`     | `ASA_EVENTS_URL`        | Counts the batch, or 400 if malformed                        |
+| `DELETE /api/v1/users`              | `DATA_DEL_REQUEST_URL`  | 204, or 403 if `X-Delete-Key` is wrong                       |
+| `POST /asr_unity`                   | `AUDIO_URL`             | One score per character, with one mistake                    |
+| `POST /asr_number`                  | `NUMBER_AUDIO_URL`      | The same, for the number                                     |
 
-It doesn't score or save audio. Results depend only on the task or text sent, so they are
+It does not score or save audio. Results depend only on the task or text sent, so they are
 repeatable. `GPT_TTS` calls OpenAI directly and is not covered.
 
 ## Remembering users
 
 Users are held in memory, so restarting the server forgets them. An unknown guid is accepted
-by default, so a restart doesn't force the Editor through onboarding again. Use
+by default, so a restart does not force the Editor through onboarding again. Use
 `--strict-users` to get the real server's 404 for a user who has not onboarded.
 
 ## Testing on a phone
@@ -105,12 +105,12 @@ by default, so a restart doesn't force the Editor through onboarding again. Use
 
 ## Troubleshooting
 
-| Problem                                       | Likely cause and fix                          |
-| --------------------------------------------- | --------------------------------------------- |
+| Problem                                          | Likely cause and fix                                                                                                                                                                                                  |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `Insecure connection not allowed` in the Console | The project blocks plain HTTP. In **Player Settings > Other Settings**, set **Allow downloads over HTTP** to **Allowed in development builds**. This changes `ProjectSettings.asset`, so decide whether to commit it. |
-| A request throws, or a spinner never stops    | The URL in `Secret.cs` is blank. `UnityWebRequest` throws on an empty URL rather than reporting a failed request. |
-| Every request shows a connection error        | The server isn't running, or the port differs from `Secret.cs`. |
-| `Address already in use` when starting        | Another copy is running. Stop it or use `--port`, then print the `Secret.cs` lines again. |
+| A request throws, or a spinner never stops       | The URL in `Secret.cs` is blank. `UnityWebRequest` throws on an empty URL rather than reporting a failed request.                                                                                                     |
+| Every request shows a connection error           | The server is not running, or the port differs from `Secret.cs`.                                                                                                                                                      |
+| `Address already in use` when starting           | Another copy is running. Stop it or use `--port`, then print the `Secret.cs` lines again.                                                                                                                             |
 
 ## Tests
 
@@ -120,4 +120,4 @@ python -B test_fake_server.py
 ```
 
 The tests run the server over real HTTP, using bodies laid out like Unity's `WWWForm`. They
-don't involve Unity, so the app itself still has to be checked in Play mode.
+do not involve Unity, so the app itself still has to be checked in Play mode.

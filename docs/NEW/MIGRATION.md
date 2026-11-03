@@ -28,6 +28,17 @@ ones keep running in `MainScene`, which remains the only build scene. Avoid feat
 in the old scripts and `MainScene` until cutover, or the changes must be copied across by
 hand.
 
+### Rules during the migration
+
+These apply on top of the [Coding Standards](CODING_STANDARDS.md), until cutover:
+
+- **Location:** new and changed scripts go in `Assets/Scripts/NewScripts/`.
+- **Namespace:** all of them use `SaySuomi.Navigation`. A single namespace matters while old classes
+  exist: a file-level `using` loses to a global class of the same name, so the old `NetworkManager`
+  would be picked silently.
+- **Formatting:** run CSharpier from `Assets/Scripts/NewScripts/`, not the repository root, so the
+  original scripts stay untouched. Run Prettier from `docs/NEW/`, so the existing documents do too.
+
 ## Stages
 
 ```mermaid
@@ -42,7 +53,7 @@ flowchart TD
 ```
 
 Each stage ends with a Play mode check. When a button migrates, `ButtonWiring.Replace` turns
-off its Inspector `OnClick` entries while the app runs, so they don't need clearing by hand.
+off its Inspector `OnClick` entries while the app runs, so they do not need clearing by hand.
 
 ## Hierarchy
 
@@ -61,6 +72,9 @@ later. No script finds them by path, but check for Inspector references first:
 - [ ] `RecordButtonOld` under `FreestyleScreen`
 - [ ] `GreyBackground` under `ASATaskScreen`
 - [ ] The inactive `TopPanel` objects, except the one under `FreestyleScreen`, which is used
+
+After cutover, rename the serialized fields that still have older names, such as a `GO` suffix or
+"popup".
 
 ## Stage 1 scene update
 
@@ -83,7 +97,7 @@ rewrites these values when it saves the scene.
 ## Checks waiting on the backend
 
 These need a server. Use the [fake server](FAKE_SERVER.md) to check them during each stage,
-then run them against the real backend before cutover, because the fake server can't prove
+then run them against the real backend before cutover, because the fake server cannot prove
 what the real one sends:
 
 - **Pronunciation:** a score appears in Freestyle and on a flashcard, including the warning icon.

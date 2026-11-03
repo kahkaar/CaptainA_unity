@@ -3,23 +3,25 @@
 How screens connect to their UI, and how to add a new one. Scene objects are assigned in the
 Inspector, and behaviour such as button clicks is wired in code.
 
+For naming, member order and Inspector layout, see [Coding Standards](CODING_STANDARDS.md).
+
 ## Rules
 
-| Need                   | Do this                                                              |
-| ---------------------- | -------------------------------------------------------------------- |
-| Child object or component | A `[SerializeField]` field, assigned in the Inspector                |
-| Button click           | `ButtonWiring.Replace(button, Handler)` once, in `Bind`              |
-| Back control           | Your own button calling `Navigator.Back`, or override `ShowsBackButton` to get the shared one |
-| Localized text         | `new LocalizedString(table, key)`                                    |
-| Another screen         | Ask `Navigator` by type. Never hold a reference to a screen.         |
-| Screen layer           | Override `Layer`                                                     |
-| Object outside the screen | Give it a class, and ask `Navigator` for it or look for it with `GetComponentInChildren` |
-| Value carried by an object | A component holding the value, such as `OptionValue` or `FlashcardDeck`. Never read it from the object's name. |
-| Popup with no logic    | `ModalScreen.Attach(popupGO, dismissible)` from the owning screen    |
-| Popup waiting on the server | A `LoadingModal` component on the popup, with its `icon` assigned, which it spins |
-| Reset on closing a popup | `modal.OnBack`, so every way out behaves the same                  |
-| Drop-down error message | `ErrorBanner.Show` and `ErrorBanner.Hide`                           |
-| Durations and constants | Constants in code                                                   |
+| Need                        | Do this                                                                                                        |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| Child object or component   | A `[SerializeField]` field, assigned in the Inspector                                                          |
+| Button click                | `ButtonWiring.Replace(button, Handler)` once, in `Bind`                                                        |
+| Back control                | Your own button calling `Navigator.Back`, or override `ShowsBackButton` to get the shared one                  |
+| Localized text              | `new LocalizedString(table, key)`                                                                              |
+| Another screen              | Ask `Navigator` by type. Never hold a reference to a screen.                                                   |
+| Screen layer                | Override `Layer`                                                                                               |
+| Object outside the screen   | Give it a class, and ask `Navigator` for it or look for it with `GetComponentInChildren`                       |
+| Value carried by an object  | A component holding the value, such as `OptionValue` or `FlashcardDeck`. Never read it from the object's name. |
+| Popup with no logic         | `ModalScreen.Attach(popupGO, dismissible)` from the owning screen                                              |
+| Popup waiting on the server | A `LoadingModal` component on the popup, with its `icon` assigned, which it spins                              |
+| Reset on closing a popup    | `modal.OnBack`, so every way out behaves the same                                                              |
+| Drop-down error message     | `ErrorBanner.Show` and `ErrorBanner.Hide`                                                                      |
+| Durations and constants     | Constants in code                                                                                              |
 
 A serialized reference keeps working when its object is renamed or moved.
 
@@ -30,7 +32,7 @@ repeated `AddListener` makes one tap run its handler several times.
 events there. Anything that depends on the screen being open belongs in `OnEnable`.
 
 `ButtonWiring.Replace` also switches off any Inspector `OnClick` entries while the app runs,
-so a migrated button can't fire twice and its entries don't have to be cleared by hand.
+so a migrated button cannot fire twice and its entries do not have to be cleared by hand.
 
 ## What stays in the Inspector
 
@@ -48,46 +50,12 @@ so a migrated button can't fire twice and its entries don't have to be cleared b
 
 `NetworkManager` needs nothing assigned, because it contains no UI.
 
-### Laying out the Inspector
-
-Keep a class's `[SerializeField]` fields together, near the top of the class, so the Inspector
-reads in a useful order:
-
-- **Groups:** use `[Header]` to split a class's fields by where the objects live in the hierarchy,
-  such as `Consent Modal`, with the screen's own objects first. Write headers in title case, and say
-  "Modal" rather than "Popup". A class with only a few obvious fields needs no headers.
-- **Tooltips:** add a `[Tooltip]` only when the name doesn't say enough: when an object appears, the
-  required order of an array, or a component its objects must have. Don't repeat the field's name.
-  Write tooltips as normal sentences, and say "modal" rather than "popup".
-- **Runtime values:** mark a public field that only holds runtime state `[System.NonSerialized]`,
-  so it stays out of the Inspector.
-
-Unity saves fields by name, so moving them or adding these attributes keeps their assigned values.
-
-## Member order
-
-Inside a class, members go in this order, and every member states its access, including `private`:
-
-1. Constants
-2. Static fields, whose order is kept because their initializers run from top to bottom
-3. Serialized fields, in their Inspector order
-4. Other fields
-5. Constructors
-6. Events and delegates
-7. Properties
-8. Unity messages and `Bind`, in the order they run: `Awake`, `Bind`, `OnEnable`, `Start`, `Update`,
-   `LateUpdate`, `OnDisable`, `OnDestroy`
-9. Other methods
-10. Nested types
-
-Within a group, go from public to internal, protected and private, then static before instance.
-
 ## Renaming and moving
 
-| Change                                | Effect                               |
-| ------------------------------------- | ------------------------------------ |
-| Rename or move anything in the scene  | Safe: references and classes don't depend on names |
-| Delete an object a field points to    | Logged at launch as an unassigned field |
+| Change                                 | Effect                                                     |
+| -------------------------------------- | ---------------------------------------------------------- |
+| Rename or move anything in the scene   | Safe: references and classes do not depend on names        |
+| Delete an object a field points to     | Logged at launch as an unassigned field                    |
 | Rename a child inside a runtime prefab | Breaks its `transform.Find`, because those are still paths |
 
 `MissingReferences` logs an error naming the class and the field for any that is empty. It runs
@@ -122,26 +90,15 @@ Every popup goes directly under `Modals`, never under a screen or in a group ins
 `ModalHost` only orders a popup among its siblings, so one in a group could draw over a newer
 popup. Popups used by one screen start with that screen's name, such as `ASAProfileSettingsModal`.
 
-## Naming
-
-- Full-screen view classes end in `Screen`, and popups end in `Modal`. "Panel" is only for
-  sections inside a screen.
-- Abbreviations stay in capitals: `ASATaskScreen`, not `AsaTaskScreen`.
-- Do not name a class `Screen`, because it would shadow `UnityEngine.Screen`.
-- During the migration, new files go in `Assets/Scripts/NewScripts/`, and all use the
-  `SaySuomi.Navigation` namespace. A single namespace matters while old classes exist: a
-  file-level `using` loses to a global class of the same name, so the old `NetworkManager`
-  would be picked silently.
-
 ## Finding objects
 
-| Object | Found by |
-| ------ | -------- |
-| Screens and app-wide modals | Class, through `Navigator` |
-| Tab buttons | `TabButton`, in hierarchy order, so adding a tab needs no code change |
-| New-feature dot | `NewFeatureDot` |
-| Objects inside a screen or modal | `[SerializeField]` fields, checked at launch |
-| Children of a prefab created at runtime | `transform.Find` on the new instance, because it isn't in the scene |
+| Object                                  | Found by                                                              |
+| --------------------------------------- | --------------------------------------------------------------------- |
+| Screens and app-wide modals             | Class, through `Navigator`                                            |
+| Tab buttons                             | `TabButton`, in hierarchy order, so adding a tab needs no code change |
+| New-feature dot                         | `NewFeatureDot`                                                       |
+| Objects inside a screen or modal        | `[SerializeField]` fields, checked at launch                          |
+| Children of a prefab created at runtime | `transform.Find` on the new instance, because it is not in the scene  |
 
 ## Adding a screen
 
