@@ -11,14 +11,19 @@ namespace SaySuomi.Navigation
 
         [SerializeField]
         TextMeshProUGUI explainText;
+
         [SerializeField]
         Image frontMouth1;
+
         [SerializeField]
         Image frontMouth2;
+
         [SerializeField]
         Image sideMouth1;
+
         [SerializeField]
         Image sideMouth2;
+
         [SerializeField]
         TextMeshProUGUI creditText;
         Animation mouthAnimation;
@@ -74,7 +79,11 @@ namespace SaySuomi.Navigation
 
         void Display()
         {
-            string phonemeString = TextUtils.WrapPhonemeSO(phonemeSO, Const.GOOD_COLOR, isBold: false);
+            string phonemeString = TextUtils.WrapPhonemeSO(
+                phonemeSO,
+                Const.GOOD_COLOR,
+                isBold: false
+            );
 
             explainText.text = phonemeString + " " + phonemeSO.instruction;
             frontMouth1.sprite = phonemeSO.front_1;

@@ -134,14 +134,23 @@ namespace SaySuomi.Navigation
             form.AddField(backgroundFields.gender.Item1, backgroundFields.gender.Item2);
             form.AddField(backgroundFields.age.Item1, backgroundFields.age.Item2);
             form.AddField(backgroundFields.motherTongue.Item1, backgroundFields.motherTongue.Item2);
-            form.AddField(backgroundFields.otherLanguages.Item1, backgroundFields.otherLanguages.Item2);
-            form.AddField(backgroundFields.selfAssessment.Item1, backgroundFields.selfAssessment.Item2);
+            form.AddField(
+                backgroundFields.otherLanguages.Item1,
+                backgroundFields.otherLanguages.Item2
+            );
+            form.AddField(
+                backgroundFields.selfAssessment.Item1,
+                backgroundFields.selfAssessment.Item2
+            );
 
             // moved_to_finland and finnish_learning_duration are deliberately absent: those
             // questions were dropped from the background form. The server made both nullable
             // in v1.2.0, so omitting them is accepted - docs/TO_FRONTEND.md item 10.
 
-            form.AddField("background_form_timestamp", PlayerPrefs.GetString("BackgroundTimestamp"));
+            form.AddField(
+                "background_form_timestamp",
+                PlayerPrefs.GetString("BackgroundTimestamp")
+            );
             form.AddField("consent_accepted", PlayerPrefs.GetInt("ConsentGiven"));
             form.AddField("background_form_completed", 1);
 
@@ -726,7 +735,6 @@ namespace SaySuomi.Navigation
                 {
                     Debug.LogWarning("Relevance check: off_topic - " + asrResultASA.content.reason);
                 }
-
             }
             OnServerDone?.Invoke(true);
         }
@@ -873,7 +881,9 @@ namespace SaySuomi.Navigation
                 {
                     // The server's own words are for us, not for the learner.
                     Debug.LogError($"{postType} failed: {uwr.error} | {uwr.downloadHandler.text}");
-                    lastError = string.IsNullOrEmpty(uwr.error) ? "Network error!" : "Server error!";
+                    lastError = string.IsNullOrEmpty(uwr.error)
+                        ? "Network error!"
+                        : "Server error!";
 
                     OnServerDone?.Invoke(false);
                     yield break;
@@ -994,7 +1004,9 @@ namespace SaySuomi.Navigation
                 || www.result == UnityWebRequest.Result.ProtocolError
             )
             {
-                Debug.LogError($"Number game post failed: {www.error} | {www.downloadHandler.text}");
+                Debug.LogError(
+                    $"Number game post failed: {www.error} | {www.downloadHandler.text}"
+                );
                 lastError = string.IsNullOrEmpty(www.error)
                     ? "Network error!"
                     : www.downloadHandler.text ?? www.error;

@@ -9,8 +9,6 @@ namespace SaySuomi.Navigation
 {
     public class ASAResultsScreen : AppScreen
     {
-        const string Content = "ScrollView/Viewport/Content/";
-
         // The "ASAPanel Labels"-style table holding this screen's text.
         static readonly System.Guid Table = new System.Guid("db69d3d55aef5df5fa3b2c531d1f5502");
 
@@ -199,7 +197,6 @@ namespace SaySuomi.Navigation
                 Popup(2925197877248, 6874936205312),
                 Popup(2951772987392, 6939780145152),
             };
-
 
             Navigator navigator = Navigator.GetManager();
 
@@ -417,7 +414,9 @@ namespace SaySuomi.Navigation
                 // Empty rather than left over from the previous recording: this panel is
                 // reused, and a stale transcript next to fresh scores is worse than none.
                 string heard =
-                    networkManager.asrResultASA == null ? null : networkManager.asrResultASA.transcript;
+                    networkManager.asrResultASA == null
+                        ? null
+                        : networkManager.asrResultASA.transcript;
 
                 if (string.IsNullOrWhiteSpace(heard))
                 {
@@ -523,7 +522,9 @@ namespace SaySuomi.Navigation
             if (relevanceWarningText != null && show)
             {
                 relevanceWarningHelper ??= new LocalizedTextHelper(relevanceWarningText);
-                relevanceWarningHelper?.SetText(offTopic ? answerOffTopicNotice : answerPartialNotice);
+                relevanceWarningHelper?.SetText(
+                    offTopic ? answerOffTopicNotice : answerPartialNotice
+                );
             }
 
             if (relevanceWarningGO != null)
@@ -599,7 +600,9 @@ namespace SaySuomi.Navigation
             // Measured, not laid out: GetPreferredValues answers immediately, where waiting
             // for a layout pass would leave Content at the wrong height for a frame.
             float textWidth = transcriptGroup.sizeDelta.x - TRANSCRIPT_SIDE_PADDING * 2f;
-            float textHeight = transcriptText.GetPreferredValues(transcriptText.text, textWidth, 0f).y;
+            float textHeight = transcriptText
+                .GetPreferredValues(transcriptText.text, textWidth, 0f)
+                .y;
 
             float groupHeight = TRANSCRIPT_HEADER + textHeight + TRANSCRIPT_BOTTOM_PADDING;
             transcriptGroup.sizeDelta = new Vector2(transcriptGroup.sizeDelta.x, groupHeight);

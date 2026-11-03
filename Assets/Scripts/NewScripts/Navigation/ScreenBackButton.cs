@@ -26,7 +26,10 @@ namespace SaySuomi.Navigation
             // Last, so nothing in the screen draws over it or takes its taps.
             rect.SetAsLastSibling();
 
-            ButtonWiring.Replace(button.GetComponent<Button>(), () => Navigator.GetManager().Back());
+            ButtonWiring.Replace(
+                button.GetComponent<Button>(),
+                () => Navigator.GetManager().Back()
+            );
         }
     }
 }

@@ -84,7 +84,9 @@ namespace SaySuomi.Navigation
             if (!TryGetComponent(out Canvas canvas))
             {
                 Canvas parent =
-                    transform.parent != null ? transform.parent.GetComponentInParent<Canvas>(true) : null;
+                    transform.parent != null
+                        ? transform.parent.GetComponentInParent<Canvas>(true)
+                        : null;
                 canvas = gameObject.AddComponent<Canvas>();
                 if (parent != null)
                 {

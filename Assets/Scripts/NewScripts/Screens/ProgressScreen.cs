@@ -84,8 +84,10 @@ namespace SaySuomi.Navigation
                     .GetComponent<TMPro.TextMeshProUGUI>()
                     .text = score;
 
-                phonemeScoreGO.transform.Find("NoTries").GetComponent<TMPro.TextMeshProUGUI>().text =
-                    noTries;
+                phonemeScoreGO
+                    .transform.Find("NoTries")
+                    .GetComponent<TMPro.TextMeshProUGUI>()
+                    .text = noTries;
 
                 listItems.Add(phonemeScoreGO);
 

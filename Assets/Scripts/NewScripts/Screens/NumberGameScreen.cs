@@ -14,21 +14,29 @@ namespace SaySuomi.Navigation
 
         [SerializeField]
         GameObject recordButtonGO;
+
         [SerializeField]
         GameObject progressBarGO;
         NGTaskType taskType = NGTaskType.EASY;
+
         [SerializeField]
         Toggle easyToggle;
+
         [SerializeField]
         Toggle mediumToggle;
+
         [SerializeField]
         Toggle hardToggle;
+
         [SerializeField]
         Toggle rankToggle;
+
         [SerializeField]
         GameObject numberLabelGO;
+
         [SerializeField]
         GameObject errorTextGO;
+
         [SerializeField]
         GameObject replayButtonGO;
 
@@ -44,7 +52,6 @@ namespace SaySuomi.Navigation
 
         protected override void Bind()
         {
-
             ButtonWiring.Replace(recordButtonGO.GetComponent<Button>(), OnRecordButtonClicked);
             ButtonWiring.Replace(newButton, OnNewButtonClick);
         }
@@ -141,7 +148,8 @@ namespace SaySuomi.Navigation
 
             // Get the text TMP component from the GameObject
             // The TMP is a child of the NumberLabelGO
-            numberLabelGO.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = taskNumber.ToString();
+            numberLabelGO.GetComponentInChildren<TMPro.TextMeshProUGUI>().text =
+                taskNumber.ToString();
 
             // Set the countdown time based on the task type
             if (taskType == NGTaskType.EASY)
@@ -319,7 +327,10 @@ namespace SaySuomi.Navigation
                 // Need the file:// for GetAudioClip
                 // TODO check with iOS version does it need sth similar
                 using (
-                    var uwr = UnityWebRequestMultimedia.GetAudioClip("file://" + path, AudioType.WAV)
+                    var uwr = UnityWebRequestMultimedia.GetAudioClip(
+                        "file://" + path,
+                        AudioType.WAV
+                    )
                 )
                 {
                     ((DownloadHandlerAudioClip)uwr.downloadHandler).streamAudio = true;
@@ -337,7 +348,8 @@ namespace SaySuomi.Navigation
                         yield break;
                     }
 
-                    DownloadHandlerAudioClip dlHandler = (DownloadHandlerAudioClip)uwr.downloadHandler;
+                    DownloadHandlerAudioClip dlHandler = (DownloadHandlerAudioClip)
+                        uwr.downloadHandler;
 
                     if (dlHandler.isDone)
                     {

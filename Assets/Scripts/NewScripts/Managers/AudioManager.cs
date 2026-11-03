@@ -263,9 +263,7 @@ namespace SaySuomi.Navigation
             SavWav.Save(Const.NUMBERGAME_FILENAME, audioSource.clip, trim: true); // for debug purpose
 
             StartCoroutine(
-                NetworkManager
-                    .GetManager()
-                    .NumberGamePost(number, wavBuffer, OnServerDone)
+                NetworkManager.GetManager().NumberGamePost(number, wavBuffer, OnServerDone)
             );
         }
 
@@ -381,7 +379,8 @@ namespace SaySuomi.Navigation
                         yield break;
                     }
 
-                    DownloadHandlerAudioClip dlHandler = (DownloadHandlerAudioClip)uwr.downloadHandler;
+                    DownloadHandlerAudioClip dlHandler = (DownloadHandlerAudioClip)
+                        uwr.downloadHandler;
 
                     if (dlHandler.isDone)
                     {

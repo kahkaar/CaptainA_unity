@@ -9,14 +9,19 @@ namespace SaySuomi.Navigation
     {
         [SerializeField]
         GameObject errorPopupGO;
+
         [SerializeField]
         GameObject loadingIconGO;
+
         [SerializeField]
         GameObject profileLoadingBackButtonGO;
+
         [SerializeField]
         GameObject profileLoadingErrorTextGO;
+
         [SerializeField]
         TMP_InputField overallFeedbackTextGO;
+
         [SerializeField]
         ToggleGroup overallRatingOptions;
 
@@ -46,7 +51,6 @@ namespace SaySuomi.Navigation
 
         protected override void Bind()
         {
-
             Navigator navigator = Navigator.GetManager();
 
             ButtonWiring.Replace(backButton, () => navigator.Back());
@@ -56,7 +60,10 @@ namespace SaySuomi.Navigation
                 ButtonWiring.Replace(taskButtons[i], () => OpenTask(task));
             }
             ButtonWiring.Replace(profileButton, LoadProfile);
-            ButtonWiring.Replace(profileLoadingBackButtonGO.GetComponent<Button>(), () => navigator.Back());
+            ButtonWiring.Replace(
+                profileLoadingBackButtonGO.GetComponent<Button>(),
+                () => navigator.Back()
+            );
             ButtonWiring.Replace(feedbackSendButton, SendOverallFeedback);
             ButtonWiring.Replace(feedbackBackButton, () => navigator.Back());
 

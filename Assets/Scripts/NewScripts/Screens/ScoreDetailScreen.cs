@@ -14,17 +14,23 @@ namespace SaySuomi.Navigation
 
         [SerializeField]
         GameObject resultPanelGO;
+
         [SerializeField]
         GameObject sampleButtonGO; // Replay sample audio
+
         [SerializeField]
         GameObject replayButtonGO; // Replay recorded audio
         Animator animator;
+
         [SerializeField]
         GameObject detailContent; // Content store the list of detail score
+
         [SerializeField]
         ScrollRect scrollRectWarning; // Use this to reset scroll of WarningScroll
+
         [SerializeField]
         ScrollRect scrollRectDetail; // Use this to reset scroll of DetailScoreScroll
+
         [SerializeField]
         TMPro.TextMeshProUGUI warningText;
 

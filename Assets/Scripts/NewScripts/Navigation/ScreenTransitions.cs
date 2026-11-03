@@ -20,8 +20,10 @@ namespace SaySuomi.Navigation
 
             return t =>
             {
-                to.Rect.anchoredPosition = to.HomePosition + new Vector2(direction * width * (1f - t), 0f);
-                from.Rect.anchoredPosition = from.HomePosition - new Vector2(direction * width * t, 0f);
+                to.Rect.anchoredPosition =
+                    to.HomePosition + new Vector2(direction * width * (1f - t), 0f);
+                from.Rect.anchoredPosition =
+                    from.HomePosition - new Vector2(direction * width * t, 0f);
             };
         }
 
@@ -32,7 +34,8 @@ namespace SaySuomi.Navigation
             return t =>
             {
                 float hidden = opening ? 1f - t : t;
-                screen.Rect.anchoredPosition = screen.HomePosition - new Vector2(0f, height * hidden);
+                screen.Rect.anchoredPosition =
+                    screen.HomePosition - new Vector2(0f, height * hidden);
             };
         }
 

@@ -27,42 +27,61 @@ namespace SaySuomi.Navigation
 
         [SerializeField]
         TMPro.TextMeshProUGUI frontCardText; // Front card
+
         [SerializeField]
         TMPro.TextMeshProUGUI backCardText; // Back card
+
         [SerializeField]
         TMPro.TextMeshProUGUI etymoText; // Etymology card
+
         [SerializeField]
         GameObject warningImageFrontGO; // Front card
+
         [SerializeField]
         GameObject warningImageBackGO; // Back card
+
         [SerializeField]
         TMPro.TextMeshProUGUI intervalText_again; // Interval text for AGAIN button
+
         [SerializeField]
         TMPro.TextMeshProUGUI intervalText_hard; // Interval text for HARD button
+
         [SerializeField]
         TMPro.TextMeshProUGUI intervalText_good; // Interval text for GOOD button
+
         [SerializeField]
         TMPro.TextMeshProUGUI intervalText_easy; // Interval text for EASY button
+
         [SerializeField]
         GameObject showAnswerGO; // Show answer GO
+
         [SerializeField]
         GameObject qualityBarGO; // Quality bar GO
+
         [SerializeField]
         GameObject recordButtonGO;
+
         [SerializeField]
         GameObject progressBarGO; // Progress bar
+
         [SerializeField]
         GameObject errorTextGO;
+
         [SerializeField]
         GameObject sampleButtonGO; // Replay sample audio
+
         [SerializeField]
         GameObject replayButtonGO; // Replay recorded audio
+
         [SerializeField]
         Toggle autoPlayToggle; // Auto play audio
+
         [SerializeField]
         Toggle hideFinnishToggle; // Hide Finnish text
+
         [SerializeField]
         GameObject illustrationGO; // Illustration
+
         [SerializeField]
         TMPro.TextMeshProUGUI predictionDebugText;
 
@@ -90,7 +109,6 @@ namespace SaySuomi.Navigation
 
         protected override void Bind()
         {
-
             ButtonWiring.Replace(showAnswerGO.GetComponent<Button>(), DisplayAnswer);
             ButtonWiring.Replace(recordButtonGO.GetComponent<Button>(), OnRecordButtonClick);
             ButtonWiring.Replace(againButton, () => OnSubmitButtonClick(0));
@@ -558,9 +576,8 @@ namespace SaySuomi.Navigation
                             errorTextGO.SetActive(!serverOk);
                             if (!serverOk)
                             {
-                                errorTextGO.GetComponent<TMPro.TextMeshProUGUI>().text = NetworkManager
-                                    .GetManager()
-                                    .lastError;
+                                errorTextGO.GetComponent<TMPro.TextMeshProUGUI>().text =
+                                    NetworkManager.GetManager().lastError;
                                 return;
                             }
 
@@ -612,7 +629,10 @@ namespace SaySuomi.Navigation
                 resultTextButton.onClick.RemoveAllListeners();
                 // Add onclick to text result
                 resultTextButton.onClick.AddListener(() =>
-                    Navigator.GetManager().Push<ScoreDetailScreen>().Show(transcript, sampleClip, replayClip)
+                    Navigator
+                        .GetManager()
+                        .Push<ScoreDetailScreen>()
+                        .Show(transcript, sampleClip, replayClip)
                 );
             }
 
@@ -639,7 +659,10 @@ namespace SaySuomi.Navigation
                 // Need the file:// for GetAudioClip
                 // TODO check with iOS version does it need sth similar
                 using (
-                    var uwr = UnityWebRequestMultimedia.GetAudioClip("file://" + path, AudioType.WAV)
+                    var uwr = UnityWebRequestMultimedia.GetAudioClip(
+                        "file://" + path,
+                        AudioType.WAV
+                    )
                 )
                 {
                     ((DownloadHandlerAudioClip)uwr.downloadHandler).streamAudio = true;
@@ -657,7 +680,8 @@ namespace SaySuomi.Navigation
                         yield break;
                     }
 
-                    DownloadHandlerAudioClip dlHandler = (DownloadHandlerAudioClip)uwr.downloadHandler;
+                    DownloadHandlerAudioClip dlHandler = (DownloadHandlerAudioClip)
+                        uwr.downloadHandler;
 
                     if (dlHandler.isDone)
                     {

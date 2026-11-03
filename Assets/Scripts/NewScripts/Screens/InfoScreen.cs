@@ -16,10 +16,7 @@ namespace SaySuomi.Navigation
         protected override void Bind()
         {
             ButtonWiring.Replace(backButton, () => Navigator.GetManager().Back());
-            ButtonWiring.Replace(
-                secretButton,
-                () => Navigator.GetManager().Open<SecretModal>()
-            );
+            ButtonWiring.Replace(secretButton, () => Navigator.GetManager().Open<SecretModal>());
         }
     }
 }

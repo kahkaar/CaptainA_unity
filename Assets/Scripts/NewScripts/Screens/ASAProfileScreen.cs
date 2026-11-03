@@ -11,8 +11,6 @@ namespace SaySuomi.Navigation
 {
     public class ASAProfileScreen : AppScreen
     {
-        const string Content = "Viewport/Content/";
-
         static readonly Guid Table = new Guid("850ceabc4262bb1acb39b8a91b2fcf93");
 
         [SerializeField]
@@ -275,20 +273,22 @@ namespace SaySuomi.Navigation
             rankUnavailableNotice = new LocalizedString(Table, 20288265871360);
             rankUnavailableGeneralNotice = new LocalizedString(Table, 20790462472192);
 
-
             Navigator navigator = Navigator.GetManager();
 
             ButtonWiring.Replace(profileBackButton, () => navigator.Back());
             ButtonWiring.Replace(settingsButton, () => navigator.Open(settingsModal));
             ButtonWiring.Replace(settingsBackButton, () => navigator.Back());
-            ButtonWiring.Replace(
-                guidCopyButton,
-                () => GUIUtility.systemCopyBuffer = guid
-            );
+            ButtonWiring.Replace(guidCopyButton, () => GUIUtility.systemCopyBuffer = guid);
             ButtonWiring.Replace(deleteDataButton, OpenDeleteConfirm);
-            ButtonWiring.Replace(deleteCancelButtonGO.GetComponent<Button>(), () => navigator.Back());
+            ButtonWiring.Replace(
+                deleteCancelButtonGO.GetComponent<Button>(),
+                () => navigator.Back()
+            );
             ButtonWiring.Replace(deleteConfirmButtonGO.GetComponent<Button>(), DeleteData);
-            ButtonWiring.Replace(feedbackButtonGO.GetComponent<Button>(), () => navigator.Open(feedbackModal));
+            ButtonWiring.Replace(
+                feedbackButtonGO.GetComponent<Button>(),
+                () => navigator.Open(feedbackModal)
+            );
             ButtonWiring.Replace(feedbackBackButton, () => navigator.Back());
             ButtonWiring.Replace(feedbackSendButton, SendFeedback);
             ButtonWiring.Replace(advanceLevelButtonGO.GetComponent<Button>(), () => ChangeLevel(1));
@@ -660,7 +660,8 @@ namespace SaySuomi.Navigation
         // The endpoint is still to be built, so ASA_SET_LEVEL_URL is blank in Secret.cs until
         // it exists. A button that visibly does nothing is worse than no button, so both are
         // hidden while it is. Filling the value in is all that is needed to bring them back.
-        private static bool LevelChangeConfigured => !string.IsNullOrEmpty(Secret.ASA_SET_LEVEL_URL);
+        private static bool LevelChangeConfigured =>
+            !string.IsNullOrEmpty(Secret.ASA_SET_LEVEL_URL);
 
         private static int LevelIndex(string cefrLevel)
         {

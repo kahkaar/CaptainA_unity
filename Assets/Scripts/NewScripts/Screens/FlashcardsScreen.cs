@@ -133,7 +133,9 @@ namespace SaySuomi.Navigation
 
                 // Update the progress value. The progress value is the number of cards that the user in CARD_TYPE.REVIEW
                 // round down instead of round up (int) is enough for rounding down
-                int reviewCards = flashCard.cards.Count(card => card.cardType == (int)CARD_TYPE.REVIEW);
+                int reviewCards = flashCard.cards.Count(card =>
+                    card.cardType == (int)CARD_TYPE.REVIEW
+                );
                 flashCard.progress = (int)((double)reviewCards / flashCard.cards.Count * 100);
 
                 SaveData.SaveIntoJson(flashCard, flashCard.fileName);
@@ -144,7 +146,11 @@ namespace SaySuomi.Navigation
                 deck.ProgressBar.fillAmount = flashCard.progress / 100f;
                 deck.ProgressText.text = flashCard.progress + "%";
 
-                deck.CardInfoText.text = TextUtils.FormatCardTypeNumber(newCards, learnCards, dueCards);
+                deck.CardInfoText.text = TextUtils.FormatCardTypeNumber(
+                    newCards,
+                    learnCards,
+                    dueCards
+                );
 
                 // Pass phoneme value to EventTrigger function
                 // We need EventTrigger to detect long press and short press

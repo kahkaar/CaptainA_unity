@@ -85,7 +85,6 @@ namespace SaySuomi.Navigation
 
         protected override void Bind()
         {
-
             // This is for testing purposes
             // PlayerPrefs.SetInt("BackgroundFormCompleted", 0);
             // PlayerPrefs.SetInt("ConsentGiven", 0);
@@ -161,7 +160,11 @@ namespace SaySuomi.Navigation
             else if (PlayerPrefs.GetInt(Const.PREF_INS_MAIN) < Const.APP_VERSION)
             {
                 // Show the instruction if the version is different from the last time
-                InstructionModal.Show(Const.PREF_INS_MAIN, Const.NEW_VERSION_TEXT, Const.APP_VERSION);
+                InstructionModal.Show(
+                    Const.PREF_INS_MAIN,
+                    Const.NEW_VERSION_TEXT,
+                    Const.APP_VERSION
+                );
             }
         }
 
@@ -683,7 +686,9 @@ namespace SaySuomi.Navigation
                 );
 
             replayButtonGO.transform.GetComponent<Button>().onClick.RemoveAllListeners();
-            yield return AudioManager.GetManager().LoadAudioClip(Const.REPLAY_FILENAME, replayButtonGO);
+            yield return AudioManager
+                .GetManager()
+                .LoadAudioClip(Const.REPLAY_FILENAME, replayButtonGO);
         }
 
         private void OnServerDone()

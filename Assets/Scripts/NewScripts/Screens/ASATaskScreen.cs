@@ -12,30 +12,42 @@ namespace SaySuomi.Navigation
     {
         [SerializeField]
         GameObject recordButtonGO;
+
         [SerializeField]
         GameObject pauseButtonGO;
+
         [SerializeField]
         GameObject sendButtonGO;
+
         [SerializeField]
         GameObject replayButtonGO;
+
         [SerializeField]
         GameObject replayBarGO;
+
         [SerializeField]
         GameObject progressBarBackgroundGO;
+
         [SerializeField]
         GameObject progressBarGO;
 
         TaskSendingModal loadingModal;
+
         [SerializeField]
         GameObject loadingIconGO;
+
         [SerializeField]
         GameObject resultsButtonGO;
+
         [SerializeField]
         GameObject errorTextGO;
+
         [SerializeField]
         GameObject backButtonGO;
+
         [SerializeField]
         GameObject errorPopupGO;
+
         [SerializeField]
         TextMeshProUGUI loadingTitleText;
 
@@ -105,7 +117,6 @@ namespace SaySuomi.Navigation
 
         protected override void Bind()
         {
-
             loadingModal = Navigator.GetManager().Get<TaskSendingModal>();
 
             Navigator navigator = Navigator.GetManager();
@@ -133,7 +144,10 @@ namespace SaySuomi.Navigation
             //
             // Hosted on NetworkManager, because this screen hides behind Results and a post
             // running on it would die there.
-            selfAssessmentFeedback = new FeedbackAutoSend(NetworkManager.GetManager(), "self_assessment");
+            selfAssessmentFeedback = new FeedbackAutoSend(
+                NetworkManager.GetManager(),
+                "self_assessment"
+            );
             selfAssessmentFeedback.Attach(ratingOptions, () => feedbackTextGO.text);
             selfAssessmentFeedback.AttachComment(feedbackTextGO, ratingOptions);
         }
@@ -335,7 +349,9 @@ namespace SaySuomi.Navigation
             replayButtonGO.SetActive(true);
 
             // Retrieve audio for replaying
-            StartCoroutine(AudioManager.GetManager().LoadAudioClip(Const.ASA_FILENAME, replayButtonGO));
+            StartCoroutine(
+                AudioManager.GetManager().LoadAudioClip(Const.ASA_FILENAME, replayButtonGO)
+            );
         }
 
         public void OnReplayButtonClicked()
