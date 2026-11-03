@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,82 +7,97 @@ namespace SaySuomi.Navigation
 {
     public class FreestyleScreen : AppScreen
     {
-        public override bool IsTabRoot => true;
+        [Header("Top Panel")]
+        [SerializeField]
+        private GameObject topPanelGO;
+
+        [Tooltip("Shown on the start layout.")]
+        [SerializeField]
+        private GameObject topPanelBigGO;
+
+        [Tooltip("Shown once the learner focuses the text input.")]
+        [SerializeField]
+        private GameObject topPanelSmallGO;
+
+        [Tooltip("Moves with the text input panel.")]
+        [SerializeField]
+        private GameObject dropShadowLGO;
+
+        [Tooltip("Moves with the text input panel.")]
+        [SerializeField]
+        private GameObject dropShadowBGO;
+
+        [Tooltip("Moves with the text input panel.")]
+        [SerializeField]
+        private GameObject dropShadowRGO;
+
+        [Header("Text Input")]
+        [SerializeField]
+        private GameObject textInputPanelGO;
 
         [SerializeField]
-        GameObject topPanelGO;
+        private TMP_InputField inputText;
 
         [SerializeField]
-        GameObject topPanelBigGO;
+        private TextMeshProUGUI promptText;
 
         [SerializeField]
-        GameObject topPanelSmallGO;
+        private TextMeshProUGUI readAloudText;
 
         [SerializeField]
-        GameObject dropShadowLGO;
+        private GameObject startButtonGO;
 
         [SerializeField]
-        GameObject dropShadowBGO;
+        private GameObject againButtonGO;
+
+        [Header("Recording")]
+        [SerializeField]
+        private GameObject recordButtonGO;
 
         [SerializeField]
-        GameObject dropShadowRGO;
+        private GameObject stopButtonGO;
+
+        [Tooltip("Fill that counts down the recording time.")]
+        [SerializeField]
+        private GameObject stopButtonPanelGO;
 
         [SerializeField]
-        GameObject textInputPanelGO;
+        private GameObject stopButtonPanelBackgroundGO;
 
+        [Tooltip("Spins while waiting for the server.")]
         [SerializeField]
-        GameObject debugTextGO;
+        private GameObject waitIconGO;
 
-        [SerializeField]
-        GameObject startButtonGO;
-
-        [SerializeField]
-        GameObject againButtonGO;
-
-        [SerializeField]
-        TMPro.TMP_InputField inputText;
-
-        [SerializeField]
-        GameObject stopButtonPanelGO;
-
-        [SerializeField]
-        GameObject stopButtonPanelBackgroundGO;
-
-        [SerializeField]
-        GameObject stopButtonGO;
-
-        [SerializeField]
-        GameObject waitIconGO;
-
-        [SerializeField]
-        GameObject recordButtonGO;
-
+        [Header("Results")]
         // There are two functions for hiding the buttons when user try new words
         // 1. When users first open the app, the buttons are hidden: SetUpStartUI()
         // 2. Hide the buttons when the user focus on the input text: SetupFocusTextUI()
+        [Tooltip("Plays back the learner's recording.")]
         [SerializeField]
-        GameObject replayButtonGO;
+        private GameObject replayButtonGO;
+
+        [Tooltip("Plays the sample audio.")]
+        [SerializeField]
+        private GameObject sampleButtonGO;
+
+        [Tooltip("Opens the detailed score.")]
+        [SerializeField]
+        private GameObject detailButtonGO;
 
         [SerializeField]
-        GameObject sampleButtonGO; // Play sample audio
+        private GameObject illustrationGO; // Illustration
 
+        [Header("Debug")]
         [SerializeField]
-        GameObject detailButtonGO; // Display detail feedback
+        private GameObject debugTextGO;
 
-        [SerializeField]
-        GameObject illustrationGO; // Illustration
-
-        AudioClip sampleClip;
+        private AudioClip sampleClip;
 
         private float countdownTime = 2.0f;
         private float currentTime = 2.0f;
         private string transcript;
 
-        [SerializeField]
-        TMPro.TextMeshProUGUI promptText;
-
-        [SerializeField]
-        TMPro.TextMeshProUGUI readAloudText;
+        public override bool IsTabRoot => true;
 
         protected override void Bind()
         {
@@ -135,14 +151,7 @@ namespace SaySuomi.Navigation
                 );
         }
 
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start()
-        {
-            // Set the start UI to be active
-            SetUpStartUI();
-        }
-
-        void OnEnable()
+        private void OnEnable()
         {
             // This is for testing purposes
             // PlayerPrefs.SetInt("BackgroundFormCompleted", 0);
@@ -168,7 +177,34 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnDisable()
+        // Start is called once before the first execution of Update after the MonoBehaviour is created
+        private void Start()
+        {
+            // Set the start UI to be active
+            SetUpStartUI();
+        }
+
+        // Update is called once per frame
+        private void Update()
+        {
+            // Only run this code if the stopButtonGO  is active
+            if (stopButtonPanelGO.activeSelf == true)
+            {
+                UpdateProgressCircle();
+            }
+
+            // Rotate the wait icon if it is active every frame
+            // only less half 1 degree per 2 frames
+            if (waitIconGO.activeSelf == true)
+            {
+                if (Time.frameCount % 2 == 0)
+                {
+                    waitIconGO.transform.Rotate(0, 0, -1.5f);
+                }
+            }
+        }
+
+        private void OnDisable()
         {
             // The stop button's panel is only up while recording. Without this the microphone
             // keeps running behind the next tab, with nothing left on screen to stop it.
@@ -191,23 +227,216 @@ namespace SaySuomi.Navigation
             }
         }
 
-        // Update is called once per frame
-        void Update()
+        public void SetUpStartUI()
         {
-            // Only run this code if the stopButtonGO  is active
-            if (stopButtonPanelGO.activeSelf == true)
+            // Set up the default image for the top panel. This image is a sprite that is loaded from the Resources folder.
+            //topPanelGO.GetComponent<Image>().sprite = Resources.Load<Sprite>("app_icons/top_bar_BIG");
+            topPanelSmallGO.SetActive(false);
+            topPanelBigGO.SetActive(true);
+
+            // Move the top panel to the top of the screen
+            topPanelGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            // Set the default size for the top panel
+            topPanelGO.GetComponent<RectTransform>().sizeDelta = new Vector2(900, 560);
+
+            // Change the text prompt of PromptText
+            textInputPanelGO.GetComponentInChildren<TextMeshProUGUI>().text =
+                "Did you find a new Finnish word or sentence?";
+
+            // Clean the debug text
+            debugTextGO.SetActive(false);
+            debugTextGO.GetComponent<TextMeshProUGUI>().text = "";
+
+            textInputPanelGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -904);
+
+            dropShadowLGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(-372, -904);
+            dropShadowBGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -1188);
+            dropShadowRGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(372, -904);
+
+            // Enable the startButtonGO
+            startButtonGO.SetActive(true);
+            // Enable the start button button, not GO
+            startButtonGO.GetComponent<Button>().interactable = true;
+
+            // Disable the ReadAloudTextGO
+            readAloudText.gameObject.SetActive(false);
+
+            // Disable the recording button
+            recordButtonGO.SetActive(false);
+            againButtonGO.SetActive(false);
+            replayButtonGO.SetActive(false);
+            detailButtonGO.SetActive(false);
+
+            // Disable the illustration
+            illustrationGO.SetActive(false);
+
+            // Disable the sample button
+            sampleButtonGO.SetActive(false);
+
+            ResetStopButtonAnimation();
+
+            ResetWaitIcon();
+        }
+
+        public void SetupFocusTextUI()
+        {
+            // Set up the smaller image for the top panel. This image is a sprite that is loaded from the Resources folder.
+            //topPanelGO.GetComponent<UnityEngine.UI.Image>().sprite = Resources.Load<Sprite>(
+            //    "app_icons/top_bar_SMALL"
+            //);
+            topPanelBigGO.SetActive(false);
+            topPanelSmallGO.SetActive(true);
+
+            // Move the top panel to the top of the screen
+            topPanelGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
+            // Set the default size for the top panel
+            topPanelGO.GetComponent<RectTransform>().sizeDelta = new Vector2(900, 250);
+
+            // Change the text prompt of PromptText
+            textInputPanelGO.GetComponentInChildren<TextMeshProUGUI>().text =
+                "Type in Finnish, and \nlet's practice!";
+
+            // Clean the debug text, if any
+            debugTextGO.SetActive(false);
+            debugTextGO.GetComponent<TextMeshProUGUI>().text = "";
+
+            textInputPanelGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -692);
+
+            dropShadowLGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(-372, -692);
+            dropShadowBGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -976);
+            dropShadowRGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(372, -692);
+
+            // Enable the inputText
+            inputText.gameObject.SetActive(true);
+
+            // Disable the text prompt of PromptText
+            readAloudText.gameObject.SetActive(false);
+
+            // Disable the start button button, not GO
+            // Disable the button will change its color to gray and make it unclickable (set in the Editor)
+
+            // Only disable the start button if there is no text in the input field
+            if (inputText.text.Length == 0)
+                startButtonGO.GetComponent<UnityEngine.UI.Button>().interactable = false;
+            else
             {
-                UpdateProgressCircle();
+                startButtonGO.GetComponent<UnityEngine.UI.Button>().interactable = true;
             }
 
-            // Rotate the wait icon if it is active every frame
-            // only less half 1 degree per 2 frames
-            if (waitIconGO.activeSelf == true)
+            // Enable the startButtonGO
+            startButtonGO.SetActive(true);
+
+            // Disable the recording button
+            recordButtonGO.SetActive(false);
+            againButtonGO.SetActive(false);
+            replayButtonGO.SetActive(false);
+            detailButtonGO.SetActive(false);
+
+            // Disable the illustration
+            illustrationGO.SetActive(false);
+
+            // Disable the sample button
+            sampleButtonGO.SetActive(false);
+
+            ResetStopButtonAnimation();
+
+            ResetWaitIcon();
+        }
+
+        public void SetUpReadAloudUI()
+        {
+            // Change the text prompt of PromptText
+            textInputPanelGO.GetComponentInChildren<TextMeshProUGUI>().text =
+                "Tap the record \nbutton and speak.";
+
+            // Disable the inputText
+            inputText.gameObject.SetActive(false);
+
+            // Santinize the text
+            string finnishText = inputText.text;
+            finnishText = TextUtils.SantinizeText(finnishText).ToLower();
+
+            readAloudText.gameObject.SetActive(true);
+            readAloudText.text = finnishText;
+
+            // Set ReadAloudText to normal following design guideline
+            // ReadAloudText is the text that will be read aloud
+            // It will be set to bold when the result is shown
+            readAloudText.fontStyle = FontStyles.Normal;
+
+            // Try to find the illustration and display it
+            ShowSampleIllustration(finnishText);
+
+            // Try to find if there is audio sample for the text
+            ShowSampleAudio(finnishText);
+
+            // Clean the input text
+            inputText.text = "";
+
+            // Clean the debug text, if any
+            debugTextGO.SetActive(false);
+            debugTextGO.GetComponent<TextMeshProUGUI>().text = "";
+
+            // Disable the startButtonGO
+            startButtonGO.SetActive(false);
+
+            // Enable the recording button
+            recordButtonGO.SetActive(true);
+            againButtonGO.SetActive(true);
+        }
+
+        public void ShowSampleIllustration(string word)
+        {
+            // Find the illustration and display it
+            Sprite newSprite = Resources.Load<Sprite>(Const.ILLUSTRATIONS_PATH + word);
+            if (newSprite)
             {
-                if (Time.frameCount % 2 == 0)
-                {
-                    waitIconGO.transform.Rotate(0, 0, -1.5f);
-                }
+                illustrationGO.GetComponent<Image>().sprite = newSprite;
+                illustrationGO.SetActive(true);
+            }
+            else
+            {
+                // If the illustration is not found, disable the illustration GO
+                illustrationGO.SetActive(false);
+            }
+        }
+
+        public void ShowSampleAudio(string word)
+        {
+            GetSampleClip(word);
+
+            if (sampleClip != null)
+            {
+                //Debug.Log("Sample audio update");
+                sampleButtonGO.SetActive(true);
+
+                Button sampleButton = sampleButtonGO.transform.GetComponent<Button>();
+                // Need to remove old OnClick Listeners, otherwise it will keep adding up
+                sampleButton.onClick.RemoveAllListeners();
+                sampleButton.onClick.AddListener(() =>
+                    AudioManager.GetManager().PlayAudioClip(sampleClip)
+                );
+            }
+            else
+            {
+                sampleButtonGO.SetActive(false);
+            }
+        }
+
+        public void GetSampleClip(string word)
+        {
+            // Audio file name is the santinized word
+            // with lower case
+            string audioFileName = TextUtils.SantinizeText(word).ToLower();
+
+            // Load sample clip from the natural folder
+            sampleClip = Resources.Load<AudioClip>(Const.AUDIO_NATURAL_PATH + audioFileName);
+
+            // If the sample clip is not found in the natural folder
+            // try to find it in the AI folder
+            if (sampleClip == null)
+            {
+                sampleClip = Resources.Load<AudioClip>(Const.AUDIO_AI_PATH + audioFileName);
             }
         }
 
@@ -305,7 +534,7 @@ namespace SaySuomi.Navigation
             StartCoroutine(StopRecordingAndProcessAudio());
         }
 
-        private void OnInputTextFocus(TMPro.TMP_InputField inputField)
+        private void OnInputTextFocus(TMP_InputField inputField)
         {
             // Debug.Log(inputField.name + " is focused.");
             SetupFocusTextUI();
@@ -320,7 +549,7 @@ namespace SaySuomi.Navigation
         /// If the input field's text length is greater than 0, the Start button is made interactable.
         /// Otherwise, the Start button is made non-interactable.
         /// </remarks>
-        private void OnInputTextChange(TMPro.TMP_InputField inputField)
+        private void OnInputTextChange(TMP_InputField inputField)
         {
             // If the input field contains any text, enable the Start button
             if (inputField.text.Length > 0)
@@ -340,7 +569,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        private void OnInputTextUnfocus(TMPro.TMP_InputField inputField)
+        private void OnInputTextUnfocus(TMP_InputField inputField)
         {
             Debug.Log(inputField.name + " is unfocused.");
         }
@@ -405,122 +634,6 @@ namespace SaySuomi.Navigation
             StartTimer();
         }
 
-        public void SetUpStartUI()
-        {
-            // Set up the default image for the top panel. This image is a sprite that is loaded from the Resources folder.
-            //topPanelGO.GetComponent<Image>().sprite = Resources.Load<Sprite>("app_icons/top_bar_BIG");
-            topPanelSmallGO.SetActive(false);
-            topPanelBigGO.SetActive(true);
-
-            // Move the top panel to the top of the screen
-            topPanelGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-            // Set the default size for the top panel
-            topPanelGO.GetComponent<RectTransform>().sizeDelta = new Vector2(900, 560);
-
-            // Change the text prompt of PromptText
-            textInputPanelGO.GetComponentInChildren<TMPro.TextMeshProUGUI>().text =
-                "Did you find a new Finnish word or sentence?";
-
-            // Clean the debug text
-            debugTextGO.SetActive(false);
-            debugTextGO.GetComponent<TMPro.TextMeshProUGUI>().text = "";
-
-            textInputPanelGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -904);
-
-            dropShadowLGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(-372, -904);
-            dropShadowBGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -1188);
-            dropShadowRGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(372, -904);
-
-            // Enable the startButtonGO
-            startButtonGO.SetActive(true);
-            // Enable the start button button, not GO
-            startButtonGO.GetComponent<Button>().interactable = true;
-
-            // Disable the ReadAloudTextGO
-            readAloudText.gameObject.SetActive(false);
-
-            // Disable the recording button
-            recordButtonGO.SetActive(false);
-            againButtonGO.SetActive(false);
-            replayButtonGO.SetActive(false);
-            detailButtonGO.SetActive(false);
-
-            // Disable the illustration
-            illustrationGO.SetActive(false);
-
-            // Disable the sample button
-            sampleButtonGO.SetActive(false);
-
-            ResetStopButtonAnimation();
-
-            ResetWaitIcon();
-        }
-
-        public void SetupFocusTextUI()
-        {
-            // Set up the smaller image for the top panel. This image is a sprite that is loaded from the Resources folder.
-            //topPanelGO.GetComponent<UnityEngine.UI.Image>().sprite = Resources.Load<Sprite>(
-            //    "app_icons/top_bar_SMALL"
-            //);
-            topPanelBigGO.SetActive(false);
-            topPanelSmallGO.SetActive(true);
-
-            // Move the top panel to the top of the screen
-            topPanelGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 0);
-            // Set the default size for the top panel
-            topPanelGO.GetComponent<RectTransform>().sizeDelta = new Vector2(900, 250);
-
-            // Change the text prompt of PromptText
-            textInputPanelGO.GetComponentInChildren<TMPro.TextMeshProUGUI>().text =
-                "Type in Finnish, and \nlet's practice!";
-
-            // Clean the debug text, if any
-            debugTextGO.SetActive(false);
-            debugTextGO.GetComponent<TMPro.TextMeshProUGUI>().text = "";
-
-            textInputPanelGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -692);
-
-            dropShadowLGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(-372, -692);
-            dropShadowBGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, -976);
-            dropShadowRGO.GetComponent<RectTransform>().anchoredPosition = new Vector2(372, -692);
-
-            // Enable the inputText
-            inputText.gameObject.SetActive(true);
-
-            // Disable the text prompt of PromptText
-            readAloudText.gameObject.SetActive(false);
-
-            // Disable the start button button, not GO
-            // Disable the button will change its color to gray and make it unclickable (set in the Editor)
-
-            // Only disable the start button if there is no text in the input field
-            if (inputText.text.Length == 0)
-                startButtonGO.GetComponent<UnityEngine.UI.Button>().interactable = false;
-            else
-            {
-                startButtonGO.GetComponent<UnityEngine.UI.Button>().interactable = true;
-            }
-
-            // Enable the startButtonGO
-            startButtonGO.SetActive(true);
-
-            // Disable the recording button
-            recordButtonGO.SetActive(false);
-            againButtonGO.SetActive(false);
-            replayButtonGO.SetActive(false);
-            detailButtonGO.SetActive(false);
-
-            // Disable the illustration
-            illustrationGO.SetActive(false);
-
-            // Disable the sample button
-            sampleButtonGO.SetActive(false);
-
-            ResetStopButtonAnimation();
-
-            ResetWaitIcon();
-        }
-
         private void ResetStopButtonAnimation()
         {
             // Disable the stop button
@@ -541,103 +654,6 @@ namespace SaySuomi.Navigation
             // Reset the wait icon rotation
             // Quaternion.identity is the default rotation (0, 0, 0)
             waitIconGO.transform.rotation = Quaternion.identity;
-        }
-
-        public void SetUpReadAloudUI()
-        {
-            // Change the text prompt of PromptText
-            textInputPanelGO.GetComponentInChildren<TMPro.TextMeshProUGUI>().text =
-                "Tap the record \nbutton and speak.";
-
-            // Disable the inputText
-            inputText.gameObject.SetActive(false);
-
-            // Santinize the text
-            string finnishText = inputText.text;
-            finnishText = TextUtils.SantinizeText(finnishText).ToLower();
-
-            readAloudText.gameObject.SetActive(true);
-            readAloudText.text = finnishText;
-
-            // Set ReadAloudText to normal following design guideline
-            // ReadAloudText is the text that will be read aloud
-            // It will be set to bold when the result is shown
-            readAloudText.fontStyle = TMPro.FontStyles.Normal;
-
-            // Try to find the illustration and display it
-            ShowSampleIllustration(finnishText);
-
-            // Try to find if there is audio sample for the text
-            ShowSampleAudio(finnishText);
-
-            // Clean the input text
-            inputText.text = "";
-
-            // Clean the debug text, if any
-            debugTextGO.SetActive(false);
-            debugTextGO.GetComponent<TMPro.TextMeshProUGUI>().text = "";
-
-            // Disable the startButtonGO
-            startButtonGO.SetActive(false);
-
-            // Enable the recording button
-            recordButtonGO.SetActive(true);
-            againButtonGO.SetActive(true);
-        }
-
-        public void ShowSampleIllustration(string word)
-        {
-            // Find the illustration and display it
-            Sprite newSprite = Resources.Load<Sprite>(Const.ILLUSTRATIONS_PATH + word);
-            if (newSprite)
-            {
-                illustrationGO.GetComponent<Image>().sprite = newSprite;
-                illustrationGO.SetActive(true);
-            }
-            else
-            {
-                // If the illustration is not found, disable the illustration GO
-                illustrationGO.SetActive(false);
-            }
-        }
-
-        public void ShowSampleAudio(string word)
-        {
-            GetSampleClip(word);
-
-            if (sampleClip != null)
-            {
-                //Debug.Log("Sample audio update");
-                sampleButtonGO.SetActive(true);
-
-                Button sampleButton = sampleButtonGO.transform.GetComponent<Button>();
-                // Need to remove old OnClick Listeners, otherwise it will keep adding up
-                sampleButton.onClick.RemoveAllListeners();
-                sampleButton.onClick.AddListener(() =>
-                    AudioManager.GetManager().PlayAudioClip(sampleClip)
-                );
-            }
-            else
-            {
-                sampleButtonGO.SetActive(false);
-            }
-        }
-
-        public void GetSampleClip(string word)
-        {
-            // Audio file name is the santinized word
-            // with lower case
-            string audioFileName = TextUtils.SantinizeText(word).ToLower();
-
-            // Load sample clip from the natural folder
-            sampleClip = Resources.Load<AudioClip>(Const.AUDIO_NATURAL_PATH + audioFileName);
-
-            // If the sample clip is not found in the natural folder
-            // try to find it in the AI folder
-            if (sampleClip == null)
-            {
-                sampleClip = Resources.Load<AudioClip>(Const.AUDIO_AI_PATH + audioFileName);
-            }
         }
 
         private IEnumerator StopRecordingAndProcessAudio()
@@ -674,7 +690,7 @@ namespace SaySuomi.Navigation
                             promptText.text = "Here are your results. \n Great effort!";
 
                             // Set the result text to bold following design guideline
-                            readAloudText.fontStyle = TMPro.FontStyles.Bold;
+                            readAloudText.fontStyle = FontStyles.Bold;
                         }
                         else
                         {

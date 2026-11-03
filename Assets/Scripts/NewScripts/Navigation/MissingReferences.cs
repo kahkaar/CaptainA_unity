@@ -11,7 +11,7 @@ namespace SaySuomi.Navigation
     /// </summary>
     internal static class MissingReferences
     {
-        const BindingFlags OwnInstanceFields =
+        private const BindingFlags OwnInstanceFields =
             BindingFlags.Instance
             | BindingFlags.Public
             | BindingFlags.NonPublic
@@ -35,7 +35,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        static bool IsEmpty(FieldInfo field, MonoBehaviour component)
+        private static bool IsEmpty(FieldInfo field, MonoBehaviour component)
         {
             object value = field.GetValue(component);
 

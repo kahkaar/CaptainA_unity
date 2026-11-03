@@ -7,47 +7,54 @@ namespace SaySuomi.Navigation
 {
     public class ASATaskListScreen : AppScreen
     {
+        [Header("Task List")]
+        [Tooltip("In task order: each opens the matching entry in ASATaskScreen's Tasks.")]
         [SerializeField]
-        GameObject errorPopupGO;
+        private Button[] taskButtons;
 
         [SerializeField]
-        GameObject loadingIconGO;
+        private Button backButton;
 
         [SerializeField]
-        GameObject profileLoadingBackButtonGO;
+        private Button profileButton;
+
+        [Tooltip("Drop-down error message, shown through ErrorBanner.")]
+        [SerializeField]
+        private GameObject errorPopupGO;
+
+        [Header("Profile Loading Modal")]
+        [SerializeField]
+        private LoadingModal profileLoadingModal;
 
         [SerializeField]
-        GameObject profileLoadingErrorTextGO;
+        private GameObject loadingIconGO;
+
+        [Tooltip("Shown only after the request fails.")]
+        [SerializeField]
+        private GameObject profileLoadingBackButtonGO;
 
         [SerializeField]
-        TMP_InputField overallFeedbackTextGO;
+        private GameObject profileLoadingErrorTextGO;
+
+        [Header("Feedback Modal")]
+        [SerializeField]
+        private GameObject overallFeedbackPopUpGO;
 
         [SerializeField]
-        ToggleGroup overallRatingOptions;
+        private Button feedbackBackButton;
 
         [SerializeField]
-        LoadingModal profileLoadingModal;
-        ModalScreen overallFeedbackModal;
-
-        LocalizedTextHelper profileErrorHelper;
+        private Button feedbackSendButton;
 
         [SerializeField]
-        Button backButton;
+        private ToggleGroup overallRatingOptions;
 
         [SerializeField]
-        Button profileButton;
+        private TMP_InputField overallFeedbackTextGO;
 
-        [SerializeField]
-        Button feedbackSendButton;
+        private ModalScreen overallFeedbackModal;
 
-        [SerializeField]
-        Button feedbackBackButton;
-
-        [SerializeField]
-        GameObject overallFeedbackPopUpGO;
-
-        [SerializeField]
-        Button[] taskButtons;
+        private LocalizedTextHelper profileErrorHelper;
 
         protected override void Bind()
         {
@@ -85,7 +92,7 @@ namespace SaySuomi.Navigation
             };
         }
 
-        void OnEnable()
+        private void OnEnable()
         {
             // Stops animated dropdown error message from appearing
             ErrorBanner.Hide(errorPopupGO);
@@ -95,57 +102,9 @@ namespace SaySuomi.Navigation
             OverallFeedback();
         }
 
-        void SendOverallFeedback()
+        private void OnDestroy()
         {
-            var overallRating = overallRatingOptions.ActiveToggles().FirstOrDefault();
-            string comment_overall = overallFeedbackTextGO.text;
-
-            // Show drop-down error animation if attempting to send feedback without selecting an emoji
-            if (overallRating == null)
-            {
-                ErrorBanner.Show(errorPopupGO);
-                return;
-            }
-
-            // Send feedback to server
-            StartCoroutine(
-                NetworkManager
-                    .GetManager()
-                    .ServerPost_feedback(
-                        POSTType.USER_ASA_FEEDBACK,
-                        "overall_experience",
-                        overallRating.GetComponent<OptionValue>().value,
-                        comment_overall
-                    )
-            );
-
-            // OnBack resets the form and records that the learner was asked.
-            Navigator.GetManager().Back();
-        }
-
-        /// <summary>
-        /// Restarts the countdown to the next overall-feedback ask.
-        ///
-        /// Called for both Send and Cancel: what is recorded is that the learner was asked at
-        /// this point, not what they said. That is enough to pace the question, and it means
-        /// declining is respected for a full interval rather than until the next task.
-        ///
-        /// Saved immediately - a decision lost to the app being killed is a learner who gets
-        /// asked again anyway, which is the behaviour this exists to stop.
-        /// </summary>
-        void MarkOverallFeedbackAsked()
-        {
-            PlayerPrefs.SetInt(
-                Const.PREF_OVERALL_FEEDBACK_ASKED_AT,
-                PlayerPrefs.GetInt("TasksSent", 0)
-            );
-            PlayerPrefs.Save();
-        }
-
-        // The five task buttons differ only by index.
-        void OpenTask(int taskIndex)
-        {
-            Navigator.GetManager().Push<ASATaskScreen>().DisplayTask(taskIndex);
+            profileErrorHelper?.ClearText();
         }
 
         /// <summary>
@@ -213,12 +172,60 @@ namespace SaySuomi.Navigation
             ServerNotices.Show(profileErrorHelper, NetworkManager.GetManager().lastServerError);
         }
 
-        void OnDestroy()
+        private void SendOverallFeedback()
         {
-            profileErrorHelper?.ClearText();
+            var overallRating = overallRatingOptions.ActiveToggles().FirstOrDefault();
+            string comment_overall = overallFeedbackTextGO.text;
+
+            // Show drop-down error animation if attempting to send feedback without selecting an emoji
+            if (overallRating == null)
+            {
+                ErrorBanner.Show(errorPopupGO);
+                return;
+            }
+
+            // Send feedback to server
+            StartCoroutine(
+                NetworkManager
+                    .GetManager()
+                    .ServerPost_feedback(
+                        POSTType.USER_ASA_FEEDBACK,
+                        "overall_experience",
+                        overallRating.GetComponent<OptionValue>().value,
+                        comment_overall
+                    )
+            );
+
+            // OnBack resets the form and records that the learner was asked.
+            Navigator.GetManager().Back();
         }
 
-        void OverallFeedback()
+        /// <summary>
+        /// Restarts the countdown to the next overall-feedback ask.
+        ///
+        /// Called for both Send and Cancel: what is recorded is that the learner was asked at
+        /// this point, not what they said. That is enough to pace the question, and it means
+        /// declining is respected for a full interval rather than until the next task.
+        ///
+        /// Saved immediately - a decision lost to the app being killed is a learner who gets
+        /// asked again anyway, which is the behaviour this exists to stop.
+        /// </summary>
+        private void MarkOverallFeedbackAsked()
+        {
+            PlayerPrefs.SetInt(
+                Const.PREF_OVERALL_FEEDBACK_ASKED_AT,
+                PlayerPrefs.GetInt("TasksSent", 0)
+            );
+            PlayerPrefs.Save();
+        }
+
+        // The five task buttons differ only by index.
+        private void OpenTask(int taskIndex)
+        {
+            Navigator.GetManager().Push<ASATaskScreen>().DisplayTask(taskIndex);
+        }
+
+        private void OverallFeedback()
         {
             // Ask for overall feedback once Const.ASA_OVERALL_FEEDBACK_EVERY tasks have been
             // completed since the last time we asked.

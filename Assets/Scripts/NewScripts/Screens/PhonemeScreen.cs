@@ -7,34 +7,39 @@ namespace SaySuomi.Navigation
 {
     public class PhonemeScreen : AppScreen
     {
+        [Header("Explanation")]
+        [SerializeField]
+        private TextMeshProUGUI explainText;
+
+        [SerializeField]
+        private TextMeshProUGUI creditText;
+
+        [Header("Mouth Images")]
+        [SerializeField]
+        private Image frontMouth1;
+
+        [SerializeField]
+        private Image frontMouth2;
+
+        [SerializeField]
+        private Image sideMouth1;
+
+        [SerializeField]
+        private Image sideMouth2;
+
+        [Header("Buttons")]
+        [SerializeField]
+        private Button backButton;
+
+        [Tooltip("Opens the phoneme's video link.")]
+        [SerializeField]
+        private Button videoButton;
+
+        private Animation mouthAnimation;
+
+        private SOPhonemeHelper phonemeSO;
+
         public override ScreenLayer Layer => ScreenLayer.Overlay;
-
-        [SerializeField]
-        TextMeshProUGUI explainText;
-
-        [SerializeField]
-        Image frontMouth1;
-
-        [SerializeField]
-        Image frontMouth2;
-
-        [SerializeField]
-        Image sideMouth1;
-
-        [SerializeField]
-        Image sideMouth2;
-
-        [SerializeField]
-        TextMeshProUGUI creditText;
-        Animation mouthAnimation;
-
-        SOPhonemeHelper phonemeSO;
-
-        [SerializeField]
-        Button backButton;
-
-        [SerializeField]
-        Button videoButton;
 
         protected override void Bind()
         {
@@ -42,6 +47,33 @@ namespace SaySuomi.Navigation
 
             ButtonWiring.Replace(backButton, () => Navigator.GetManager().Back());
             ButtonWiring.Replace(videoButton, OnVideoButtonClick);
+        }
+
+        private void OnEnable()
+        {
+            // Empty the first time, because the caller only gives the phoneme after Push.
+            // Set when something on the Screen layer covered this and has now closed.
+            if (phonemeSO != null)
+            {
+                Display();
+            }
+
+            if (!PlayerPrefs.HasKey(Const.PREF_INS_PHONE))
+            {
+                InstructionModal.Show(Const.PREF_INS_PHONE, Const.INSTRUCTION_PHONE);
+            }
+        }
+
+        private void Update()
+        {
+            // Set focus to the panel
+            // so that the back button won't go back to the URL
+            EventSystem.current.SetSelectedGameObject(gameObject, null);
+        }
+
+        private void OnDisable()
+        {
+            mouthAnimation.clip = null;
         }
 
         public void Show(string phoneme)
@@ -57,27 +89,12 @@ namespace SaySuomi.Navigation
             Display();
         }
 
-        void OnVideoButtonClick()
+        private void OnVideoButtonClick()
         {
             Application.OpenURL(phonemeSO.videoURL);
         }
 
-        void OnEnable()
-        {
-            // Empty the first time, because the caller only gives the phoneme after Push.
-            // Set when something on the Screen layer covered this and has now closed.
-            if (phonemeSO != null)
-            {
-                Display();
-            }
-
-            if (!PlayerPrefs.HasKey(Const.PREF_INS_PHONE))
-            {
-                InstructionModal.Show(Const.PREF_INS_PHONE, Const.INSTRUCTION_PHONE);
-            }
-        }
-
-        void Display()
+        private void Display()
         {
             string phonemeString = TextUtils.WrapPhonemeSO(
                 phonemeSO,
@@ -99,18 +116,6 @@ namespace SaySuomi.Navigation
                 + ".\nBottom images: "
                 + phonemeSO.side_credit
                 + ".";
-        }
-
-        void OnDisable()
-        {
-            mouthAnimation.clip = null;
-        }
-
-        void Update()
-        {
-            // Set focus to the panel
-            // so that the back button won't go back to the URL
-            EventSystem.current.SetSelectedGameObject(gameObject, null);
         }
     }
 }

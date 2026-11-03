@@ -8,10 +8,10 @@ namespace SaySuomi.Navigation
     /// </summary>
     internal sealed class ModalHost : MonoBehaviour
     {
-        ModalDim dim;
-        TransitionRunner transition;
+        private ModalDim dim;
+        private TransitionRunner transition;
 
-        void Awake()
+        private void Awake()
         {
             transition = new TransitionRunner(this);
 
@@ -97,7 +97,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void PlaceDimBelow(ModalScreen modal)
+        private void PlaceDimBelow(ModalScreen modal)
         {
             if (dim != null)
             {
@@ -105,7 +105,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void SetDimAmount(float amount)
+        private void SetDimAmount(float amount)
         {
             if (dim != null)
             {

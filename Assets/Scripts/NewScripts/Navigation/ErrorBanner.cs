@@ -8,7 +8,7 @@ namespace SaySuomi.Navigation
     /// </summary>
     public static class ErrorBanner
     {
-        const string AnimationName = "Error Popup Animation";
+        private const string AnimationName = "Error Popup Animation";
 
         public static void Show(GameObject banner)
         {

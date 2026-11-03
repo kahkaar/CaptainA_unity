@@ -48,6 +48,40 @@ so a migrated button can't fire twice and its entries don't have to be cleared b
 
 `NetworkManager` needs nothing assigned, because it contains no UI.
 
+### Laying out the Inspector
+
+Keep a class's `[SerializeField]` fields together, near the top of the class, so the Inspector
+reads in a useful order:
+
+- **Groups:** use `[Header]` to split a class's fields by where the objects live in the hierarchy,
+  such as `Consent Modal`, with the screen's own objects first. Write headers in title case, and say
+  "Modal" rather than "Popup". A class with only a few obvious fields needs no headers.
+- **Tooltips:** add a `[Tooltip]` only when the name doesn't say enough: when an object appears, the
+  required order of an array, or a component its objects must have. Don't repeat the field's name.
+  Write tooltips as normal sentences, and say "modal" rather than "popup".
+- **Runtime values:** mark a public field that only holds runtime state `[System.NonSerialized]`,
+  so it stays out of the Inspector.
+
+Unity saves fields by name, so moving them or adding these attributes keeps their assigned values.
+
+## Member order
+
+Inside a class, members go in this order, and every member states its access, including `private`:
+
+1. Constants
+2. Static fields, whose order is kept because their initializers run from top to bottom
+3. Serialized fields, in their Inspector order
+4. Other fields
+5. Constructors
+6. Events and delegates
+7. Properties
+8. Unity messages and `Bind`, in the order they run: `Awake`, `Bind`, `OnEnable`, `Start`, `Update`,
+   `LateUpdate`, `OnDisable`, `OnDestroy`
+9. Other methods
+10. Nested types
+
+Within a group, go from public to internal, protected and private, then static before instance.
+
 ## Renaming and moving
 
 | Change                                | Effect                               |

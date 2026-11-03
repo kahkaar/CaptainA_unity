@@ -5,15 +5,15 @@ namespace SaySuomi.Navigation
     /// </summary>
     public sealed class ServerError
     {
-        public long ResponseCode { get; }
-
-        // The server's own wording, or null when the body was not the usual envelope.
-        public string ServerMessage { get; }
-
         public ServerError(long responseCode, string serverMessage)
         {
             ResponseCode = responseCode;
             ServerMessage = serverMessage;
         }
+
+        public long ResponseCode { get; }
+
+        // The server's own wording, or null when the body was not the usual envelope.
+        public string ServerMessage { get; }
     }
 }

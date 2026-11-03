@@ -8,12 +8,13 @@ namespace SaySuomi.Navigation
     /// </summary>
     public class LoadingModal : ModalScreen
     {
-        const float DegreesPerFrame = -6f;
+        private const float DegreesPerFrame = -6f;
 
+        [Tooltip("Spins while the modal waits on the server.")]
         [SerializeField]
-        Transform icon;
+        private Transform icon;
 
-        void Update()
+        private void Update()
         {
             if (icon.gameObject.activeSelf)
             {

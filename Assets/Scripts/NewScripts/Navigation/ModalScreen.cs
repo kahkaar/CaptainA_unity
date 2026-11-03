@@ -20,11 +20,6 @@ namespace SaySuomi.Navigation
         /// </summary>
         public Func<bool> OnBack { get; set; }
 
-        public override bool HandleBack()
-        {
-            return OnBack != null && OnBack();
-        }
-
         /// <summary>Makes a script-less popup openable, without needing any scene changes.</summary>
         public static ModalScreen Attach(GameObject popup, bool dismissible = true)
         {
@@ -43,6 +38,11 @@ namespace SaySuomi.Navigation
             modal.Dismissible = dismissible;
             modal.EnsureBound();
             return modal;
+        }
+
+        public override bool HandleBack()
+        {
+            return OnBack != null && OnBack();
         }
     }
 }

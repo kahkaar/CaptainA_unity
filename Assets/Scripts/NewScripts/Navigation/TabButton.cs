@@ -7,14 +7,17 @@ namespace SaySuomi.Navigation
     [RequireComponent(typeof(Button), typeof(Image))]
     public sealed class TabButton : MonoBehaviour
     {
+        [Tooltip("The screen this tab opens.")]
         [SerializeField]
-        AppScreen root;
+        private AppScreen root;
 
+        [Tooltip("Shown while this tab is selected.")]
         [SerializeField]
-        Sprite activeIcon;
+        private Sprite activeIcon;
 
+        [Tooltip("Shown while another tab is selected.")]
         [SerializeField]
-        Sprite inactiveIcon;
+        private Sprite inactiveIcon;
 
         public AppScreen Root => root;
 

@@ -10,72 +10,85 @@ namespace SaySuomi.Navigation
 {
     public class ASATaskScreen : AppScreen
     {
-        [SerializeField]
-        GameObject recordButtonGO;
-
-        [SerializeField]
-        GameObject pauseButtonGO;
-
-        [SerializeField]
-        GameObject sendButtonGO;
-
-        [SerializeField]
-        GameObject replayButtonGO;
-
-        [SerializeField]
-        GameObject replayBarGO;
-
-        [SerializeField]
-        GameObject progressBarBackgroundGO;
-
-        [SerializeField]
-        GameObject progressBarGO;
-
-        TaskSendingModal loadingModal;
-
-        [SerializeField]
-        GameObject loadingIconGO;
-
-        [SerializeField]
-        GameObject resultsButtonGO;
-
-        [SerializeField]
-        GameObject errorTextGO;
-
-        [SerializeField]
-        GameObject backButtonGO;
-
-        [SerializeField]
-        GameObject errorPopupGO;
-
-        [SerializeField]
-        TextMeshProUGUI loadingTitleText;
-
-        [SerializeField]
-        ToggleGroup ratingOptions;
-
-        // Posts the self-assessment emoji on tap rather than waiting for Results. Built once
-        // and kept: it remembers what the server already has, and that memory is what stops
-        // the Results button re-sending an answer that has not changed.
-        private FeedbackAutoSend selfAssessmentFeedback;
-
-        [SerializeField]
-        TMP_InputField feedbackTextGO;
-
-        [System.Serializable]
-        public class TaskAttributes
-        {
-            public LocalizedString taskText;
-            public Sprite taskImage;
-            public float recordingTime = 0;
-        }
-
+        [Header("Task")]
         // In the Inspector because it holds sprites, and assets cannot be found by path.
+        [Tooltip("In task order. An entry's position plus one is the task ID sent to the server.")]
         [SerializeField]
         private TaskAttributes[] tasks;
 
         [SerializeField]
         private TextMeshProUGUI taskTextGO;
+
+        [SerializeField]
+        private Image taskImageGO;
+
+        [Tooltip("Also the template for the back button on screens that have none of their own.")]
+        [SerializeField]
+        private Button taskBackButton;
+
+        [Header("Recording")]
+        [SerializeField]
+        private GameObject recordButtonGO;
+
+        [Tooltip("Stops the recording.")]
+        [SerializeField]
+        private GameObject pauseButtonGO;
+
+        [Tooltip("Fill that counts down the recording time.")]
+        [SerializeField]
+        private GameObject progressBarGO;
+
+        [SerializeField]
+        private GameObject progressBarBackgroundGO;
+
+        [Header("Replay and Send")]
+        [SerializeField]
+        private GameObject replayButtonGO;
+
+        [Tooltip("Fill that shows replay progress.")]
+        [SerializeField]
+        private GameObject replayBarGO;
+
+        [SerializeField]
+        private GameObject sendButtonGO;
+
+        [Header("Sending Modal")]
+        [SerializeField]
+        private TextMeshProUGUI loadingTitleText;
+
+        [SerializeField]
+        private GameObject loadingIconGO;
+
+        [SerializeField]
+        private GameObject errorTextGO;
+
+        [Tooltip("Drop-down error message, shown through ErrorBanner.")]
+        [SerializeField]
+        private GameObject errorPopupGO;
+
+        [SerializeField]
+        private ToggleGroup ratingOptions;
+
+        [SerializeField]
+        private TMP_InputField feedbackTextGO;
+
+        [Tooltip("Shown once the server has scored the recording.")]
+        [SerializeField]
+        private GameObject resultsButtonGO;
+
+        [Tooltip("Shown only after a failed send.")]
+        [SerializeField]
+        private GameObject backButtonGO;
+
+        [System.NonSerialized]
+        public int currentTaskSelected = -1;
+
+        private TaskSendingModal loadingModal;
+
+        // Posts the self-assessment emoji on tap rather than waiting for Results. Built once
+        // and kept: it remembers what the server already has, and that memory is what stops
+        // the Results button re-sending an answer that has not changed.
+        private FeedbackAutoSend selfAssessmentFeedback;
 
         private LocalizedTextHelper taskTextHelper;
 
@@ -83,16 +96,13 @@ namespace SaySuomi.Navigation
 
         private LocalizedTextHelper loadingErrorHelper;
 
-        [SerializeField]
-        private Image taskImageGO;
-
         private bool isRecording = false;
 
         private bool isReplaying = false;
 
         private float currentTime = 0;
 
-        public int currentTaskSelected = -1;
+        private AudioClip recording;
 
         /// <summary>
         /// The id the DTA server knows this task by. Its task ids start at 1
@@ -107,13 +117,8 @@ namespace SaySuomi.Navigation
         /// </summary>
         public int CurrentServerTaskId => currentTaskSelected + 1;
 
-        private AudioClip recording;
-
         /// <summary>The button ScreenBackButton copies, so all back buttons look the same.</summary>
         internal GameObject BackButtonTemplate => taskBackButton.gameObject;
-
-        [SerializeField]
-        Button taskBackButton;
 
         protected override void Bind()
         {
@@ -152,6 +157,57 @@ namespace SaySuomi.Navigation
             selfAssessmentFeedback.AttachComment(feedbackTextGO, ratingOptions);
         }
 
+        private void OnEnable()
+        {
+            replayBarGO.SetActive(false);
+            progressBarBackgroundGO.SetActive(false);
+            progressBarGO.SetActive(false);
+
+            pauseButtonGO.SetActive(false);
+            recordButtonGO.SetActive(true);
+            sendButtonGO.SetActive(false);
+            replayButtonGO.SetActive(false);
+
+            // The panel is reused, so it must open in a known state rather than whatever the
+            // last visit left behind. OnDisable already does this, but not every way out of a
+            // screen runs it - the app being backgrounded mid-recording does not - and the
+            // cost of being wrong here is a Stop button that never works again.
+            CancelRecording();
+        }
+
+        private void Update()
+        {
+            // Show relevant animations depending on state
+            if (isRecording)
+            {
+                UpdateProgressBar();
+            }
+            if (isReplaying)
+            {
+                UpdateReplayBar();
+            }
+        }
+
+        private void OnDisable()
+        {
+            taskTextHelper?.ClearText();
+
+            // Already destroyed when this runs because the app is quitting.
+            AudioManager audioManager = AudioManager.GetManager();
+            if (audioManager != null)
+            {
+                audioManager.StopReplaying();
+            }
+
+            CancelRecording();
+        }
+
+        private void OnDestroy()
+        {
+            loadingTitleHelper?.ClearText();
+            loadingErrorHelper?.ClearText();
+        }
+
         /// <summary>
         /// The microphone takes priority over leaving, because leaving would throw the recording
         /// away. What the screen shows then is Stop, so back does that: the first press stops
@@ -188,85 +244,6 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnEnable()
-        {
-            replayBarGO.SetActive(false);
-            progressBarBackgroundGO.SetActive(false);
-            progressBarGO.SetActive(false);
-
-            pauseButtonGO.SetActive(false);
-            recordButtonGO.SetActive(true);
-            sendButtonGO.SetActive(false);
-            replayButtonGO.SetActive(false);
-
-            // The panel is reused, so it must open in a known state rather than whatever the
-            // last visit left behind. OnDisable already does this, but not every way out of a
-            // screen runs it - the app being backgrounded mid-recording does not - and the
-            // cost of being wrong here is a Stop button that never works again.
-            CancelRecording();
-        }
-
-        void StartTimer()
-        {
-            // Start countdown so the user knows how long the recording will be
-            currentTime = tasks[currentTaskSelected].recordingTime;
-
-            // Hide the record button and replace it with the pause button
-            recordButtonGO.SetActive(false);
-            pauseButtonGO.SetActive(true);
-            sendButtonGO.SetActive(false);
-            replayButtonGO.SetActive(false);
-            replayBarGO.SetActive(false);
-
-            // Show the countdown progress bar
-            progressBarBackgroundGO.SetActive(true);
-            progressBarGO.SetActive(true);
-
-            isRecording = true;
-        }
-
-        void Update()
-        {
-            // Show relevant animations depending on state
-            if (isRecording)
-            {
-                UpdateProgressBar();
-            }
-            if (isReplaying)
-            {
-                UpdateReplayBar();
-            }
-        }
-
-        void UpdateProgressBar()
-        {
-            // Start decreasing currentTime with deltaTime and compare the ratio to given recordingTime
-            currentTime -= Time.deltaTime;
-            progressBarGO.GetComponent<Image>().fillAmount =
-                currentTime / tasks[currentTaskSelected].recordingTime;
-
-            // When currentTime reaches zero, the time has run out and recording is stopped
-            if (currentTime <= 0)
-            {
-                currentTime = 0;
-                progressBarGO.SetActive(false);
-                StopRecord();
-            }
-        }
-
-        void UpdateReplayBar()
-        {
-            // Same principle as with UpdateProgressBar(), but this time comparing with the length of the recording
-            currentTime -= Time.deltaTime;
-            replayBarGO.GetComponent<Image>().fillAmount = currentTime / recording.length;
-            if (currentTime <= 0)
-            {
-                currentTime = 0;
-                replayBarGO.SetActive(false);
-                isReplaying = false;
-            }
-        }
-
         public void OnRecordButtonClicked()
         {
             // Stop stays dead until the microphone is genuinely open. It used to be re-enabled
@@ -299,28 +276,6 @@ namespace SaySuomi.Navigation
                         AbandonRecording();
                     }
                 );
-        }
-
-        /// <summary>
-        /// Returns the panel to its ready-to-record state without producing a result.
-        /// Used when a recording never started, and when it captured nothing.
-        /// </summary>
-        private void AbandonRecording()
-        {
-            isRecording = false;
-            currentTime = 0f;
-
-            progressBarBackgroundGO.SetActive(false);
-            progressBarGO.SetActive(false);
-
-            pauseButtonGO.SetActive(false);
-            pauseButtonGO.GetComponent<Button>().interactable = true;
-            recordButtonGO.SetActive(true);
-
-            // Deliberately not offered: there is no new recording behind them, and the file on
-            // disk is still the previous answer.
-            sendButtonGO.SetActive(false);
-            replayButtonGO.SetActive(false);
         }
 
         public void StopRecord()
@@ -400,40 +355,6 @@ namespace SaySuomi.Navigation
             backButtonGO.SetActive(false);
         }
 
-        private void OnASAPostDone(bool serverOk)
-        {
-            loadingIconGO.SetActive(false);
-
-            if (serverOk)
-            {
-                resultsButtonGO.SetActive(true);
-                SetLoadingTitle(ServerNotices.LoadingCompleted());
-                return;
-            }
-
-            loadingModal.Dismissible = true;
-            errorTextGO.SetActive(true);
-            backButtonGO.SetActive(true);
-            SetLoadingTitle(ServerNotices.LoadingFailed());
-
-            loadingErrorHelper ??= new LocalizedTextHelper(
-                errorTextGO.GetComponent<TextMeshProUGUI>()
-            );
-            ServerNotices.Show(loadingErrorHelper, NetworkManager.GetManager().lastServerError);
-        }
-
-        private void SetLoadingTitle(LocalizedString message)
-        {
-            loadingTitleHelper ??= new LocalizedTextHelper(loadingTitleText);
-            loadingTitleHelper.SetText(message);
-        }
-
-        void OnDestroy()
-        {
-            loadingTitleHelper?.ClearText();
-            loadingErrorHelper?.ClearText();
-        }
-
         public void OnResultsButtonClicked()
         {
             var self_rating = ratingOptions.ActiveToggles().FirstOrDefault();
@@ -464,18 +385,102 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnDisable()
+        private void StartTimer()
         {
-            taskTextHelper?.ClearText();
+            // Start countdown so the user knows how long the recording will be
+            currentTime = tasks[currentTaskSelected].recordingTime;
 
-            // Already destroyed when this runs because the app is quitting.
-            AudioManager audioManager = AudioManager.GetManager();
-            if (audioManager != null)
+            // Hide the record button and replace it with the pause button
+            recordButtonGO.SetActive(false);
+            pauseButtonGO.SetActive(true);
+            sendButtonGO.SetActive(false);
+            replayButtonGO.SetActive(false);
+            replayBarGO.SetActive(false);
+
+            // Show the countdown progress bar
+            progressBarBackgroundGO.SetActive(true);
+            progressBarGO.SetActive(true);
+
+            isRecording = true;
+        }
+
+        private void UpdateProgressBar()
+        {
+            // Start decreasing currentTime with deltaTime and compare the ratio to given recordingTime
+            currentTime -= Time.deltaTime;
+            progressBarGO.GetComponent<Image>().fillAmount =
+                currentTime / tasks[currentTaskSelected].recordingTime;
+
+            // When currentTime reaches zero, the time has run out and recording is stopped
+            if (currentTime <= 0)
             {
-                audioManager.StopReplaying();
+                currentTime = 0;
+                progressBarGO.SetActive(false);
+                StopRecord();
+            }
+        }
+
+        private void UpdateReplayBar()
+        {
+            // Same principle as with UpdateProgressBar(), but this time comparing with the length of the recording
+            currentTime -= Time.deltaTime;
+            replayBarGO.GetComponent<Image>().fillAmount = currentTime / recording.length;
+            if (currentTime <= 0)
+            {
+                currentTime = 0;
+                replayBarGO.SetActive(false);
+                isReplaying = false;
+            }
+        }
+
+        /// <summary>
+        /// Returns the panel to its ready-to-record state without producing a result.
+        /// Used when a recording never started, and when it captured nothing.
+        /// </summary>
+        private void AbandonRecording()
+        {
+            isRecording = false;
+            currentTime = 0f;
+
+            progressBarBackgroundGO.SetActive(false);
+            progressBarGO.SetActive(false);
+
+            pauseButtonGO.SetActive(false);
+            pauseButtonGO.GetComponent<Button>().interactable = true;
+            recordButtonGO.SetActive(true);
+
+            // Deliberately not offered: there is no new recording behind them, and the file on
+            // disk is still the previous answer.
+            sendButtonGO.SetActive(false);
+            replayButtonGO.SetActive(false);
+        }
+
+        private void OnASAPostDone(bool serverOk)
+        {
+            loadingIconGO.SetActive(false);
+
+            if (serverOk)
+            {
+                resultsButtonGO.SetActive(true);
+                SetLoadingTitle(ServerNotices.LoadingCompleted());
+                return;
             }
 
-            CancelRecording();
+            loadingModal.Dismissible = true;
+            errorTextGO.SetActive(true);
+            backButtonGO.SetActive(true);
+            SetLoadingTitle(ServerNotices.LoadingFailed());
+
+            loadingErrorHelper ??= new LocalizedTextHelper(
+                errorTextGO.GetComponent<TextMeshProUGUI>()
+            );
+            ServerNotices.Show(loadingErrorHelper, NetworkManager.GetManager().lastServerError);
+        }
+
+        private void SetLoadingTitle(LocalizedString message)
+        {
+            loadingTitleHelper ??= new LocalizedTextHelper(loadingTitleText);
+            loadingTitleHelper.SetText(message);
         }
 
         /// <summary>
@@ -517,6 +522,16 @@ namespace SaySuomi.Navigation
             {
                 pauseButtonGO.GetComponent<Button>().interactable = true;
             }
+        }
+
+        [System.Serializable]
+        public class TaskAttributes
+        {
+            public LocalizedString taskText;
+            public Sprite taskImage;
+
+            [Tooltip("The longest the learner can record for, in seconds.")]
+            public float recordingTime = 0;
         }
     }
 }

@@ -7,20 +7,24 @@ namespace SaySuomi.Navigation
     /// <summary>Marks an object on FlashcardsScreen as a deck, and says which one.</summary>
     public sealed class FlashcardDeck : MonoBehaviour
     {
+        [Header("Deck")]
+        [Tooltip("The name SaveData loads and saves this deck under.")]
         [SerializeField]
-        string deckName;
+        private string deckName;
+
+        [Tooltip("The deck unlocked by the secret code. Set this on one deck only.")]
+        [SerializeField]
+        private bool isSecret;
+
+        [Header("Deck Display")]
+        [SerializeField]
+        private Image progressBar;
 
         [SerializeField]
-        bool isSecret;
+        private TextMeshProUGUI progressText;
 
         [SerializeField]
-        Image progressBar;
-
-        [SerializeField]
-        TextMeshProUGUI progressText;
-
-        [SerializeField]
-        TextMeshProUGUI cardInfoText;
+        private TextMeshProUGUI cardInfoText;
 
         /// <summary>The name SaveData loads and saves this deck under.</summary>
         public string DeckName => deckName;

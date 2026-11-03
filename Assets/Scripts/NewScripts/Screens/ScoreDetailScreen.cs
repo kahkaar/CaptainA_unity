@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,46 +8,59 @@ namespace SaySuomi.Navigation
 {
     public class ScoreDetailScreen : AppScreen
     {
+        [Header("Prefab")]
+        [Tooltip("The ListDetailPanel prefab.")]
+        [SerializeField]
+        private GameObject detailScorePrefab;
+
+        [Header("Result")]
+        [SerializeField]
+        private GameObject resultPanelGO;
+
+        [SerializeField]
+        private TextMeshProUGUI resultText;
+
+        [Tooltip("Plays the sample audio.")]
+        [SerializeField]
+        private GameObject sampleButtonGO;
+
+        [Tooltip("Plays back the learner's recording.")]
+        [SerializeField]
+        private GameObject replayButtonGO;
+
+        [Header("Warnings")]
+        [Tooltip("Scrolled back to the top for each new result.")]
+        [SerializeField]
+        private ScrollRect scrollRectWarning;
+
+        [SerializeField]
+        private TextMeshProUGUI warningText;
+
+        [Header("Details")]
+        [Tooltip("Scrolled back to the top for each new result.")]
+        [SerializeField]
+        private ScrollRect scrollRectDetail;
+
+        [Tooltip("The scroll content the rows are added to.")]
+        [SerializeField]
+        private GameObject detailContent;
+
+        [Header("Close")]
+        [Tooltip("Every control that closes this screen.")]
+        [SerializeField]
+        private Button[] closeButtons;
+
+        private Animator animator;
+
+        private int warningNo = 0; // number of warning of the ASRResult
+        private ASRResult asrResult;
+        private AudioClip sampleClip;
+        private AudioClip replayClip;
+        private bool isScrolledUp = false;
+
+        private List<GameObject> listScrollItems = new List<GameObject>(); // To store item from scroll list and delete after inactive
+
         public override ScreenLayer Layer => ScreenLayer.Overlay;
-
-        [SerializeField]
-        GameObject detailScorePrefab; // Refer to ListDetailPanel prefab
-
-        [SerializeField]
-        GameObject resultPanelGO;
-
-        [SerializeField]
-        GameObject sampleButtonGO; // Replay sample audio
-
-        [SerializeField]
-        GameObject replayButtonGO; // Replay recorded audio
-        Animator animator;
-
-        [SerializeField]
-        GameObject detailContent; // Content store the list of detail score
-
-        [SerializeField]
-        ScrollRect scrollRectWarning; // Use this to reset scroll of WarningScroll
-
-        [SerializeField]
-        ScrollRect scrollRectDetail; // Use this to reset scroll of DetailScoreScroll
-
-        [SerializeField]
-        TMPro.TextMeshProUGUI warningText;
-
-        int warningNo = 0; // number of warning of the ASRResult
-        ASRResult asrResult;
-        AudioClip sampleClip;
-        AudioClip replayClip;
-        bool isScrolledUp = false;
-
-        List<GameObject> listScrollItems = new List<GameObject>(); // To store item from scroll list and delete after inactive
-
-        [SerializeField]
-        TMPro.TextMeshProUGUI resultText;
-
-        [SerializeField]
-        Button[] closeButtons;
 
         protected override void Bind()
         {
@@ -60,6 +74,25 @@ namespace SaySuomi.Navigation
             {
                 ButtonWiring.Replace(closeButton, () => Navigator.GetManager().Back());
             }
+        }
+
+        private void OnDisable()
+        /*
+        *   Need to Destroy all GO in the list to avoid create duplicate scorelist
+        */
+        {
+            warningNo = 0;
+            isScrolledUp = false;
+            DeleteListItems();
+
+            // Already destroyed when this runs because the app is quitting.
+            if (scrollRectWarning == null || scrollRectDetail == null)
+            {
+                return;
+            }
+
+            scrollRectWarning.verticalNormalizedPosition = 1.0f;
+            scrollRectDetail.verticalNormalizedPosition = 1.0f;
         }
 
         public void Show(string transcript, AudioClip _sampleClip, AudioClip _replayClip)
@@ -158,13 +191,13 @@ namespace SaySuomi.Navigation
                         .transform.Find("TargetActualPanel")
                         .transform.Find("TargetPanel")
                         .transform.Find("Phoneme")
-                        .GetComponent<TMPro.TextMeshProUGUI>()
+                        .GetComponent<TextMeshProUGUI>()
                         .text = phoneTarget;
 
                     detailScoreGO
                         .transform.Find("ExplainPanel")
                         .transform.Find("ExplainText")
-                        .GetComponent<TMPro.TextMeshProUGUI>()
+                        .GetComponent<TextMeshProUGUI>()
                         .text = phonemeSO.instruction;
 
                     // Check for substitution errors
@@ -210,7 +243,7 @@ namespace SaySuomi.Navigation
                         .transform.Find("TargetActualPanel")
                         .transform.Find("ActualPanel")
                         .transform.Find("Phoneme")
-                        .GetComponent<TMPro.TextMeshProUGUI>()
+                        .GetComponent<TextMeshProUGUI>()
                         .text = phoneActual + phoneActualRate;
 
                     listScrollItems.Add(detailScoreGO);
@@ -244,7 +277,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnDetailScoreScroll(Vector2 value)
+        private void OnDetailScoreScroll(Vector2 value)
         /*
         *   This function was attached to scrollRectDetail of detail score
         *   The idea is whenver user scroll up (y change from 1 to sth lower)
@@ -271,26 +304,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnDisable()
-        /*
-        *   Need to Destroy all GO in the list to avoid create duplicate scorelist
-        */
-        {
-            warningNo = 0;
-            isScrolledUp = false;
-            DeleteListItems();
-
-            // Already destroyed when this runs because the app is quitting.
-            if (scrollRectWarning == null || scrollRectDetail == null)
-            {
-                return;
-            }
-
-            scrollRectWarning.verticalNormalizedPosition = 1.0f;
-            scrollRectDetail.verticalNormalizedPosition = 1.0f;
-        }
-
-        void DeleteListItems()
+        private void DeleteListItems()
         {
             foreach (GameObject go in listScrollItems)
             {

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,25 +8,27 @@ namespace SaySuomi.Navigation
 {
     public class ProgressScreen : AppScreen
     {
+        [Tooltip("The ListItemPanel prefab.")]
+        [SerializeField]
+        private GameObject phonemeScorePrefab;
+
+        [Tooltip("The scroll content the rows are added to.")]
+        [SerializeField]
+        private GameObject content;
+
+        [SerializeField]
+        private Button infoButton;
+
+        private List<GameObject> listItems = new List<GameObject>(); // To store item from scroll list and delete after inactive
+
         public override bool IsTabRoot => true;
-
-        [SerializeField]
-        GameObject phonemeScorePrefab; // Refer to ListItemPanel prefab
-
-        [SerializeField]
-        GameObject content;
-
-        List<GameObject> listItems = new List<GameObject>(); // To store item from scroll list and delete after inactive
-
-        [SerializeField]
-        Button infoButton;
 
         protected override void Bind()
         {
             ButtonWiring.Replace(infoButton, () => Navigator.GetManager().Push<InfoScreen>());
         }
 
-        void OnEnable()
+        private void OnEnable()
         // Is called when SetActive(true)
         // The opposite is OnDisable() when SetActive(false)
         {
@@ -75,19 +78,17 @@ namespace SaySuomi.Navigation
                     .transform.Find("ScorePanel")
                     .transform.Find("PhonemeBG")
                     .transform.Find("Phoneme")
-                    .GetComponent<TMPro.TextMeshProUGUI>()
+                    .GetComponent<TextMeshProUGUI>()
                     .text = phoneme;
 
                 phonemeScoreGO
                     .transform.Find("ScorePanel")
                     .transform.Find("Score")
-                    .GetComponent<TMPro.TextMeshProUGUI>()
+                    .GetComponent<TextMeshProUGUI>()
                     .text = score;
 
-                phonemeScoreGO
-                    .transform.Find("NoTries")
-                    .GetComponent<TMPro.TextMeshProUGUI>()
-                    .text = noTries;
+                phonemeScoreGO.transform.Find("NoTries").GetComponent<TextMeshProUGUI>().text =
+                    noTries;
 
                 listItems.Add(phonemeScoreGO);
 
@@ -109,7 +110,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnDisable()
+        private void OnDisable()
         /*
         *   Need to Destroy all GO in the list to avoid create duplicate scorelist
         */

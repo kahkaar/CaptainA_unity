@@ -11,7 +11,7 @@ namespace SaySuomi.Navigation
         public const float TabSeconds = 0.15f;
         public const float ModalSeconds = 0.2f;
 
-        const float ModalStartScale = 0.95f;
+        private const float ModalStartScale = 0.95f;
 
         public static Action<float> Slide(AppScreen from, AppScreen to, bool forward)
         {
@@ -65,11 +65,11 @@ namespace SaySuomi.Navigation
     internal sealed class TransitionRunner
     {
         // Longest step per frame, so a heavy screen's first frame does not skip the animation.
-        const float MaxStepSeconds = 1f / 30f;
+        private const float MaxStepSeconds = 1f / 30f;
 
-        readonly MonoBehaviour host;
-        Coroutine running;
-        Action finish;
+        private readonly MonoBehaviour host;
+        private Coroutine running;
+        private Action finish;
 
         public TransitionRunner(MonoBehaviour host)
         {
@@ -103,7 +103,7 @@ namespace SaySuomi.Navigation
             Complete();
         }
 
-        IEnumerator Drive(float seconds, Action<float> apply)
+        private IEnumerator Drive(float seconds, Action<float> apply)
         {
             // One frame first, so a screen that builds rows in OnEnable has done so.
             yield return null;
@@ -120,7 +120,7 @@ namespace SaySuomi.Navigation
             Complete();
         }
 
-        void Complete()
+        private void Complete()
         {
             running = null;
             Action onFinish = finish;

@@ -6,14 +6,15 @@ namespace SaySuomi.Navigation
 {
     public class SecretModal : ModalScreen
     {
+        [Tooltip("The code field's text object, which holds what the learner typed.")]
         [SerializeField]
-        TextMeshProUGUI secretTextTMP;
+        private TextMeshProUGUI secretTextTMP;
 
         [SerializeField]
-        Button okButton;
+        private Button okButton;
 
         [SerializeField]
-        Button laterButton;
+        private Button laterButton;
 
         protected override void Bind()
         {
@@ -21,7 +22,7 @@ namespace SaySuomi.Navigation
             ButtonWiring.Replace(laterButton, () => Navigator.GetManager().Back());
         }
 
-        void OnYesButtonClick()
+        private void OnYesButtonClick()
         {
             string secretText = secretTextTMP.text;
             secretText = secretText.Replace("\r", "").Replace("\n", "").Trim();

@@ -18,9 +18,9 @@ namespace SaySuomi.Navigation
     /// </summary>
     public abstract class AppScreen : MonoBehaviour
     {
-        bool prepared;
-        bool bound;
-        Vector2 homePosition;
+        private bool prepared;
+        private bool bound;
+        private Vector2 homePosition;
 
         public virtual ScreenLayer Layer => ScreenLayer.Screen;
 
@@ -28,9 +28,6 @@ namespace SaySuomi.Navigation
 
         /// <summary>True adds a back button in the header, for a screen with none of its own.</summary>
         public virtual bool ShowsBackButton => false;
-
-        /// <summary>Return true to consume a back press rather than closing this screen.</summary>
-        public virtual bool HandleBack() => false;
 
         internal CanvasGroup Group { get; private set; }
 
@@ -50,6 +47,9 @@ namespace SaySuomi.Navigation
         /// rather than when that screen is first opened.
         /// </summary>
         protected virtual void Bind() { }
+
+        /// <summary>Return true to consume a back press rather than closing this screen.</summary>
+        public virtual bool HandleBack() => false;
 
         internal void EnsureBound()
         {

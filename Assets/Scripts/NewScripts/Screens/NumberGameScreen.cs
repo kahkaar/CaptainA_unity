@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Diagnostics;
 using UnityEngine.Networking;
@@ -10,50 +11,79 @@ namespace SaySuomi.Navigation
 {
     public class NumberGameScreen : AppScreen
     {
-        public override bool ShowsBackButton => true;
+        [Header("Number")]
+        [Tooltip("Holds the text showing the number.")]
+        [SerializeField]
+        private GameObject numberLabelGO;
+
+        [Tooltip("Picks a new number.")]
+        [SerializeField]
+        private Button newButton;
+
+        [Header("Difficulty")]
+        [SerializeField]
+        private Toggle easyToggle;
 
         [SerializeField]
-        GameObject recordButtonGO;
+        private Toggle mediumToggle;
 
         [SerializeField]
-        GameObject progressBarGO;
-        NGTaskType taskType = NGTaskType.EASY;
+        private Toggle hardToggle;
 
         [SerializeField]
-        Toggle easyToggle;
+        private Toggle rankToggle;
+
+        [Header("Recording")]
+        [SerializeField]
+        private GameObject recordButtonGO;
 
         [SerializeField]
-        Toggle mediumToggle;
+        private GameObject progressBarGO;
 
         [SerializeField]
-        Toggle hardToggle;
+        private GameObject replayButtonGO;
 
         [SerializeField]
-        Toggle rankToggle;
+        private GameObject errorTextGO;
 
-        [SerializeField]
-        GameObject numberLabelGO;
+        private NGTaskType taskType = NGTaskType.EASY;
 
-        [SerializeField]
-        GameObject errorTextGO;
-
-        [SerializeField]
-        GameObject replayButtonGO;
-
-        AudioClip replayClip;
+        private AudioClip replayClip;
 
         private float recordingTime = Const.MAX_REC_NUMBERGAME_EASY;
         private float currentTime = Const.MAX_REC_NUMBERGAME_EASY;
 
         private string number = "999";
 
-        [SerializeField]
-        Button newButton;
+        public override bool ShowsBackButton => true;
 
         protected override void Bind()
         {
             ButtonWiring.Replace(recordButtonGO.GetComponent<Button>(), OnRecordButtonClicked);
             ButtonWiring.Replace(newButton, OnNewButtonClick);
+        }
+
+        private void OnEnable()
+        {
+            Debug.Log("NumberGameScreen OnEnable()");
+
+            // Hide the progress bar
+            if (taskType == NGTaskType.EASY)
+            {
+                recordingTime = Const.MAX_REC_NUMBERGAME_EASY;
+            }
+            else if (taskType == NGTaskType.MEDIUM)
+            {
+                recordingTime = Const.MAX_REC_NUMBERGAME_MEDIUM;
+            }
+            else if (taskType == NGTaskType.HARD)
+            {
+                recordingTime = Const.MAX_REC_NUMBERGAME_HARD;
+            }
+            else if (taskType == NGTaskType.RANK)
+            {
+                recordingTime = Const.MAX_REC_NUMBERGAME_RANK;
+            }
         }
 
         private void Start()
@@ -92,30 +122,16 @@ namespace SaySuomi.Navigation
             easyToggle.isOn = true;
         }
 
-        void OnEnable()
+        private void Update()
         {
-            Debug.Log("NumberGameScreen OnEnable()");
-
-            // Hide the progress bar
-            if (taskType == NGTaskType.EASY)
+            // Only run this code if the progress bar is active
+            if (progressBarGO.activeSelf == true)
             {
-                recordingTime = Const.MAX_REC_NUMBERGAME_EASY;
-            }
-            else if (taskType == NGTaskType.MEDIUM)
-            {
-                recordingTime = Const.MAX_REC_NUMBERGAME_MEDIUM;
-            }
-            else if (taskType == NGTaskType.HARD)
-            {
-                recordingTime = Const.MAX_REC_NUMBERGAME_HARD;
-            }
-            else if (taskType == NGTaskType.RANK)
-            {
-                recordingTime = Const.MAX_REC_NUMBERGAME_RANK;
+                UpdateProgressBar();
             }
         }
 
-        void OnDisable()
+        private void OnDisable()
         {
             // The progress bar is only up while recording. Without this the microphone keeps
             // running behind the next screen, with nothing left on screen to stop it.
@@ -148,8 +164,7 @@ namespace SaySuomi.Navigation
 
             // Get the text TMP component from the GameObject
             // The TMP is a child of the NumberLabelGO
-            numberLabelGO.GetComponentInChildren<TMPro.TextMeshProUGUI>().text =
-                taskNumber.ToString();
+            numberLabelGO.GetComponentInChildren<TextMeshProUGUI>().text = taskNumber.ToString();
 
             // Set the countdown time based on the task type
             if (taskType == NGTaskType.EASY)
@@ -170,89 +185,9 @@ namespace SaySuomi.Navigation
             }
         }
 
-        private void OnNewButtonClick()
-        {
-            // Disable the replay button
-            replayButtonGO.SetActive(false);
-
-            // Retrigger the current toggle to generate a new number
-            if (easyToggle.isOn)
-            {
-                easyToggle.isOn = false;
-                easyToggle.isOn = true;
-            }
-            else if (mediumToggle.isOn)
-            {
-                mediumToggle.isOn = false;
-                mediumToggle.isOn = true;
-            }
-            else if (hardToggle.isOn)
-            {
-                hardToggle.isOn = false;
-                hardToggle.isOn = true;
-            }
-            else if (rankToggle.isOn)
-            {
-                rankToggle.isOn = false;
-                rankToggle.isOn = true;
-            }
-        }
-
-        void StartTimer()
-        /*
-        *
-        */
-        {
-            // Start countdown so the user know how long the recording will be
-            currentTime = recordingTime;
-
-            // Hide the record button
-            recordButtonGO.SetActive(false);
-
-            // Show the countdown progress bar
-            progressBarGO.SetActive(true);
-        }
-
-        void Update()
-        {
-            // Only run this code if the progress bar is active
-            if (progressBarGO.activeSelf == true)
-            {
-                UpdateProgressBar();
-            }
-        }
-
-        void UpdateProgressBar()
-        {
-            /*
-            *   This function will update the progress bar
-            */
-            currentTime -= Time.deltaTime;
-            progressBarGO.GetComponent<Image>().fillAmount = currentTime / recordingTime;
-
-            if (currentTime <= 0)
-            {
-                currentTime = 0;
-                progressBarGO.SetActive(false);
-                OnFinnishTimer();
-            }
-        }
-
-        void OnRecordButtonClicked()
-        {
-            progressBarGO.SetActive(true);
-            // Start recording
-            AudioManager.GetManager().StartRecording((int)recordingTime);
-
-            // Start the timer
-            // Should not use invoke or delay as it will cause the timer to be inaccurate
-            StartTimer();
-        }
-
         public void OnFinnishTimer()
         {
-            TMPro.TextMeshProUGUI resultTextTMP =
-                numberLabelGO.GetComponentInChildren<TMPro.TextMeshProUGUI>();
+            TextMeshProUGUI resultTextTMP = numberLabelGO.GetComponentInChildren<TextMeshProUGUI>();
             number = TextUtils.RemoveColorTag(resultTextTMP.text);
 
             StartCoroutine(DelayPost());
@@ -275,7 +210,7 @@ namespace SaySuomi.Navigation
                             errorTextGO.SetActive(!serverOk);
                             if (!serverOk)
                             {
-                                errorTextGO.GetComponent<TMPro.TextMeshProUGUI>().text =
+                                errorTextGO.GetComponent<TextMeshProUGUI>().text =
                                     network.lastError;
                                 return;
                             }
@@ -307,7 +242,77 @@ namespace SaySuomi.Navigation
             }
         }
 
-        IEnumerator LoadAudioClip(string filename)
+        private void OnNewButtonClick()
+        {
+            // Disable the replay button
+            replayButtonGO.SetActive(false);
+
+            // Retrigger the current toggle to generate a new number
+            if (easyToggle.isOn)
+            {
+                easyToggle.isOn = false;
+                easyToggle.isOn = true;
+            }
+            else if (mediumToggle.isOn)
+            {
+                mediumToggle.isOn = false;
+                mediumToggle.isOn = true;
+            }
+            else if (hardToggle.isOn)
+            {
+                hardToggle.isOn = false;
+                hardToggle.isOn = true;
+            }
+            else if (rankToggle.isOn)
+            {
+                rankToggle.isOn = false;
+                rankToggle.isOn = true;
+            }
+        }
+
+        private void StartTimer()
+        /*
+        *
+        */
+        {
+            // Start countdown so the user know how long the recording will be
+            currentTime = recordingTime;
+
+            // Hide the record button
+            recordButtonGO.SetActive(false);
+
+            // Show the countdown progress bar
+            progressBarGO.SetActive(true);
+        }
+
+        private void UpdateProgressBar()
+        {
+            /*
+            *   This function will update the progress bar
+            */
+            currentTime -= Time.deltaTime;
+            progressBarGO.GetComponent<Image>().fillAmount = currentTime / recordingTime;
+
+            if (currentTime <= 0)
+            {
+                currentTime = 0;
+                progressBarGO.SetActive(false);
+                OnFinnishTimer();
+            }
+        }
+
+        private void OnRecordButtonClicked()
+        {
+            progressBarGO.SetActive(true);
+            // Start recording
+            AudioManager.GetManager().StartRecording((int)recordingTime);
+
+            // Start the timer
+            // Should not use invoke or delay as it will cause the timer to be inaccurate
+            StartTimer();
+        }
+
+        private IEnumerator LoadAudioClip(string filename)
         /*
         *   This one should be called inside the Panel (not AudioManager)
         *   as it will update the replay audio with current replay audio

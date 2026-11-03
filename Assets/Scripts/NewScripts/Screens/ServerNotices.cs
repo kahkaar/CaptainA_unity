@@ -11,7 +11,7 @@ namespace SaySuomi.Navigation
     /// </summary>
     public static class ServerNotices
     {
-        static readonly Guid Table = new Guid("d3a4387299faa8b81aed682b3107b9e1");
+        private static readonly Guid Table = new Guid("d3a4387299faa8b81aed682b3107b9e1");
 
         public static LocalizedString Loading() => Entry(2573893778890752);
 
@@ -36,7 +36,7 @@ namespace SaySuomi.Navigation
             label.textComponent.text = error.ServerMessage;
         }
 
-        static bool HasOwnNotice(long responseCode)
+        private static bool HasOwnNotice(long responseCode)
         {
             return responseCode == 0
                 || responseCode == 403
@@ -46,7 +46,7 @@ namespace SaySuomi.Navigation
                 || responseCode == 503;
         }
 
-        static LocalizedString ForStatus(long responseCode)
+        private static LocalizedString ForStatus(long responseCode)
         {
             return responseCode switch
             {
@@ -61,6 +61,6 @@ namespace SaySuomi.Navigation
             };
         }
 
-        static LocalizedString Entry(long key) => new LocalizedString(Table, key);
+        private static LocalizedString Entry(long key) => new LocalizedString(Table, key);
     }
 }

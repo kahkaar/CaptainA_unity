@@ -11,38 +11,23 @@ namespace SaySuomi.Navigation
     /// </summary>
     public sealed class Navigator : MonoBehaviour
     {
-        static Navigator instance;
+        private static Navigator instance;
 
-        readonly Dictionary<Type, AppScreen> screens = new Dictionary<Type, AppScreen>();
-        readonly List<AppScreen> stack = new List<AppScreen>();
+        private readonly Dictionary<Type, AppScreen> screens = new Dictionary<Type, AppScreen>();
+        private readonly List<AppScreen> stack = new List<AppScreen>();
 
-        TransitionRunner transition;
-        ModalHost modalHost;
-        AppScreen home;
+        private TransitionRunner transition;
+        private ModalHost modalHost;
+        private AppScreen home;
 
         /// <summary>Raised after the new tab is active, so its OnEnable has already run.</summary>
         public event Action<AppScreen> TabChanged;
 
         public AppScreen CurrentTab { get; private set; }
 
-        AppScreen Top => stack.Count > 0 ? stack[stack.Count - 1] : CurrentTab;
+        private AppScreen Top => stack.Count > 0 ? stack[stack.Count - 1] : CurrentTab;
 
-        public static Navigator GetManager()
-        {
-            return instance;
-        }
-
-        // After scene load, so tab bars and screens exist. This runs in every scene, and Awake
-        // removes it from any that has no AppScreen.
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-        static void CreateAtLaunch()
-        {
-            var host = new GameObject(nameof(Navigator));
-            DontDestroyOnLoad(host);
-            host.AddComponent<Navigator>();
-        }
-
-        void Awake()
+        private void Awake()
         {
             AppScreen[] found = FindObjectsByType<AppScreen>(FindObjectsInactive.Include);
             if (found.Length == 0)
@@ -87,41 +72,16 @@ namespace SaySuomi.Navigation
             home.gameObject.SetActive(true);
         }
 
-        /// <summary>
-        /// Sets up every screen now, so all broken paths show up in the Console at launch. One
-        /// failing does not stop the others, so they are all reported together, and the app
-        /// still opens for whatever else needs testing.
-        /// </summary>
-        void BindAllScreens()
+        private void Update()
         {
-            foreach (AppScreen screen in screens.Values)
+            Keyboard keyboard = Keyboard.current;
+            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
             {
-                try
-                {
-                    screen.EnsureBound();
-                }
-                catch (Exception exception)
-                {
-                    Debug.LogError($"Navigator: could not set up {screen.GetType().Name}.", screen);
-                    Debug.LogException(exception, screen);
-                }
+                Back();
             }
         }
 
-        void AddBackButtons()
-        {
-            GameObject template = Get<ASATaskScreen>().BackButtonTemplate;
-
-            foreach (AppScreen screen in screens.Values)
-            {
-                if (screen.ShowsBackButton)
-                {
-                    ScreenBackButton.AddTo(screen, template);
-                }
-            }
-        }
-
-        void OnDestroy()
+        private void OnDestroy()
         {
             NetworkManager.SurveyDue -= ShowSurvey;
 
@@ -131,18 +91,9 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void ShowSurvey()
+        public static Navigator GetManager()
         {
-            Open<SurveyModal>();
-        }
-
-        void Update()
-        {
-            Keyboard keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
-            {
-                Back();
-            }
+            return instance;
         }
 
         public T Get<T>()
@@ -360,14 +311,69 @@ namespace SaySuomi.Navigation
             );
         }
 
-        void FinishTransition()
+        // After scene load, so tab bars and screens exist. This runs in every scene, and Awake
+        // removes it from any that has no AppScreen.
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+        private static void CreateAtLaunch()
+        {
+            var host = new GameObject(nameof(Navigator));
+            DontDestroyOnLoad(host);
+            host.AddComponent<Navigator>();
+        }
+
+        private static void Deactivate(AppScreen screen)
+        {
+            screen.ResetVisuals();
+            screen.gameObject.SetActive(false);
+        }
+
+        /// <summary>
+        /// Sets up every screen now, so all broken paths show up in the Console at launch. One
+        /// failing does not stop the others, so they are all reported together, and the app
+        /// still opens for whatever else needs testing.
+        /// </summary>
+        private void BindAllScreens()
+        {
+            foreach (AppScreen screen in screens.Values)
+            {
+                try
+                {
+                    screen.EnsureBound();
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogError($"Navigator: could not set up {screen.GetType().Name}.", screen);
+                    Debug.LogException(exception, screen);
+                }
+            }
+        }
+
+        private void AddBackButtons()
+        {
+            GameObject template = Get<ASATaskScreen>().BackButtonTemplate;
+
+            foreach (AppScreen screen in screens.Values)
+            {
+                if (screen.ShowsBackButton)
+                {
+                    ScreenBackButton.AddTo(screen, template);
+                }
+            }
+        }
+
+        private void ShowSurvey()
+        {
+            Open<SurveyModal>();
+        }
+
+        private void FinishTransition()
         {
             transition.Snap();
             modalHost.Snap();
         }
 
         /// <summary>Closes everything above count entries, animating only the top one.</summary>
-        void PopDownTo(int count)
+        private void PopDownTo(int count)
         {
             FinishTransition();
 
@@ -385,7 +391,7 @@ namespace SaySuomi.Navigation
             PopTop();
         }
 
-        void PopTop()
+        private void PopTop()
         {
             AppScreen top = stack[stack.Count - 1];
             stack.RemoveAt(stack.Count - 1);
@@ -433,7 +439,7 @@ namespace SaySuomi.Navigation
         /// Reactivates what a closing Screen layer entry was hiding: the nearest Screen layer
         /// entry and any overlays above it, bottom-up, so each OnEnable sees the one below.
         /// </summary>
-        void RevealVisibleEntries()
+        private void RevealVisibleEntries()
         {
             int first = stack.Count - 1;
             while (first >= 0 && stack[first].Layer != ScreenLayer.Screen)
@@ -452,7 +458,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void HideEverythingBelow(AppScreen screen)
+        private void HideEverythingBelow(AppScreen screen)
         {
             for (int i = stack.IndexOf(screen) - 1; i >= 0; i--)
             {
@@ -462,7 +468,7 @@ namespace SaySuomi.Navigation
             Deactivate(CurrentTab);
         }
 
-        void ClearStack()
+        private void ClearStack()
         {
             for (int i = stack.Count - 1; i >= 0; i--)
             {
@@ -471,12 +477,6 @@ namespace SaySuomi.Navigation
 
             stack.Clear();
             modalHost.HideDim();
-        }
-
-        static void Deactivate(AppScreen screen)
-        {
-            screen.ResetVisuals();
-            screen.gameObject.SetActive(false);
         }
     }
 }

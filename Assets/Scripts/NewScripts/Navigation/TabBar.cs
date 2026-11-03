@@ -10,11 +10,11 @@ namespace SaySuomi.Navigation
     /// </summary>
     public class TabBar : MonoBehaviour
     {
-        TabButton[] tabs;
-        NewFeatureDot newFeatureDot;
+        private TabButton[] tabs;
+        private NewFeatureDot newFeatureDot;
 
         // Start rather than Awake: Navigator is created after every Awake in the scene.
-        void Start()
+        private void Start()
         {
             Navigator navigator = Navigator.GetManager();
 
@@ -30,7 +30,7 @@ namespace SaySuomi.Navigation
             OnTabChanged(navigator.CurrentTab);
         }
 
-        void OnDestroy()
+        private void OnDestroy()
         {
             Navigator navigator = Navigator.GetManager();
             if (navigator != null)
@@ -39,7 +39,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnTabChanged(AppScreen current)
+        private void OnTabChanged(AppScreen current)
         {
             foreach (TabButton tab in tabs)
             {

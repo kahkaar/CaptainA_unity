@@ -45714,7 +45714,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1970130711}
         m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
-        m_MethodName: OnHideFinnishToogle
+        m_MethodName: OnHideFinnishToggle
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -50267,7 +50267,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1970130711}
         m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
-        m_MethodName: OnAutoPlayToogle
+        m_MethodName: OnAutoPlayToggle
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

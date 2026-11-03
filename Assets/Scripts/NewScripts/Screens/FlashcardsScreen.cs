@@ -17,14 +17,14 @@ namespace SaySuomi.Navigation
     /// </summary>
     public class FlashcardsScreen : AppScreen
     {
-        public override bool IsTabRoot => true;
+        private List<FlashcardDeck> decks = new List<FlashcardDeck>();
 
-        List<FlashcardDeck> decks = new List<FlashcardDeck>();
-
-        FlashcardDeck secretDeck;
+        private FlashcardDeck secretDeck;
 
         private bool pointerDown;
         private float pointerDownTimer;
+
+        public override bool IsTabRoot => true;
 
         protected override void Bind()
         {
@@ -37,7 +37,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnEnable()
+        private void OnEnable()
         {
             // Check if the user has a secret flash card
             string secretText = PlayerPrefs.GetString(Const.PREF_SECRET_TEXT);
@@ -71,7 +71,63 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void LoadFlashCards()
+        private void Update()
+        {
+            if (pointerDown)
+                pointerDownTimer += Time.deltaTime;
+        }
+
+        public void OnPointerDown(PointerEventData data)
+        {
+            pointerDown = true;
+        }
+
+        public void OnPointerUp(
+            PointerEventData data,
+            string fileName,
+            int newCards,
+            int dueCards,
+            int learnCards
+        )
+        {
+            if (pointerDownTimer >= Const.REQUIRED_HOLD_TIME)
+            {
+                // Long press
+                // Add Const.ADDITIONAL_NEW_CARD new cards to the deck
+                // Default is 5
+
+                StartStudyDeck(fileName, newCards + Const.ADDITIONAL_NEW_CARD, dueCards);
+                ResetTriggerPointer();
+            }
+            else
+            {
+                // Short press
+                // Only StartStudyDeck if there at last 1 new card or 1 due card or 1 learn card
+                if (newCards + dueCards + learnCards > 0)
+                {
+                    StartStudyDeck(fileName, newCards, dueCards);
+                }
+                ResetTriggerPointer();
+            }
+        }
+
+        public void StartStudyDeck(string deckFileName, int newCards, int dueCards)
+        {
+            Debug.Log("Start study deck: " + deckFileName);
+            FlashCard flashCard = SaveData.LoadFlashCard(deckFileName);
+            CardQueueManager.GetQueueManager.MakeQueue(flashCard, newCards, dueCards);
+
+            // A long press on a finished deck can leave nothing to study, and the session closes
+            // itself as soon as it opens with an empty queue.
+            if (CardQueueManager.GetQueueManager.GetCount() == 0)
+            {
+                return;
+            }
+
+            Navigator.GetManager().Push<FlashcardSessionScreen>();
+        }
+
+        private void LoadFlashCards()
         {
             // Populate the decks into the Panel
             foreach (FlashcardDeck deck in decks)
@@ -188,66 +244,10 @@ namespace SaySuomi.Navigation
             }
         }
 
-        private void Update()
-        {
-            if (pointerDown)
-                pointerDownTimer += Time.deltaTime;
-        }
-
-        public void OnPointerDown(PointerEventData data)
-        {
-            pointerDown = true;
-        }
-
-        public void OnPointerUp(
-            PointerEventData data,
-            string fileName,
-            int newCards,
-            int dueCards,
-            int learnCards
-        )
-        {
-            if (pointerDownTimer >= Const.REQUIRED_HOLD_TIME)
-            {
-                // Long press
-                // Add Const.ADDITIONAL_NEW_CARD new cards to the deck
-                // Default is 5
-
-                StartStudyDeck(fileName, newCards + Const.ADDITIONAL_NEW_CARD, dueCards);
-                ResetTriggerPointer();
-            }
-            else
-            {
-                // Short press
-                // Only StartStudyDeck if there at last 1 new card or 1 due card or 1 learn card
-                if (newCards + dueCards + learnCards > 0)
-                {
-                    StartStudyDeck(fileName, newCards, dueCards);
-                }
-                ResetTriggerPointer();
-            }
-        }
-
         private void ResetTriggerPointer()
         {
             pointerDown = false;
             pointerDownTimer = 0;
-        }
-
-        public void StartStudyDeck(string deckFileName, int newCards, int dueCards)
-        {
-            Debug.Log("Start study deck: " + deckFileName);
-            FlashCard flashCard = SaveData.LoadFlashCard(deckFileName);
-            CardQueueManager.GetQueueManager.MakeQueue(flashCard, newCards, dueCards);
-
-            // A long press on a finished deck can leave nothing to study, and the session closes
-            // itself as soon as it opens with an empty queue.
-            if (CardQueueManager.GetQueueManager.GetCount() == 0)
-            {
-                return;
-            }
-
-            Navigator.GetManager().Push<FlashcardSessionScreen>();
         }
     }
 }

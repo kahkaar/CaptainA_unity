@@ -6,7 +6,7 @@ namespace SaySuomi.Navigation
     public static class DeletePlayerPrefsMenu
     {
         [MenuItem("Tools/Delete All PlayerPrefs")]
-        static void DeleteAll()
+        private static void DeleteAll()
         {
             bool confirmed = EditorUtility.DisplayDialog(
                 "Delete All PlayerPrefs",

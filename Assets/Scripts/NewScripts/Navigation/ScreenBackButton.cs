@@ -10,7 +10,7 @@ namespace SaySuomi.Navigation
     internal static class ScreenBackButton
     {
         // Top-left, centred in the 130-unit header these screens share.
-        static readonly Vector2 Position = new Vector2(61f, -65f);
+        private static readonly Vector2 Position = new Vector2(61f, -65f);
 
         /// <param name="template">An existing back button to copy, so they all look the same.</param>
         public static void AddTo(AppScreen screen, GameObject template)

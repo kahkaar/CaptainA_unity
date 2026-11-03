@@ -6,10 +6,10 @@ namespace SaySuomi.Navigation
     public class SurveyModal : ModalScreen
     {
         [SerializeField]
-        Button okButton;
+        private Button okButton;
 
         [SerializeField]
-        Button laterButton;
+        private Button laterButton;
 
         protected override void Bind()
         {
@@ -17,7 +17,7 @@ namespace SaySuomi.Navigation
             ButtonWiring.Replace(laterButton, () => Navigator.GetManager().Back());
         }
 
-        void OnYesButtonClick()
+        private void OnYesButtonClick()
         {
             Application.OpenURL(Const.SURVEY_URL);
             PlayerPrefs.SetInt(Const.PREF_SURVEY_V1_DONE, 1);

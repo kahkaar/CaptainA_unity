@@ -7,7 +7,16 @@ namespace SaySuomi.Navigation
 {
     public class NetworkManager : MonoBehaviour
     {
-        static NetworkManager netWorkManager;
+        // Holds the guid of a deletion the server has not confirmed yet. Deliberately NOT
+        // cleared by ClearLocalASAData - it is the only thing left that can finish the job.
+        private const string PREF_PENDING_DELETE = "PendingDeleteGuid";
+
+        // How many times the server has answered 403 to this deletion. A rejected key is not a
+        // retryable condition, so this exists purely to allow exactly one more attempt before
+        // giving up, rather than retrying on every launch for the life of the install.
+        private const string PREF_DELETE_KEY_REJECTED = "PendingDeleteKeyRejected";
+
+        private static NetworkManager netWorkManager;
 
         // This is the URL to the ASR server
         // AUDIO_URL should be in http and not https
@@ -19,11 +28,19 @@ namespace SaySuomi.Navigation
         // 	public const string AUDIO_URL = "http://YOUR SERVER ADDRESS HERE"; //fill in this one
         // }
 
-        string asrURL = Secret.AUDIO_URL;
-        string numberGameURL = Secret.NUMBER_AUDIO_URL;
-        string gptToken = Secret.CHATGPT_API;
+        private string asrURL = Secret.AUDIO_URL;
+        private string numberGameURL = Secret.NUMBER_AUDIO_URL;
+        private string gptToken = Secret.CHATGPT_API;
 
         // However, other URL should be in https for encryption purpose
+
+        // Raised when a recording reaches the survey threshold. Static so a listener does not
+        // depend on this object's start-up order.
+        public static event System.Action SurveyDue;
+
+        // The recording the last assessment was stored as, or -1 before any result has come
+        // back. Feedback about a recording has to point at one; see RequiresAssessmentId.
+        public static int CurrentAssessmentId => PlayerPrefs.GetInt("AssessmentId", -1);
 
         public ASRResult asrResult { get; private set; }
 
@@ -53,7 +70,21 @@ namespace SaySuomi.Navigation
         // screens check this before showing progress for a request that would never be sent.
         public bool CanSetLevel => !string.IsNullOrEmpty(GetPOSTURL(POSTType.ASA_SET_LEVEL));
 
-        void Awake()
+        /// <summary>
+        /// What happened to the last deletion: "deleted" once the server has erased the data,
+        /// null if it has not answered yet or the request never reached it.
+        ///
+        /// DELETE /users erases synchronously, so there is no half-state to report - the older
+        /// "pending" value belonged to the retired POST /request/user route, which only ever
+        /// acknowledged receipt. Anything other than "deleted" means the request is still
+        /// queued locally and will be retried.
+        /// </summary>
+        public string lastDeleteStatus { get; private set; }
+
+        /// <summary>True only when the server confirmed the data is already gone.</summary>
+        public bool DataConfirmedDeleted => lastDeleteStatus == "deleted";
+
+        private void Awake()
         {
             // Destroy existing NetWorkManager(s) to avoid duplicates
             if (netWorkManager != null)
@@ -65,96 +96,48 @@ namespace SaySuomi.Navigation
             netWorkManager = this;
         }
 
-        public static NetworkManager GetManager()
-        {
-            return netWorkManager;
-        }
-
-        void Start()
+        private void Start()
         {
             // Finish any deletion that was asked for but never confirmed by the server.
             RetryPendingDeletion();
         }
 
-        // This function is used to get the URL for the POST request
-        private string GetPOSTURL(POSTType postType)
+        public static NetworkManager GetManager()
         {
-            switch (postType)
-            {
-                case POSTType.MDD_TASK:
-                    return Secret.AUDIO_URL;
-                case POSTType.LLM_TASK:
-                    return null;
-                case POSTType.PuheNumero_TASK:
-                    return Secret.NUMBER_AUDIO_URL;
-                case POSTType.ASA_TASK:
-                    return Secret.ASA_URL;
-                case POSTType.ASA_CONSENT:
-                    return Secret.ASA_CONSENT_URL;
-                case POSTType.USER_ASA_FEEDBACK:
-                    return Secret.USER_ASA_FEEDBACK_URL;
-                case POSTType.ASA_PROFILE:
-                    return Secret.ASA_PROFILE_URL;
-                case POSTType.ASA_SET_LEVEL:
-                    return Secret.ASA_SET_LEVEL_URL;
-                case POSTType.DATA_DEL_REQUEST:
-                    return Secret.DATA_DEL_REQUEST_URL;
-                default:
-                    return asrURL;
-            }
+            return netWorkManager;
         }
 
-        // This function is used to get the form for the POST request
-        private WWWForm GetPOSTForm(POSTType postType, string transcript, byte[] wavBuffer)
+        /// <summary>
+        /// Removes everything this device stores about the ASA user, so the app is back to
+        /// its pre-onboarding state. Deliberately scoped: pronunciation scores, flashcard
+        /// progress, survey state and instruction popups belong to the rest of the app and
+        /// are left alone.
+        /// </summary>
+        public static void ClearLocalASAData()
         {
-            WWWForm form = new WWWForm();
-            // FILE_NAME_POST, not ASA_FILENAME: this form goes to the legacy pronunciation
-            // server, the same one NumberGamePost uses. ASA_FILENAME belongs to the DTA
-            // server and was almost certainly copy-paste.
-            form.AddBinaryData(
-                "file",
-                wavBuffer,
-                fileName: Const.FILE_NAME_POST,
-                mimeType: "audio/wav"
-            );
-            form.AddField("transcript", transcript);
-            form.AddField("model_code", "1");
+            // Identity and consent - without these the app re-runs onboarding.
+            PlayerPrefs.DeleteKey("UserGuid");
+            PlayerPrefs.DeleteKey("ConsentGiven");
+            PlayerPrefs.DeleteKey("ConsentTimestamp");
+            PlayerPrefs.DeleteKey("BackgroundFormCompleted");
+            PlayerPrefs.DeleteKey("BackgroundTimestamp");
+            PlayerPrefs.DeleteKey("AppVersion");
 
-            return form;
-        }
+            // Assessment history held on the device.
+            PlayerPrefs.DeleteKey("AssessmentId");
+            PlayerPrefs.DeleteKey("TasksSent");
+            PlayerPrefs.DeleteKey(Const.PREF_OVERALL_FEEDBACK_ASKED_AT);
 
-        // Get the form for creating a new user
-        private WWWForm GetPOSTForm_guid(BackgroundFormData backgroundFields)
-        {
-            WWWForm form = new WWWForm();
-            form.AddField("app_version", PlayerPrefs.GetString("AppVersion"));
-            form.AddField("guid", EnsureUserGuid());
-            form.AddField("consent_timestamp", PlayerPrefs.GetString("ConsentTimestamp"));
+            // The flag this replaced. Still deleted so an account erased on a device that has
+            // been through an older build does not leave it behind.
+            PlayerPrefs.DeleteKey("OverallFeedbackSent");
 
-            form.AddField(backgroundFields.gender.Item1, backgroundFields.gender.Item2);
-            form.AddField(backgroundFields.age.Item1, backgroundFields.age.Item2);
-            form.AddField(backgroundFields.motherTongue.Item1, backgroundFields.motherTongue.Item2);
-            form.AddField(
-                backgroundFields.otherLanguages.Item1,
-                backgroundFields.otherLanguages.Item2
-            );
-            form.AddField(
-                backgroundFields.selfAssessment.Item1,
-                backgroundFields.selfAssessment.Item2
-            );
+            // Left over from the removed secret-code gate; harmless, but it was part of the
+            // ASA flow so it goes with the rest.
+            PlayerPrefs.DeleteKey("ASASecretVerified");
 
-            // moved_to_finland and finnish_learning_duration are deliberately absent: those
-            // questions were dropped from the background form. The server made both nullable
-            // in v1.2.0, so omitting them is accepted - docs/TO_FRONTEND.md item 10.
-
-            form.AddField(
-                "background_form_timestamp",
-                PlayerPrefs.GetString("BackgroundTimestamp")
-            );
-            form.AddField("consent_accepted", PlayerPrefs.GetInt("ConsentGiven"));
-            form.AddField("background_form_completed", 1);
-
-            return form;
+            PlayerPrefs.Save();
+            Debug.Log("Local ASA user data cleared.");
         }
 
         // Send form and reate a new user
@@ -236,82 +219,6 @@ namespace SaySuomi.Navigation
         }
 
         /// <summary>
-        /// Creates and stores a new identity for this device, replacing any existing one.
-        ///
-        /// The consent timestamp is deliberately left alone: the user consented once, and
-        /// that fact does not stop being true because the identifier under it changed.
-        /// </summary>
-        private static string MintUserGuid()
-        {
-            string guid = System.Guid.NewGuid().ToString();
-            PlayerPrefs.SetString("UserGuid", guid);
-            PlayerPrefs.Save();
-
-            return guid;
-        }
-
-        /// <summary>
-        /// Issues this device a new identity. Only for recovering from a guid the server has
-        /// already registered.
-        /// </summary>
-        private static void RegenerateUserGuid()
-        {
-            Debug.LogWarning("Onboarding: retrying with a new guid " + MintUserGuid());
-        }
-
-        /// <summary>
-        /// The stored guid, minting one if there is none yet.
-        ///
-        /// Used by onboarding only. Onboarding is the one endpoint entitled to create an
-        /// identity; everywhere else the guid must already exist, and quietly minting one
-        /// there would replace a clear "you are not onboarded" failure with a user the server
-        /// has never heard of.
-        ///
-        /// Normally AcceptConsent does the minting, but it only runs when ConsentGiven is 0.
-        /// A partly cleared PlayerPrefs - ConsentGiven still 1, UserGuid gone - goes straight
-        /// to the background form, which then posted an empty guid with nothing checking it.
-        /// </summary>
-        private static string EnsureUserGuid()
-        {
-            string guid = PlayerPrefs.GetString("UserGuid", "");
-            if (!string.IsNullOrEmpty(guid))
-            {
-                return guid;
-            }
-
-            guid = MintUserGuid();
-            Debug.LogWarning(
-                "Onboarding: no guid was stored - consent had been recorded without one, "
-                    + "which a partial PlayerPrefs reset can cause. Minted "
-                    + guid
-            );
-            return guid;
-        }
-
-        // Holds the guid of a deletion the server has not confirmed yet. Deliberately NOT
-        // cleared by ClearLocalASAData - it is the only thing left that can finish the job.
-        const string PREF_PENDING_DELETE = "PendingDeleteGuid";
-
-        // How many times the server has answered 403 to this deletion. A rejected key is not a
-        // retryable condition, so this exists purely to allow exactly one more attempt before
-        // giving up, rather than retrying on every launch for the life of the install.
-        const string PREF_DELETE_KEY_REJECTED = "PendingDeleteKeyRejected";
-
-        /// <summary>
-        /// What happened to the last deletion: "deleted" once the server has erased the data,
-        /// null if it has not answered yet or the request never reached it.
-        ///
-        /// DELETE /users erases synchronously, so there is no half-state to report - the older
-        /// "pending" value belonged to the retired POST /request/user route, which only ever
-        /// acknowledged receipt. Anything other than "deleted" means the request is still
-        /// queued locally and will be retried.
-        /// </summary>
-        public string lastDeleteStatus { get; private set; }
-
-        /// <summary>True only when the server confirmed the data is already gone.</summary>
-        public bool DataConfirmedDeleted => lastDeleteStatus == "deleted";
-
-        /// <summary>
         /// Deletes this user's data on the server, then wipes the local copy.
         ///
         /// The failure case is the one that matters. If the request never lands, the local
@@ -359,166 +266,6 @@ namespace SaySuomi.Navigation
 
             Debug.LogWarning("Retrying an unconfirmed data deletion for guid " + pending);
             StartCoroutine(DeleteUserOnServer(pending, null));
-        }
-
-        /// <summary>
-        /// Erases the user on the server: DELETE /users, with the guid as a form field and
-        /// SERVER_DELETE_KEY in the X-Delete-Key header.
-        ///
-        /// Not POST /request/user. That route also carries an export request type, and this
-        /// app never exports user data, so the route is being retired rather than left
-        /// half-used - see docs/TO_BACKEND.md.
-        ///
-        /// This one erases synchronously and says so: 204 means the data is gone, 403 means
-        /// the key did not match, 500 means the erase itself failed. There is no "request
-        /// received, we will get to it" state to interpret, which is why 204 is reported
-        /// straight through as a confirmed deletion.
-        /// </summary>
-        IEnumerator DeleteUserOnServer(string guid, System.Action<bool> done)
-        {
-            string url = GetPOSTURL(POSTType.DATA_DEL_REQUEST);
-
-            WWWForm form = new WWWForm();
-            form.AddField("guid", guid);
-
-            // Built by hand rather than with UnityWebRequest.Delete: that helper sends no
-            // body, and this endpoint reads the guid from a form field.
-            using (UnityWebRequest uwr = new UnityWebRequest(url, "DELETE"))
-            {
-                uwr.uploadHandler = new UploadHandlerRaw(form.data);
-                uwr.downloadHandler = new DownloadHandlerBuffer();
-                uwr.timeout = Const.TIME_OUT_SECS;
-
-                foreach (var header in form.headers)
-                {
-                    uwr.SetRequestHeader(header.Key, header.Value);
-                }
-
-                // Required. The server compares this to its own key and answers 403 on a
-                // mismatch.
-                uwr.SetRequestHeader("X-Delete-Key", Secret.SERVER_DELETE_KEY);
-
-                yield return uwr.SendWebRequest();
-
-                bool ok =
-                    uwr.result != UnityWebRequest.Result.ConnectionError
-                    && uwr.result != UnityWebRequest.Result.ProtocolError;
-
-                if (ok)
-                {
-                    Debug.Log("Server deleted the data for " + guid);
-                    PlayerPrefs.DeleteKey(PREF_PENDING_DELETE);
-                    PlayerPrefs.DeleteKey(PREF_DELETE_KEY_REJECTED);
-                    PlayerPrefs.Save();
-                    lastError = null;
-                    lastErrorType = null;
-
-                    // A 2xx from this route means the erase is done, not merely accepted.
-                    lastDeleteStatus = "deleted";
-                }
-                else if (uwr.responseCode == 403)
-                {
-                    // The delete key did not match. No number of retries can change that - the
-                    // key either matches or it does not - so this must not join the launch
-                    // retry queue, which would otherwise run forever.
-                    //
-                    // The user is told their request was received, same as any other failure,
-                    // and that is accurate: the server logs the rejected guid at WARNING from
-                    // v1.3.0, so a maintainer finishes the erase by hand. The difference is
-                    // ours to resolve, not theirs to worry about.
-                    //
-                    // This only ever happens to a misconfigured build, and when it does it
-                    // fails for every user of that build at once - hence the noise below.
-                    lastError = DescribeError(uwr);
-                    lastDeleteStatus = "key_rejected";
-
-                    int attempts = PlayerPrefs.GetInt(PREF_DELETE_KEY_REJECTED, 0) + 1;
-
-                    if (attempts < 2)
-                    {
-                        // One retry, in case the first 403 was something transient in front of
-                        // the server rather than the key itself.
-                        PlayerPrefs.SetInt(PREF_DELETE_KEY_REJECTED, attempts);
-                        PlayerPrefs.Save();
-
-                        Debug.LogError(
-                            $"DELETION REJECTED for guid {guid}: the server did not accept "
-                                + "SERVER_DELETE_KEY (403). Retrying once on the next launch."
-                        );
-                    }
-                    else
-                    {
-                        // Give up rather than retry forever. The guid stops being pending, so
-                        // this log is the last record of it on the device.
-                        PlayerPrefs.DeleteKey(PREF_PENDING_DELETE);
-                        PlayerPrefs.DeleteKey(PREF_DELETE_KEY_REJECTED);
-                        PlayerPrefs.Save();
-
-                        Debug.LogError(
-                            $"DELETION ABANDONED for guid {guid}: SERVER_DELETE_KEY was "
-                                + "rejected twice (403). THE SERVER STILL HOLDS THIS USER'S "
-                                + "DATA. Fix the key in Secret.cs, then have a maintainer "
-                                + "erase this guid by hand - the server logged it too."
-                        );
-                    }
-                }
-                else
-                {
-                    lastError = DescribeError(uwr);
-                    // Loud, and with the guid. This is the one failure the server cannot see:
-                    // the request never reached it, so only this log and the pending retry
-                    // stand between the user and data that silently survives.
-                    Debug.LogError(
-                        $"DELETION REQUEST FAILED to reach the server for guid {guid} - "
-                            + $"{uwr.responseCode} {lastErrorType}. Kept as pending and retried "
-                            + "on next launch."
-                    );
-                }
-
-                done?.Invoke(ok);
-            }
-        }
-
-        /// <summary>
-        /// Removes everything this device stores about the ASA user, so the app is back to
-        /// its pre-onboarding state. Deliberately scoped: pronunciation scores, flashcard
-        /// progress, survey state and instruction popups belong to the rest of the app and
-        /// are left alone.
-        /// </summary>
-        public static void ClearLocalASAData()
-        {
-            // Identity and consent - without these the app re-runs onboarding.
-            PlayerPrefs.DeleteKey("UserGuid");
-            PlayerPrefs.DeleteKey("ConsentGiven");
-            PlayerPrefs.DeleteKey("ConsentTimestamp");
-            PlayerPrefs.DeleteKey("BackgroundFormCompleted");
-            PlayerPrefs.DeleteKey("BackgroundTimestamp");
-            PlayerPrefs.DeleteKey("AppVersion");
-
-            // Assessment history held on the device.
-            PlayerPrefs.DeleteKey("AssessmentId");
-            PlayerPrefs.DeleteKey("TasksSent");
-            PlayerPrefs.DeleteKey(Const.PREF_OVERALL_FEEDBACK_ASKED_AT);
-
-            // The flag this replaced. Still deleted so an account erased on a device that has
-            // been through an older build does not leave it behind.
-            PlayerPrefs.DeleteKey("OverallFeedbackSent");
-
-            // Left over from the removed secret-code gate; harmless, but it was part of the
-            // ASA flow so it goes with the rest.
-            PlayerPrefs.DeleteKey("ASASecretVerified");
-
-            PlayerPrefs.Save();
-            Debug.Log("Local ASA user data cleared.");
-        }
-
-        // Get the form for creating the profile panel
-        private WWWForm GetPOSTForm_profile()
-        {
-            WWWForm form = new WWWForm();
-            form.AddField("guid", PlayerPrefs.GetString("UserGuid"));
-
-            return form;
         }
 
         /// <param name="OnServerDone">
@@ -638,25 +385,6 @@ namespace SaySuomi.Navigation
             OnServerDone?.Invoke(true);
         }
 
-        // Get the form for ASA audio recording
-        private WWWForm GetPOSTForm_ASA(int taskId, byte[] wavBuffer)
-        {
-            WWWForm form = new WWWForm();
-            form.AddBinaryData(
-                "file",
-                wavBuffer,
-                // Same recording the user just listened to, hence the same constant.
-                // The ".wav" is required by the DTA server: it rejects a filename that does
-                // not end in .wav with 400 BAD_REQUEST, even though the bytes are fine.
-                fileName: Const.ASA_FILENAME + ".wav",
-                mimeType: "audio/wav"
-            );
-            form.AddField("guid", PlayerPrefs.GetString("UserGuid"));
-            form.AddField("task_id", taskId);
-
-            return form;
-        }
-
         // Send ASA audio recording to server and get evaluation
         /// <param name="taskId">The server's id for the task, not an array index.</param>
         /// <param name="OnServerDone">
@@ -738,58 +466,6 @@ namespace SaySuomi.Navigation
             }
             OnServerDone?.Invoke(true);
         }
-
-        // Get form for feedback (grade and optional comment)
-        private WWWForm GetPOSTForm_feedback(
-            POSTType postType,
-            string feedback_type,
-            string grade,
-            string comment
-        )
-        {
-            WWWForm form = new();
-
-            int value = grade[^1] - '0';
-            form.AddField("guid", PlayerPrefs.GetString("UserGuid"));
-            form.AddField("reaction_value", value);
-            form.AddField("feedback_classification", feedback_type);
-
-            // Only feedback about a specific recording carries an assessment_id.
-            // Feedback about a screen or about the app as a whole must not send the field
-            // at all - the server answers 422 if it is present. See docs/TO_FRONTEND.md item 1.
-            if (RequiresAssessmentId(feedback_type))
-            {
-                int assessmentId = PlayerPrefs.GetInt("AssessmentId", -1);
-                if (assessmentId < 0)
-                {
-                    Debug.LogError(
-                        $"Feedback '{feedback_type}' needs an assessment_id but none is stored. "
-                            + "The server will reject this with 422."
-                    );
-                }
-                form.AddField("assessment_id", assessmentId);
-            }
-
-            form.AddField("comment", comment);
-
-            // Debug.Log("Rating value: " + grade);
-            //Debug.Log("Comment: " + comment);
-            return form;
-        }
-
-        // Which feedback types are about one scored recording, and so must reference the
-        // assessment they are about. The other two (comparison_ui, overall_experience) are
-        // about the UI and the app, so there is no assessment for them to point at.
-        private static bool RequiresAssessmentId(string feedback_type)
-        {
-            return feedback_type == "self_assessment"
-                || feedback_type == "result_accuracy"
-                || feedback_type == "result_understanding";
-        }
-
-        // The recording the last assessment was stored as, or -1 before any result has come
-        // back. Feedback about a recording has to point at one; see RequiresAssessmentId.
-        public static int CurrentAssessmentId => PlayerPrefs.GetInt("AssessmentId", -1);
 
         // Send feedback to server
         /// <param name="OnServerDone">
@@ -1049,10 +725,6 @@ namespace SaySuomi.Navigation
             OnServerDone?.Invoke(true);
         }
 
-        // Raised when a recording reaches the survey threshold. Static so a listener does not
-        // depend on this object's start-up order.
-        public static event System.Action SurveyDue;
-
         public void checkSurVey()
         {
             int recordNumber = 1;
@@ -1075,6 +747,428 @@ namespace SaySuomi.Navigation
                     SurveyDue?.Invoke();
                 }
             }
+        }
+
+        /// <summary>
+        /// Creates and stores a new identity for this device, replacing any existing one.
+        ///
+        /// The consent timestamp is deliberately left alone: the user consented once, and
+        /// that fact does not stop being true because the identifier under it changed.
+        /// </summary>
+        private static string MintUserGuid()
+        {
+            string guid = System.Guid.NewGuid().ToString();
+            PlayerPrefs.SetString("UserGuid", guid);
+            PlayerPrefs.Save();
+
+            return guid;
+        }
+
+        /// <summary>
+        /// Issues this device a new identity. Only for recovering from a guid the server has
+        /// already registered.
+        /// </summary>
+        private static void RegenerateUserGuid()
+        {
+            Debug.LogWarning("Onboarding: retrying with a new guid " + MintUserGuid());
+        }
+
+        /// <summary>
+        /// The stored guid, minting one if there is none yet.
+        ///
+        /// Used by onboarding only. Onboarding is the one endpoint entitled to create an
+        /// identity; everywhere else the guid must already exist, and quietly minting one
+        /// there would replace a clear "you are not onboarded" failure with a user the server
+        /// has never heard of.
+        ///
+        /// Normally AcceptConsent does the minting, but it only runs when ConsentGiven is 0.
+        /// A partly cleared PlayerPrefs - ConsentGiven still 1, UserGuid gone - goes straight
+        /// to the background form, which then posted an empty guid with nothing checking it.
+        /// </summary>
+        private static string EnsureUserGuid()
+        {
+            string guid = PlayerPrefs.GetString("UserGuid", "");
+            if (!string.IsNullOrEmpty(guid))
+            {
+                return guid;
+            }
+
+            guid = MintUserGuid();
+            Debug.LogWarning(
+                "Onboarding: no guid was stored - consent had been recorded without one, "
+                    + "which a partial PlayerPrefs reset can cause. Minted "
+                    + guid
+            );
+            return guid;
+        }
+
+        // Which feedback types are about one scored recording, and so must reference the
+        // assessment they are about. The other two (comparison_ui, overall_experience) are
+        // about the UI and the app, so there is no assessment for them to point at.
+        private static bool RequiresAssessmentId(string feedback_type)
+        {
+            return feedback_type == "self_assessment"
+                || feedback_type == "result_accuracy"
+                || feedback_type == "result_understanding";
+        }
+
+        private static string DescribeError(long responseCode, string serverMessage)
+        {
+            return responseCode switch
+            {
+                0 => "No connection. Check your network and try again.",
+
+                403 => "Consent is required to use this feature.",
+
+                404 => "Your account was not found. You may need to set up the app again.",
+
+                // The client sent something the server rejected - the user cannot fix
+                // this by retrying, so say so rather than inviting them to try again.
+                422 => "This version of the app could not be accepted by the server. "
+                    + "Please update the app, or contact us if it is already up to date.",
+
+                // We cap the recording length before uploading, so reaching this means
+                // our cap and the server's disagree - a bug, not something the learner did.
+                413 => "That recording is too long to send.",
+
+                503 => "The server is busy. Please try again in a moment.",
+
+                // The server's own wording is the only thing that says WHICH bad request
+                // this is: "Unknown task_id 0" and a rejected filename are both 400 and
+                // otherwise indistinguishable. A generic apology here cost us a day
+                // finding the task_id offset, so show what the server said.
+                400 => string.IsNullOrEmpty(serverMessage)
+                    ? "The app sent something the server could not accept."
+                    : serverMessage,
+
+                // Same reasoning: an unrecognised status with a message is still far more
+                // use than "something went wrong", to the user and in a bug report.
+                _ => string.IsNullOrEmpty(serverMessage)
+                    ? "Something went wrong. Please try again."
+                    : serverMessage,
+            };
+        }
+
+        // This function is used to get the URL for the POST request
+        private string GetPOSTURL(POSTType postType)
+        {
+            switch (postType)
+            {
+                case POSTType.MDD_TASK:
+                    return Secret.AUDIO_URL;
+                case POSTType.LLM_TASK:
+                    return null;
+                case POSTType.PuheNumero_TASK:
+                    return Secret.NUMBER_AUDIO_URL;
+                case POSTType.ASA_TASK:
+                    return Secret.ASA_URL;
+                case POSTType.ASA_CONSENT:
+                    return Secret.ASA_CONSENT_URL;
+                case POSTType.USER_ASA_FEEDBACK:
+                    return Secret.USER_ASA_FEEDBACK_URL;
+                case POSTType.ASA_PROFILE:
+                    return Secret.ASA_PROFILE_URL;
+                case POSTType.ASA_SET_LEVEL:
+                    return Secret.ASA_SET_LEVEL_URL;
+                case POSTType.DATA_DEL_REQUEST:
+                    return Secret.DATA_DEL_REQUEST_URL;
+                default:
+                    return asrURL;
+            }
+        }
+
+        // This function is used to get the form for the POST request
+        private WWWForm GetPOSTForm(POSTType postType, string transcript, byte[] wavBuffer)
+        {
+            WWWForm form = new WWWForm();
+            // FILE_NAME_POST, not ASA_FILENAME: this form goes to the legacy pronunciation
+            // server, the same one NumberGamePost uses. ASA_FILENAME belongs to the DTA
+            // server and was almost certainly copy-paste.
+            form.AddBinaryData(
+                "file",
+                wavBuffer,
+                fileName: Const.FILE_NAME_POST,
+                mimeType: "audio/wav"
+            );
+            form.AddField("transcript", transcript);
+            form.AddField("model_code", "1");
+
+            return form;
+        }
+
+        // Get the form for creating a new user
+        private WWWForm GetPOSTForm_guid(BackgroundFormData backgroundFields)
+        {
+            WWWForm form = new WWWForm();
+            form.AddField("app_version", PlayerPrefs.GetString("AppVersion"));
+            form.AddField("guid", EnsureUserGuid());
+            form.AddField("consent_timestamp", PlayerPrefs.GetString("ConsentTimestamp"));
+
+            form.AddField(backgroundFields.gender.Item1, backgroundFields.gender.Item2);
+            form.AddField(backgroundFields.age.Item1, backgroundFields.age.Item2);
+            form.AddField(backgroundFields.motherTongue.Item1, backgroundFields.motherTongue.Item2);
+            form.AddField(
+                backgroundFields.otherLanguages.Item1,
+                backgroundFields.otherLanguages.Item2
+            );
+            form.AddField(
+                backgroundFields.selfAssessment.Item1,
+                backgroundFields.selfAssessment.Item2
+            );
+
+            // moved_to_finland and finnish_learning_duration are deliberately absent: those
+            // questions were dropped from the background form. The server made both nullable
+            // in v1.2.0, so omitting them is accepted - docs/TO_FRONTEND.md item 10.
+
+            form.AddField(
+                "background_form_timestamp",
+                PlayerPrefs.GetString("BackgroundTimestamp")
+            );
+            form.AddField("consent_accepted", PlayerPrefs.GetInt("ConsentGiven"));
+            form.AddField("background_form_completed", 1);
+
+            return form;
+        }
+
+        /// <summary>
+        /// Erases the user on the server: DELETE /users, with the guid as a form field and
+        /// SERVER_DELETE_KEY in the X-Delete-Key header.
+        ///
+        /// Not POST /request/user. That route also carries an export request type, and this
+        /// app never exports user data, so the route is being retired rather than left
+        /// half-used - see docs/TO_BACKEND.md.
+        ///
+        /// This one erases synchronously and says so: 204 means the data is gone, 403 means
+        /// the key did not match, 500 means the erase itself failed. There is no "request
+        /// received, we will get to it" state to interpret, which is why 204 is reported
+        /// straight through as a confirmed deletion.
+        /// </summary>
+        private IEnumerator DeleteUserOnServer(string guid, System.Action<bool> done)
+        {
+            string url = GetPOSTURL(POSTType.DATA_DEL_REQUEST);
+
+            WWWForm form = new WWWForm();
+            form.AddField("guid", guid);
+
+            // Built by hand rather than with UnityWebRequest.Delete: that helper sends no
+            // body, and this endpoint reads the guid from a form field.
+            using (UnityWebRequest uwr = new UnityWebRequest(url, "DELETE"))
+            {
+                uwr.uploadHandler = new UploadHandlerRaw(form.data);
+                uwr.downloadHandler = new DownloadHandlerBuffer();
+                uwr.timeout = Const.TIME_OUT_SECS;
+
+                foreach (var header in form.headers)
+                {
+                    uwr.SetRequestHeader(header.Key, header.Value);
+                }
+
+                // Required. The server compares this to its own key and answers 403 on a
+                // mismatch.
+                uwr.SetRequestHeader("X-Delete-Key", Secret.SERVER_DELETE_KEY);
+
+                yield return uwr.SendWebRequest();
+
+                bool ok =
+                    uwr.result != UnityWebRequest.Result.ConnectionError
+                    && uwr.result != UnityWebRequest.Result.ProtocolError;
+
+                if (ok)
+                {
+                    Debug.Log("Server deleted the data for " + guid);
+                    PlayerPrefs.DeleteKey(PREF_PENDING_DELETE);
+                    PlayerPrefs.DeleteKey(PREF_DELETE_KEY_REJECTED);
+                    PlayerPrefs.Save();
+                    lastError = null;
+                    lastErrorType = null;
+
+                    // A 2xx from this route means the erase is done, not merely accepted.
+                    lastDeleteStatus = "deleted";
+                }
+                else if (uwr.responseCode == 403)
+                {
+                    // The delete key did not match. No number of retries can change that - the
+                    // key either matches or it does not - so this must not join the launch
+                    // retry queue, which would otherwise run forever.
+                    //
+                    // The user is told their request was received, same as any other failure,
+                    // and that is accurate: the server logs the rejected guid at WARNING from
+                    // v1.3.0, so a maintainer finishes the erase by hand. The difference is
+                    // ours to resolve, not theirs to worry about.
+                    //
+                    // This only ever happens to a misconfigured build, and when it does it
+                    // fails for every user of that build at once - hence the noise below.
+                    lastError = DescribeError(uwr);
+                    lastDeleteStatus = "key_rejected";
+
+                    int attempts = PlayerPrefs.GetInt(PREF_DELETE_KEY_REJECTED, 0) + 1;
+
+                    if (attempts < 2)
+                    {
+                        // One retry, in case the first 403 was something transient in front of
+                        // the server rather than the key itself.
+                        PlayerPrefs.SetInt(PREF_DELETE_KEY_REJECTED, attempts);
+                        PlayerPrefs.Save();
+
+                        Debug.LogError(
+                            $"DELETION REJECTED for guid {guid}: the server did not accept "
+                                + "SERVER_DELETE_KEY (403). Retrying once on the next launch."
+                        );
+                    }
+                    else
+                    {
+                        // Give up rather than retry forever. The guid stops being pending, so
+                        // this log is the last record of it on the device.
+                        PlayerPrefs.DeleteKey(PREF_PENDING_DELETE);
+                        PlayerPrefs.DeleteKey(PREF_DELETE_KEY_REJECTED);
+                        PlayerPrefs.Save();
+
+                        Debug.LogError(
+                            $"DELETION ABANDONED for guid {guid}: SERVER_DELETE_KEY was "
+                                + "rejected twice (403). THE SERVER STILL HOLDS THIS USER'S "
+                                + "DATA. Fix the key in Secret.cs, then have a maintainer "
+                                + "erase this guid by hand - the server logged it too."
+                        );
+                    }
+                }
+                else
+                {
+                    lastError = DescribeError(uwr);
+                    // Loud, and with the guid. This is the one failure the server cannot see:
+                    // the request never reached it, so only this log and the pending retry
+                    // stand between the user and data that silently survives.
+                    Debug.LogError(
+                        $"DELETION REQUEST FAILED to reach the server for guid {guid} - "
+                            + $"{uwr.responseCode} {lastErrorType}. Kept as pending and retried "
+                            + "on next launch."
+                    );
+                }
+
+                done?.Invoke(ok);
+            }
+        }
+
+        // Get the form for creating the profile panel
+        private WWWForm GetPOSTForm_profile()
+        {
+            WWWForm form = new WWWForm();
+            form.AddField("guid", PlayerPrefs.GetString("UserGuid"));
+
+            return form;
+        }
+
+        // Get the form for ASA audio recording
+        private WWWForm GetPOSTForm_ASA(int taskId, byte[] wavBuffer)
+        {
+            WWWForm form = new WWWForm();
+            form.AddBinaryData(
+                "file",
+                wavBuffer,
+                // Same recording the user just listened to, hence the same constant.
+                // The ".wav" is required by the DTA server: it rejects a filename that does
+                // not end in .wav with 400 BAD_REQUEST, even though the bytes are fine.
+                fileName: Const.ASA_FILENAME + ".wav",
+                mimeType: "audio/wav"
+            );
+            form.AddField("guid", PlayerPrefs.GetString("UserGuid"));
+            form.AddField("task_id", taskId);
+
+            return form;
+        }
+
+        // Get form for feedback (grade and optional comment)
+        private WWWForm GetPOSTForm_feedback(
+            POSTType postType,
+            string feedback_type,
+            string grade,
+            string comment
+        )
+        {
+            WWWForm form = new();
+
+            int value = grade[^1] - '0';
+            form.AddField("guid", PlayerPrefs.GetString("UserGuid"));
+            form.AddField("reaction_value", value);
+            form.AddField("feedback_classification", feedback_type);
+
+            // Only feedback about a specific recording carries an assessment_id.
+            // Feedback about a screen or about the app as a whole must not send the field
+            // at all - the server answers 422 if it is present. See docs/TO_FRONTEND.md item 1.
+            if (RequiresAssessmentId(feedback_type))
+            {
+                int assessmentId = PlayerPrefs.GetInt("AssessmentId", -1);
+                if (assessmentId < 0)
+                {
+                    Debug.LogError(
+                        $"Feedback '{feedback_type}' needs an assessment_id but none is stored. "
+                            + "The server will reject this with 422."
+                    );
+                }
+                form.AddField("assessment_id", assessmentId);
+            }
+
+            form.AddField("comment", comment);
+
+            // Debug.Log("Rating value: " + grade);
+            //Debug.Log("Comment: " + comment);
+            return form;
+        }
+
+        /// <summary>
+        /// Turns a failed DTA request into something worth showing a learner, and puts the
+        /// server's own words in the console where they belong. Previously the raw
+        /// UnityWebRequest.error went straight on screen, so a deleted account showed up as
+        /// "HTTP/1.1 404 Not Found" while the useful part - USER_NOT_FOUND - was discarded.
+        ///
+        /// Branching is on the HTTP status rather than on detail.type on purpose: `detail` is
+        /// an object for normal errors but an array for 422, and JsonUtility cannot handle a
+        /// field that changes shape. The body is parsed best-effort for the log line only.
+        /// The envelope is published in the OpenAPI schema as of v1.2.0, and 422 keeps its
+        /// array shape - see docs/TO_FRONTEND.md item 6.
+        /// </summary>
+        private string DescribeError(UnityWebRequest uwr)
+        {
+            return DescribeError(uwr.responseCode, GetServerErrorMessage(uwr));
+        }
+
+        /// <summary>
+        /// Records a failed DTA request for the caller to read: lastError for plain text, and
+        /// lastServerError for screens that localize the message themselves.
+        /// </summary>
+        private void RecordFailure(UnityWebRequest uwr)
+        {
+            string serverMessage = GetServerErrorMessage(uwr);
+            lastError = DescribeError(uwr.responseCode, serverMessage);
+            lastServerError = new ServerError(uwr.responseCode, serverMessage);
+        }
+
+        private string GetServerErrorMessage(UnityWebRequest uwr)
+        {
+            string body = uwr.downloadHandler?.text;
+            string type = null;
+            string serverMessage = null;
+
+            if (!string.IsNullOrEmpty(body))
+            {
+                try
+                {
+                    ApiErrorEnvelope envelope = JsonUtility.FromJson<ApiErrorEnvelope>(body);
+                    if (envelope != null && envelope.detail != null)
+                    {
+                        type = envelope.detail.type;
+                        serverMessage = envelope.detail.message;
+                    }
+                }
+                catch (System.Exception)
+                {
+                    // 422 (detail is an array) and any non-JSON body land here. The status
+                    // code is enough to pick a message.
+                }
+            }
+
+            Debug.LogError($"{uwr.url} -> {uwr.responseCode} {type} | {body} | {uwr.error}");
+            lastErrorType = type;
+            return serverMessage;
         }
 
         [System.Serializable]
@@ -1187,100 +1281,6 @@ namespace SaySuomi.Navigation
         {
             public string type;
             public string message;
-        }
-
-        /// <summary>
-        /// Turns a failed DTA request into something worth showing a learner, and puts the
-        /// server's own words in the console where they belong. Previously the raw
-        /// UnityWebRequest.error went straight on screen, so a deleted account showed up as
-        /// "HTTP/1.1 404 Not Found" while the useful part - USER_NOT_FOUND - was discarded.
-        ///
-        /// Branching is on the HTTP status rather than on detail.type on purpose: `detail` is
-        /// an object for normal errors but an array for 422, and JsonUtility cannot handle a
-        /// field that changes shape. The body is parsed best-effort for the log line only.
-        /// The envelope is published in the OpenAPI schema as of v1.2.0, and 422 keeps its
-        /// array shape - see docs/TO_FRONTEND.md item 6.
-        /// </summary>
-        private string DescribeError(UnityWebRequest uwr)
-        {
-            return DescribeError(uwr.responseCode, GetServerErrorMessage(uwr));
-        }
-
-        private static string DescribeError(long responseCode, string serverMessage)
-        {
-            return responseCode switch
-            {
-                0 => "No connection. Check your network and try again.",
-
-                403 => "Consent is required to use this feature.",
-
-                404 => "Your account was not found. You may need to set up the app again.",
-
-                // The client sent something the server rejected - the user cannot fix
-                // this by retrying, so say so rather than inviting them to try again.
-                422 => "This version of the app could not be accepted by the server. "
-                    + "Please update the app, or contact us if it is already up to date.",
-
-                // We cap the recording length before uploading, so reaching this means
-                // our cap and the server's disagree - a bug, not something the learner did.
-                413 => "That recording is too long to send.",
-
-                503 => "The server is busy. Please try again in a moment.",
-
-                // The server's own wording is the only thing that says WHICH bad request
-                // this is: "Unknown task_id 0" and a rejected filename are both 400 and
-                // otherwise indistinguishable. A generic apology here cost us a day
-                // finding the task_id offset, so show what the server said.
-                400 => string.IsNullOrEmpty(serverMessage)
-                    ? "The app sent something the server could not accept."
-                    : serverMessage,
-
-                // Same reasoning: an unrecognised status with a message is still far more
-                // use than "something went wrong", to the user and in a bug report.
-                _ => string.IsNullOrEmpty(serverMessage)
-                    ? "Something went wrong. Please try again."
-                    : serverMessage,
-            };
-        }
-
-        /// <summary>
-        /// Records a failed DTA request for the caller to read: lastError for plain text, and
-        /// lastServerError for screens that localize the message themselves.
-        /// </summary>
-        private void RecordFailure(UnityWebRequest uwr)
-        {
-            string serverMessage = GetServerErrorMessage(uwr);
-            lastError = DescribeError(uwr.responseCode, serverMessage);
-            lastServerError = new ServerError(uwr.responseCode, serverMessage);
-        }
-
-        private string GetServerErrorMessage(UnityWebRequest uwr)
-        {
-            string body = uwr.downloadHandler?.text;
-            string type = null;
-            string serverMessage = null;
-
-            if (!string.IsNullOrEmpty(body))
-            {
-                try
-                {
-                    ApiErrorEnvelope envelope = JsonUtility.FromJson<ApiErrorEnvelope>(body);
-                    if (envelope != null && envelope.detail != null)
-                    {
-                        type = envelope.detail.type;
-                        serverMessage = envelope.detail.message;
-                    }
-                }
-                catch (System.Exception)
-                {
-                    // 422 (detail is an array) and any non-JSON body land here. The status
-                    // code is enough to pick a message.
-                }
-            }
-
-            Debug.LogError($"{uwr.url} -> {uwr.responseCode} {type} | {body} | {uwr.error}");
-            lastErrorType = type;
-            return serverMessage;
         }
     }
 }

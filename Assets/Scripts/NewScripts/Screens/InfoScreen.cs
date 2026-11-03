@@ -5,13 +5,14 @@ namespace SaySuomi.Navigation
 {
     public class InfoScreen : AppScreen
     {
+        [SerializeField]
+        private Button backButton;
+
+        [Tooltip("Opens the secret code modal.")]
+        [SerializeField]
+        private Button secretButton;
+
         public override ScreenLayer Layer => ScreenLayer.Overlay;
-
-        [SerializeField]
-        Button backButton;
-
-        [SerializeField]
-        Button secretButton;
 
         protected override void Bind()
         {

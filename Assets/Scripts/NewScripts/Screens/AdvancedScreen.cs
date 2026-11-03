@@ -12,65 +12,74 @@ namespace SaySuomi.Navigation
 {
     public class AdvancedScreen : AppScreen
     {
-        public override bool IsTabRoot => true;
-
-        ModalScreen consentModal;
-        ModalScreen backgroundModal;
+        [Header("Advanced Home")]
+        [SerializeField]
+        private Button asaButton;
 
         [SerializeField]
-        Button acceptButton;
+        private Button numberGameButton;
+
+        [SerializeField]
+        private TMP_Dropdown languageDropdown;
+
+        [Header("Consent Modal")]
+        [SerializeField]
+        private GameObject consentPopUpGO;
+
+        [SerializeField]
+        private Button acceptButton;
+
+        [SerializeField]
+        private Button refuseButton;
+
+        [Tooltip("Opens the privacy notice.")]
+        [SerializeField]
+        private Button linkButton;
 
         // "I have read and understood the Privacy Notice." on the consent sheet.
         // Continue stays disabled until this is ticked, so consent cannot be given by
         // reflex-tapping the primary button.
+        [Tooltip("The accept button stays disabled until this is ticked.")]
         [SerializeField]
-        Toggle consentReadToggle;
+        private Toggle consentReadToggle;
+
+        [Header("Background Form Modal")]
+        [SerializeField]
+        private GameObject backgroundPopUpGO;
+
+        [Tooltip("Each toggle needs an OptionValue holding the value sent to the server.")]
+        [SerializeField]
+        private ToggleGroup genderOptions;
+
+        [Tooltip("Each toggle needs an OptionValue holding the value sent to the server.")]
+        [SerializeField]
+        private ToggleGroup ageOptions;
+
+        [Tooltip("Each toggle needs an OptionValue holding the value sent to the server.")]
+        [SerializeField]
+        private ToggleGroup selfAssessmentOptions;
 
         [SerializeField]
-        Button sendButton;
+        private TMP_InputField motherTongueOptions;
 
         // Other languages is now one open-ended field, and unlike the rest of the form it is
         // optional - leaving it blank is a valid answer.
+        [Tooltip("Optional: the learner may leave this blank.")]
         [SerializeField]
-        TMP_InputField languageOtherField;
+        private TMP_InputField languageOtherField;
 
         [SerializeField]
-        TMP_InputField motherTongueOptions;
+        private TextMeshProUGUI errorMessage;
 
         [SerializeField]
-        TextMeshProUGUI errorMessage;
+        private Button sendButton;
 
-        [SerializeField]
-        ToggleGroup genderOptions;
+        private ModalScreen consentModal;
+        private ModalScreen backgroundModal;
 
-        [SerializeField]
-        ToggleGroup ageOptions;
+        private readonly List<Locale> dropdownLocales = new();
 
-        [SerializeField]
-        ToggleGroup selfAssessmentOptions;
-
-        [SerializeField]
-        Button numberGameButton;
-
-        [SerializeField]
-        Button asaButton;
-
-        [SerializeField]
-        Button refuseButton;
-
-        [SerializeField]
-        Button linkButton;
-
-        [SerializeField]
-        GameObject consentPopUpGO;
-
-        [SerializeField]
-        GameObject backgroundPopUpGO;
-
-        [SerializeField]
-        TMP_Dropdown languageDropdown;
-
-        readonly List<Locale> dropdownLocales = new();
+        public override bool IsTabRoot => true;
 
         protected override void Bind()
         {
@@ -92,7 +101,7 @@ namespace SaySuomi.Navigation
             languageDropdown.onValueChanged.AddListener(SwitchLanguage);
         }
 
-        void OnEnable()
+        private void OnEnable()
         {
             languageDropdown.gameObject.SetActive(false);
             StartCoroutine(InitializeLanguageDropdown());
@@ -112,7 +121,7 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnNumberGameButtonClicked(NGTaskType taskType = NGTaskType.EASY)
+        private void OnNumberGameButtonClicked(NGTaskType taskType = NGTaskType.EASY)
         {
             // Go to number game (not very polished or functional for now)
             Navigator.GetManager().Push<NumberGameScreen>().SetTaskType(taskType);
@@ -121,7 +130,7 @@ namespace SaySuomi.Navigation
         // The assessment used to sit behind a secret code while it was being trialled. It is a
         // public feature now, so the button goes straight through - consent and the background
         // form are the only gates that remain.
-        void ProceedToASA()
+        private void ProceedToASA()
         {
             Navigator navigator = Navigator.GetManager();
 
@@ -157,20 +166,20 @@ namespace SaySuomi.Navigation
         // The sheet is a single reused object, so clear it every time it opens. Without this
         // a user who ticked the box, backed out, and came back would find Continue already
         // enabled and could consent without seeing the notice again.
-        void ResetConsentSheet()
+        private void ResetConsentSheet()
         {
             consentReadToggle.isOn = false;
             acceptButton.interactable = false;
         }
 
-        void LinkButtonPressed()
+        private void LinkButtonPressed()
         {
             Application.OpenURL(
                 "https://aalto-speech.github.io/privacy-notices/saysuomi-privacy.html"
             );
         }
 
-        void AcceptConsent()
+        private void AcceptConsent()
         {
             // Create new user after consent has been given
             string guid = Guid.NewGuid().ToString();
@@ -189,12 +198,12 @@ namespace SaySuomi.Navigation
             navigator.Open(backgroundModal);
         }
 
-        void RefuseConsent()
+        private void RefuseConsent()
         {
             Navigator.GetManager().Back();
         }
 
-        void GetUserInput()
+        private void GetUserInput()
         {
             // Set all relevant values for the user based on filled background form
             bool isValid = ValidateInformation();
@@ -293,7 +302,7 @@ namespace SaySuomi.Navigation
         // Keeps the user on the background form and tells them why they are still there.
         // The type is included because "something went wrong" is useless in a bug report,
         // and for a 422 the user genuinely cannot fix it by trying again.
-        void ShowOnboardingError()
+        private void ShowOnboardingError()
         {
             NetworkManager network = NetworkManager.GetManager();
             string reason = string.IsNullOrEmpty(network.lastError)
@@ -309,7 +318,7 @@ namespace SaySuomi.Navigation
             errorMessage.enabled = true;
         }
 
-        bool ValidateInformation()
+        private bool ValidateInformation()
         {
             // Every remaining question is mandatory except other languages, which is an
             // open-ended field the user is allowed to leave blank.
@@ -326,7 +335,7 @@ namespace SaySuomi.Navigation
             return false;
         }
 
-        IEnumerator InitializeLanguageDropdown()
+        private IEnumerator InitializeLanguageDropdown()
         {
             yield return LocalizationSettings.InitializationOperation;
 
@@ -391,7 +400,7 @@ namespace SaySuomi.Navigation
             languageDropdown.gameObject.SetActive(true);
         }
 
-        void SwitchLanguage(int currentIndex)
+        private void SwitchLanguage(int currentIndex)
         {
             var locale = dropdownLocales[currentIndex];
             LocalizationSettings.SelectedLocale = locale;

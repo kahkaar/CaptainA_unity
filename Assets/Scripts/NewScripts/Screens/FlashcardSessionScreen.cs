@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -23,89 +24,100 @@ namespace SaySuomi.Navigation
     /// </summary>
     public class FlashcardSessionScreen : AppScreen
     {
-        public override bool ShowsBackButton => true;
+        [Header("Card")]
+        [SerializeField]
+        private TextMeshProUGUI frontCardText; // Front card
 
         [SerializeField]
-        TMPro.TextMeshProUGUI frontCardText; // Front card
+        private TextMeshProUGUI backCardText; // Back card
 
         [SerializeField]
-        TMPro.TextMeshProUGUI backCardText; // Back card
+        private TextMeshProUGUI etymoText; // Etymology card
 
         [SerializeField]
-        TMPro.TextMeshProUGUI etymoText; // Etymology card
+        private GameObject warningImageFrontGO; // Front card
 
         [SerializeField]
-        GameObject warningImageFrontGO; // Front card
+        private GameObject warningImageBackGO; // Back card
 
         [SerializeField]
-        GameObject warningImageBackGO; // Back card
+        private GameObject illustrationGO; // Illustration
+
+        [Header("Answer")]
+        [SerializeField]
+        private GameObject showAnswerGO; // Show answer GO
+
+        [Tooltip("Holds the four grade buttons. Shown after the answer is revealed.")]
+        [SerializeField]
+        private GameObject qualityBarGO;
 
         [SerializeField]
-        TMPro.TextMeshProUGUI intervalText_again; // Interval text for AGAIN button
+        private Button againButton;
 
         [SerializeField]
-        TMPro.TextMeshProUGUI intervalText_hard; // Interval text for HARD button
+        private Button hardButton;
 
         [SerializeField]
-        TMPro.TextMeshProUGUI intervalText_good; // Interval text for GOOD button
+        private Button goodButton;
 
         [SerializeField]
-        TMPro.TextMeshProUGUI intervalText_easy; // Interval text for EASY button
+        private Button easyButton;
 
         [SerializeField]
-        GameObject showAnswerGO; // Show answer GO
+        private TextMeshProUGUI intervalText_again; // Interval text for AGAIN button
 
         [SerializeField]
-        GameObject qualityBarGO; // Quality bar GO
+        private TextMeshProUGUI intervalText_hard; // Interval text for HARD button
 
         [SerializeField]
-        GameObject recordButtonGO;
+        private TextMeshProUGUI intervalText_good; // Interval text for GOOD button
 
         [SerializeField]
-        GameObject progressBarGO; // Progress bar
+        private TextMeshProUGUI intervalText_easy; // Interval text for EASY button
+
+        [Header("Recording")]
+        [SerializeField]
+        private GameObject recordButtonGO;
 
         [SerializeField]
-        GameObject errorTextGO;
+        private GameObject progressBarGO; // Progress bar
 
         [SerializeField]
-        GameObject sampleButtonGO; // Replay sample audio
+        private GameObject errorTextGO;
 
+        [Tooltip("Plays the sample audio.")]
         [SerializeField]
-        GameObject replayButtonGO; // Replay recorded audio
+        private GameObject sampleButtonGO;
 
+        [Tooltip("Plays back the learner's recording.")]
         [SerializeField]
-        Toggle autoPlayToggle; // Auto play audio
+        private GameObject replayButtonGO;
 
+        [Header("Options")]
+        [Tooltip("Plays the card's audio automatically.")]
         [SerializeField]
-        Toggle hideFinnishToggle; // Hide Finnish text
+        private Toggle autoPlayToggle;
 
+        [Tooltip("Hides the Finnish text on the card.")]
         [SerializeField]
-        GameObject illustrationGO; // Illustration
+        private Toggle hideFinnishToggle;
 
+        [Header("Debug")]
+        [Tooltip("For testing only: shows what the server predicted.")]
         [SerializeField]
-        TMPro.TextMeshProUGUI predictionDebugText;
+        private TextMeshProUGUI predictionDebugText;
 
-        TMPro.TextMeshProUGUI finnishCardText; // The text of the card that is in Finnish
-        GameObject finWarningImageGO; // The warningImage of the card that is in Finnish
+        private TextMeshProUGUI finnishCardText; // The text of the card that is in Finnish
+        private GameObject finWarningImageGO; // The warningImage of the card that is in Finnish
         private CardManagerSM2 cardManager;
         private Card currentCard;
         private float countdownTime = 2.0f;
         private float currentTime = 2.0f;
         private string transcript;
-        AudioClip replayClip;
-        AudioClip sampleClip;
+        private AudioClip replayClip;
+        private AudioClip sampleClip;
 
-        [SerializeField]
-        Button againButton;
-
-        [SerializeField]
-        Button hardButton;
-
-        [SerializeField]
-        Button goodButton;
-
-        [SerializeField]
-        Button easyButton;
+        public override bool ShowsBackButton => true;
 
         protected override void Bind()
         {
@@ -117,12 +129,12 @@ namespace SaySuomi.Navigation
             ButtonWiring.Replace(easyButton, () => OnSubmitButtonClick(5));
 
             ButtonWiring.SwitchOffInspectorEntries(autoPlayToggle.onValueChanged);
-            autoPlayToggle.onValueChanged.AddListener(OnAutoPlayToogle);
+            autoPlayToggle.onValueChanged.AddListener(OnAutoPlayToggle);
             ButtonWiring.SwitchOffInspectorEntries(hideFinnishToggle.onValueChanged);
-            hideFinnishToggle.onValueChanged.AddListener(OnHideFinnishToogle);
+            hideFinnishToggle.onValueChanged.AddListener(OnHideFinnishToggle);
         }
 
-        void OnEnable()
+        private void OnEnable()
         {
             // Reset the status of the toggle buttons
             // This must be done because the hideFinnishToggle button is disabled
@@ -138,7 +150,16 @@ namespace SaySuomi.Navigation
             ShowNextCard();
         }
 
-        void OnDisable()
+        private void Update()
+        {
+            // Only run this code if the progress bar is active
+            if (progressBarGO.activeSelf == true)
+            {
+                UpdateProgressBar();
+            }
+        }
+
+        private void OnDisable()
         {
             // The progress bar is only up while recording. Without this the microphone keeps
             // running behind the next screen, with nothing left on screen to stop it.
@@ -158,12 +179,6 @@ namespace SaySuomi.Navigation
             clearOldCard();
             // Clear the cardqueue
             CardQueueManager.GetQueueManager.ClearQueue();
-        }
-
-        // OnDisable clears the session, and FlashcardsScreen refreshes its counts in OnEnable.
-        void FinnishFlashCard()
-        {
-            Navigator.GetManager().PopTo<FlashcardsScreen>();
         }
 
         public void ShowNextCard()
@@ -404,31 +419,6 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnSubmitButtonClick(int quality)
-        /*
-        *   Quality is a number from 0 to 5, where 0 means complete blackout and 5 means perfect recall.
-        *   https://www.supermemo.com/english/ol/sm2.htm
-        *   We are using Anki algorithm, so quality is a number in [0,3,4,5] where 0 means complete blackout and 5 means perfect recall.
-        *   https://apps.ankiweb.net/docs/manual.html#what-spaced-repetition-algorithm-does-anki-use
-        *   I'm not sure Anki algorithm use 0 to 3 or 0 to 5, but I think it's 0 to 3.
-        *   I used [0,3,4,5] in CaptainA because the formular is based on SuperMemo 2 algorithm.
-        *
-        *   The quality is set per button in Bind.
-        */
-        {
-            (float newInterval, float newEaseFactor) = cardManager.GetCarNewIntervalEase(
-                currentCard,
-                quality
-            );
-            cardManager.UpdateCardToJson(currentCard, quality, newInterval, newEaseFactor);
-
-            CardQueueManager.GetQueueManager.Dequeue(); // Need to dequeue to reduce the queue
-            clearOldCard();
-            ShowNextCard();
-
-            checkSurVey();
-        }
-
         public void checkSurVey()
         {
             int recordNumber = 1;
@@ -454,92 +444,6 @@ namespace SaySuomi.Navigation
             }
         }
 
-        void OnRecordButtonClick()
-        {
-            transcript =
-                currentCard.frontLanguage == "FI" ? currentCard.frontText : currentCard.backText;
-
-            // Santinize the text
-            transcript = TextUtils.SantinizeText(transcript);
-
-            // Check if the text is empty or not
-            if (transcript == "")
-            {
-                // Show the error text
-                errorTextGO.SetActive(true);
-                errorTextGO.GetComponent<TMPro.TextMeshProUGUI>().text =
-                    "Please enter a word or phrase";
-            }
-            else
-            {
-                progressBarGO.SetActive(true);
-                // Start recording
-                AudioManager.GetManager().StartRecording(Const.MAX_REC_TIME);
-
-                // Start the timer
-                // Should not use invoke or delay as it will cause the timer to be inaccurate
-                StartTimer();
-            }
-        }
-
-        void OnAutoPlayToogle(bool isAutoPlay)
-        {
-            cardManager.SetFlashCardAutoPlay(isAutoPlay);
-        }
-
-        void OnHideFinnishToogle(bool isHideText)
-        {
-            cardManager.SetFlashCardHideText(isHideText);
-        }
-
-        void StartTimer()
-        /*
-        *   This function will start the timer for the recording
-        */
-        {
-            // The length of the audio clip depend on the number of characters
-            // of the text to be recorded + EXTRA_TIME
-            countdownTime = transcript.Length * Const.SEC_PER_CHAR + Const.EXTRA_TIME;
-
-            // Make sure the countdown time is not more than MAX_REC_TIME
-            if (countdownTime > Const.MAX_REC_TIME)
-                countdownTime = Const.MAX_REC_TIME;
-
-            // Start countdown so the user know how long the recording will be
-            currentTime = countdownTime;
-
-            // Hide the record button
-            recordButtonGO.SetActive(false);
-
-            // Show the countdown progress bar
-            progressBarGO.SetActive(true);
-        }
-
-        void Update()
-        {
-            // Only run this code if the progress bar is active
-            if (progressBarGO.activeSelf == true)
-            {
-                UpdateProgressBar();
-            }
-        }
-
-        void UpdateProgressBar()
-        {
-            /*
-            *   This function will update the progress bar
-            */
-            currentTime -= Time.deltaTime;
-            progressBarGO.GetComponent<Image>().fillAmount = currentTime / countdownTime;
-
-            if (currentTime <= 0)
-            {
-                currentTime = 0;
-                progressBarGO.SetActive(false);
-                OnFinnishTimer();
-            }
-        }
-
         // TODO
         // maybe consider to merge both code into 1
         public void OnFinnishTimer()
@@ -559,7 +463,7 @@ namespace SaySuomi.Navigation
                 // Kept because the session can move to the next card before the server answers,
                 // and the score belongs to the card that was recorded.
                 string postedTranscript = transcript;
-                TMPro.TextMeshProUGUI postedCardText = finnishCardText;
+                TextMeshProUGUI postedCardText = finnishCardText;
                 GameObject postedWarningImageGO = finWarningImageGO;
 
                 AudioManager
@@ -576,8 +480,9 @@ namespace SaySuomi.Navigation
                             errorTextGO.SetActive(!serverOk);
                             if (!serverOk)
                             {
-                                errorTextGO.GetComponent<TMPro.TextMeshProUGUI>().text =
-                                    NetworkManager.GetManager().lastError;
+                                errorTextGO.GetComponent<TextMeshProUGUI>().text = NetworkManager
+                                    .GetManager()
+                                    .lastError;
                                 return;
                             }
 
@@ -639,7 +544,114 @@ namespace SaySuomi.Navigation
             DisplayAnswer();
         }
 
-        IEnumerator LoadAudioClip(string filename)
+        // OnDisable clears the session, and FlashcardsScreen refreshes its counts in OnEnable.
+        private void FinnishFlashCard()
+        {
+            Navigator.GetManager().PopTo<FlashcardsScreen>();
+        }
+
+        private void OnSubmitButtonClick(int quality)
+        /*
+        *   Quality is a number from 0 to 5, where 0 means complete blackout and 5 means perfect recall.
+        *   https://www.supermemo.com/english/ol/sm2.htm
+        *   We are using Anki algorithm, so quality is a number in [0,3,4,5] where 0 means complete blackout and 5 means perfect recall.
+        *   https://apps.ankiweb.net/docs/manual.html#what-spaced-repetition-algorithm-does-anki-use
+        *   I'm not sure Anki algorithm use 0 to 3 or 0 to 5, but I think it's 0 to 3.
+        *   I used [0,3,4,5] in CaptainA because the formular is based on SuperMemo 2 algorithm.
+        *
+        *   The quality is set per button in Bind.
+        */
+        {
+            (float newInterval, float newEaseFactor) = cardManager.GetCarNewIntervalEase(
+                currentCard,
+                quality
+            );
+            cardManager.UpdateCardToJson(currentCard, quality, newInterval, newEaseFactor);
+
+            CardQueueManager.GetQueueManager.Dequeue(); // Need to dequeue to reduce the queue
+            clearOldCard();
+            ShowNextCard();
+
+            checkSurVey();
+        }
+
+        private void OnRecordButtonClick()
+        {
+            transcript =
+                currentCard.frontLanguage == "FI" ? currentCard.frontText : currentCard.backText;
+
+            // Santinize the text
+            transcript = TextUtils.SantinizeText(transcript);
+
+            // Check if the text is empty or not
+            if (transcript == "")
+            {
+                // Show the error text
+                errorTextGO.SetActive(true);
+                errorTextGO.GetComponent<TextMeshProUGUI>().text = "Please enter a word or phrase";
+            }
+            else
+            {
+                progressBarGO.SetActive(true);
+                // Start recording
+                AudioManager.GetManager().StartRecording(Const.MAX_REC_TIME);
+
+                // Start the timer
+                // Should not use invoke or delay as it will cause the timer to be inaccurate
+                StartTimer();
+            }
+        }
+
+        private void OnAutoPlayToggle(bool isAutoPlay)
+        {
+            cardManager.SetFlashCardAutoPlay(isAutoPlay);
+        }
+
+        private void OnHideFinnishToggle(bool isHideText)
+        {
+            cardManager.SetFlashCardHideText(isHideText);
+        }
+
+        private void StartTimer()
+        /*
+        *   This function will start the timer for the recording
+        */
+        {
+            // The length of the audio clip depend on the number of characters
+            // of the text to be recorded + EXTRA_TIME
+            countdownTime = transcript.Length * Const.SEC_PER_CHAR + Const.EXTRA_TIME;
+
+            // Make sure the countdown time is not more than MAX_REC_TIME
+            if (countdownTime > Const.MAX_REC_TIME)
+                countdownTime = Const.MAX_REC_TIME;
+
+            // Start countdown so the user know how long the recording will be
+            currentTime = countdownTime;
+
+            // Hide the record button
+            recordButtonGO.SetActive(false);
+
+            // Show the countdown progress bar
+            progressBarGO.SetActive(true);
+        }
+
+        private void UpdateProgressBar()
+        {
+            /*
+            *   This function will update the progress bar
+            */
+            currentTime -= Time.deltaTime;
+            progressBarGO.GetComponent<Image>().fillAmount = currentTime / countdownTime;
+
+            if (currentTime <= 0)
+            {
+                currentTime = 0;
+                progressBarGO.SetActive(false);
+                OnFinnishTimer();
+            }
+        }
+
+        private IEnumerator LoadAudioClip(string filename)
         /*
         *   This one should be called inside the Panel (not AudioManager)
         *   as it will update the replay audio with current replay audio

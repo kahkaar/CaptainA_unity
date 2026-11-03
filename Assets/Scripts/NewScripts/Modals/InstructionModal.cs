@@ -11,12 +11,13 @@ namespace SaySuomi.Navigation
     public sealed class InstructionModal : ModalScreen
     {
         [SerializeField]
-        TextMeshProUGUI messageText;
-        string prefsKey;
-        int saveInt;
+        private TextMeshProUGUI messageText;
 
         [SerializeField]
-        Button okButton;
+        private Button okButton;
+
+        private string prefsKey;
+        private int saveInt;
 
         protected override void Bind()
         {
@@ -39,7 +40,7 @@ namespace SaySuomi.Navigation
             modal.messageText.text = message;
         }
 
-        void OnOkClicked()
+        private void OnOkClicked()
         {
             PlayerPrefs.SetInt(prefsKey, saveInt);
             PlayerPrefs.Save();

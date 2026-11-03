@@ -10,8 +10,8 @@ namespace SaySuomi.Navigation
     [RequireComponent(typeof(Image))]
     public sealed class ModalDim : MonoBehaviour
     {
-        Image image;
-        Color fullColor;
+        private Image image;
+        private Color fullColor;
 
         internal bool IsShowing => gameObject.activeSelf;
 

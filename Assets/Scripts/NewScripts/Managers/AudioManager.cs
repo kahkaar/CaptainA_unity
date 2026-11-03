@@ -10,11 +10,12 @@ namespace SaySuomi.Navigation
 {
     public class AudioManager : MonoBehaviour
     {
-        static AudioManager audioManager;
+        private static AudioManager audioManager;
 
         [SerializeField]
-        AudioClip recordNotif;
-        AudioSource audioSource;
+        private AudioClip recordNotif;
+
+        private AudioSource audioSource;
 
         private AudioClip replayClip;
 
@@ -33,7 +34,7 @@ namespace SaySuomi.Navigation
         private Button replayButton;
         private UnityEngine.Events.UnityAction replayHandler;
 
-        void Awake()
+        private void Awake()
         {
             // Destroy existing AudioManager(s) to avoid duplicates
             if (audioManager != null)
@@ -109,47 +110,6 @@ namespace SaySuomi.Navigation
             pendingStart = StartCoroutine(StartRecordingSafe(lengthSec, onStarted));
         }
 
-        IEnumerator StartRecordingSafe(int lengthSec, System.Action<bool> onStarted)
-        {
-            audioSource.Stop();
-
-            yield return new WaitForSeconds(0.3f);
-
-            if (!RecordSound(lengthSec))
-            {
-                onStarted?.Invoke(false);
-                yield break;
-            }
-
-            // Microphone.Start having returned is not the same as the microphone running. It
-            // hands back a clip straight away and the device fills it later, so reporting
-            // "started" here used to be a guess - and the samples sitting in the clip until the
-            // device caught up are what the first recordings played back as a click.
-            //
-            // GetPosition moving off zero is the device's own signal that it is delivering.
-            float deadline = Time.realtimeSinceStartup + Const.MIC_START_TIMEOUT_SECS;
-
-            while (Microphone.GetPosition(recordingDevice) <= 0)
-            {
-                if (Time.realtimeSinceStartup > deadline)
-                {
-                    Debug.LogError(
-                        $"Microphone '{recordingDevice}' never produced a sample within "
-                            + $"{Const.MIC_START_TIMEOUT_SECS}s - giving up rather than counting "
-                            + "down against a recording that is not happening."
-                    );
-
-                    Microphone.End(recordingDevice);
-                    onStarted?.Invoke(false);
-                    yield break;
-                }
-
-                yield return null;
-            }
-
-            onStarted?.Invoke(true);
-        }
-
         /// <summary>
         /// Abandons a recording without keeping it. Also stops a start still in its delay, which
         /// would otherwise open the microphone after this and leave it running.
@@ -171,33 +131,6 @@ namespace SaySuomi.Navigation
         public void StopReplaying()
         {
             audioSource.Stop();
-        }
-
-        /// <returns>True only if the microphone is now running.</returns>
-        bool RecordSound(int lengthSec)
-        {
-            // Never index Microphone.devices without checking it. It is empty whenever the
-            // permission has not been granted yet, and indexing [0] there throws
-            // IndexOutOfRangeException from inside a coroutine - which surfaces as the
-            // recording quietly never starting while the countdown runs.
-            if (!CanRecord())
-            {
-                Debug.LogError(
-                    "Cannot record: microphone permission not granted, or no input device. "
-                        + "Asking again - the user can grant it and retry."
-                );
-                RequestMicrophonePermission();
-                return false;
-            }
-
-            // Remembered rather than looked up again later. Stopping is addressed to a device
-            // by name, and re-reading devices[0] at that point assumes the list has not changed
-            // since - a headset unplugged mid-recording is enough to end the wrong one.
-            recordingDevice = Microphone.devices[0];
-
-            audioSource.clip = Microphone.Start(recordingDevice, false, lengthSec, Const.FREQUENCY);
-
-            return audioSource.clip != null;
         }
 
         public void PlayAudioClip(AudioClip audioClip)
@@ -311,37 +244,6 @@ namespace SaySuomi.Navigation
             return true;
         }
 
-        /// <summary>
-        /// Silences the first Const.MIC_WARMUP_DISCARD_MS of a finished recording.
-        ///
-        /// Silenced rather than cut out, because SavWav's trim already drops leading silence -
-        /// so zeroing the head makes the existing pass remove it, instead of adding a second
-        /// place where the start of the audio is decided.
-        ///
-        /// This is what actually removes the click. Waiting for the device to deliver its
-        /// first sample proves it is awake; it says nothing about whether the frames it
-        /// produced while waking are worth keeping.
-        /// </summary>
-        ///
-        /// <param name="capturedSamples">
-        /// How much the device really wrote. Guards the case where the whole recording is
-        /// shorter than the discard window - a very quick stop would otherwise be wiped out
-        /// entirely and read as "nothing was recorded".
-        /// </param>
-        private static void DiscardMicWarmUp(AudioClip clip, int capturedSamples)
-        {
-            int warmUpSamples = Const.FREQUENCY * Const.MIC_WARMUP_DISCARD_MS / 1000;
-
-            if (warmUpSamples <= 0 || capturedSamples <= warmUpSamples)
-            {
-                return;
-            }
-
-            // Zero-initialised by C#, so writing it over the head IS the silencing.
-            float[] silence = new float[warmUpSamples * clip.channels];
-            clip.SetData(silence, 0);
-        }
-
         public IEnumerator LoadAudioClip(string filename, GameObject replayButtonGO)
         {
             if (!string.IsNullOrEmpty(filename))
@@ -408,6 +310,105 @@ namespace SaySuomi.Navigation
 
                 yield break;
             }
+        }
+
+        /// <summary>
+        /// Silences the first Const.MIC_WARMUP_DISCARD_MS of a finished recording.
+        ///
+        /// Silenced rather than cut out, because SavWav's trim already drops leading silence -
+        /// so zeroing the head makes the existing pass remove it, instead of adding a second
+        /// place where the start of the audio is decided.
+        ///
+        /// This is what actually removes the click. Waiting for the device to deliver its
+        /// first sample proves it is awake; it says nothing about whether the frames it
+        /// produced while waking are worth keeping.
+        /// </summary>
+        ///
+        /// <param name="capturedSamples">
+        /// How much the device really wrote. Guards the case where the whole recording is
+        /// shorter than the discard window - a very quick stop would otherwise be wiped out
+        /// entirely and read as "nothing was recorded".
+        /// </param>
+        private static void DiscardMicWarmUp(AudioClip clip, int capturedSamples)
+        {
+            int warmUpSamples = Const.FREQUENCY * Const.MIC_WARMUP_DISCARD_MS / 1000;
+
+            if (warmUpSamples <= 0 || capturedSamples <= warmUpSamples)
+            {
+                return;
+            }
+
+            // Zero-initialised by C#, so writing it over the head IS the silencing.
+            float[] silence = new float[warmUpSamples * clip.channels];
+            clip.SetData(silence, 0);
+        }
+
+        private IEnumerator StartRecordingSafe(int lengthSec, System.Action<bool> onStarted)
+        {
+            audioSource.Stop();
+
+            yield return new WaitForSeconds(0.3f);
+
+            if (!RecordSound(lengthSec))
+            {
+                onStarted?.Invoke(false);
+                yield break;
+            }
+
+            // Microphone.Start having returned is not the same as the microphone running. It
+            // hands back a clip straight away and the device fills it later, so reporting
+            // "started" here used to be a guess - and the samples sitting in the clip until the
+            // device caught up are what the first recordings played back as a click.
+            //
+            // GetPosition moving off zero is the device's own signal that it is delivering.
+            float deadline = Time.realtimeSinceStartup + Const.MIC_START_TIMEOUT_SECS;
+
+            while (Microphone.GetPosition(recordingDevice) <= 0)
+            {
+                if (Time.realtimeSinceStartup > deadline)
+                {
+                    Debug.LogError(
+                        $"Microphone '{recordingDevice}' never produced a sample within "
+                            + $"{Const.MIC_START_TIMEOUT_SECS}s - giving up rather than counting "
+                            + "down against a recording that is not happening."
+                    );
+
+                    Microphone.End(recordingDevice);
+                    onStarted?.Invoke(false);
+                    yield break;
+                }
+
+                yield return null;
+            }
+
+            onStarted?.Invoke(true);
+        }
+
+        /// <returns>True only if the microphone is now running.</returns>
+        private bool RecordSound(int lengthSec)
+        {
+            // Never index Microphone.devices without checking it. It is empty whenever the
+            // permission has not been granted yet, and indexing [0] there throws
+            // IndexOutOfRangeException from inside a coroutine - which surfaces as the
+            // recording quietly never starting while the countdown runs.
+            if (!CanRecord())
+            {
+                Debug.LogError(
+                    "Cannot record: microphone permission not granted, or no input device. "
+                        + "Asking again - the user can grant it and retry."
+                );
+                RequestMicrophonePermission();
+                return false;
+            }
+
+            // Remembered rather than looked up again later. Stopping is addressed to a device
+            // by name, and re-reading devices[0] at that point assumes the list has not changed
+            // since - a headset unplugged mid-recording is enough to end the wrong one.
+            recordingDevice = Microphone.devices[0];
+
+            audioSource.clip = Microphone.Start(recordingDevice, false, lengthSec, Const.FREQUENCY);
+
+            return audioSource.clip != null;
         }
     }
 }
