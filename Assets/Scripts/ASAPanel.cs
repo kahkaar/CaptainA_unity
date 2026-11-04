@@ -18,6 +18,9 @@ public class ASAPanel : MonoBehaviour
     private AdvancePanel AdvancePanel;
 
     [SerializeField]
+    GameObject ASAPanelGO;
+
+    [SerializeField]
     GameObject recordButtonGO;
 
     [SerializeField]
@@ -536,6 +539,7 @@ public class ASAPanel : MonoBehaviour
         loadingPopUpGO.SetActive(false);
         dimPanelASAGO.SetActive(false);
         feedbackPanelGO.SetActive(true);
+        ASAPanelGO.SetActive(false);
 
         if (self_rating != null)
         {
