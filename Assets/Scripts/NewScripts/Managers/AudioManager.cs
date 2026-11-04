@@ -6,7 +6,7 @@ using UnityEngine.UI;
 using UnityEngine.Android;
 #endif
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Managers
 {
     public class AudioManager : MonoBehaviour
     {

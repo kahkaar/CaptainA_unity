@@ -1,9 +1,12 @@
 using System.Collections;
+using SaySuomi.Managers;
+using SaySuomi.Modals;
+using SaySuomi.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Screens
 {
     public class FreestyleScreen : AppScreen
     {

@@ -1,7 +1,7 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.EditorTools
 {
     public static class DeletePlayerPrefsMenu
     {

@@ -1,4 +1,4 @@
-namespace SaySuomi.Navigation
+namespace SaySuomi.Managers
 {
     // Deliberately not [System.Serializable]. Unity cannot serialize a ValueTuple, so the
     // attribute did nothing but raise a warning per field. This is a carrier: built in

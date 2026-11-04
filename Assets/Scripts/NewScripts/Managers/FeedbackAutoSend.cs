@@ -4,7 +4,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Managers
 {
     /// <summary>
     /// Sends one rating group's answer as soon as the learner taps an emoji, and again

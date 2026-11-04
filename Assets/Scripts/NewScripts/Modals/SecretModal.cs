@@ -1,8 +1,9 @@
+using SaySuomi.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Modals
 {
     public class SecretModal : ModalScreen
     {

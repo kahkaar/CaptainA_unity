@@ -107,22 +107,23 @@ popup. Popups used by one screen start with that screen's name, such as `ASAProf
 2. Add a class and attach it to the root:
 
    ```csharp
+   using SaySuomi.Navigation;
    using TMPro;
    using UnityEngine;
    using UnityEngine.UI;
 
-   namespace SaySuomi.Navigation
+   namespace SaySuomi.Screens
    {
        public class ExampleScreen : AppScreen
        {
+           [SerializeField]
+           private TextMeshProUGUI titleText;
+
+           [SerializeField]
+           private Button backButton;
+
            // Omit this for the default Screen layer.
            public override ScreenLayer Layer => ScreenLayer.Overlay;
-
-           [SerializeField]
-           TextMeshProUGUI titleText;
-
-           [SerializeField]
-           Button backButton;
 
            protected override void Bind()
            {

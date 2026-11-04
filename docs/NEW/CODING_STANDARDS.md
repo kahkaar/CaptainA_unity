@@ -10,6 +10,7 @@ Run after every change, from the folder that contains the changed files:
 ```sh
 csharpier format .                # C#
 npx prettier --write "**/*.md"    # Markdown
+ruff format .                     # Python
 ```
 
 ## Namespaces
@@ -17,15 +18,31 @@ npx prettier --write "**/*.md"    # Markdown
 The root namespace is `SaySuomi`. Each script belongs to it or to a namespace below it, named after
 the relevant area of the application:
 
+| Folder       | Namespace              | Contains                                      |
+| ------------ | ---------------------- | --------------------------------------------- |
+| `Navigation` | `SaySuomi.Navigation`  | `Navigator`, the base screens and the tab bar |
+| `Screens`    | `SaySuomi.Screens`     | Screens and the classes that support them     |
+| `Modals`     | `SaySuomi.Modals`      | Modals                                        |
+| `Managers`   | `SaySuomi.Managers`    | Audio, the server and their data classes      |
+| `Editor`     | `SaySuomi.EditorTools` | Tools that run only in the Unity Editor       |
+
+`SaySuomi.Editor` is avoided because that namespace would hide
+[`UnityEditor.Editor`](https://docs.unity3d.com/6000.5/Documentation/ScriptReference/Editor.html).
+
 ```csharp
-namespace SaySuomi.Navigation
+using SaySuomi.Navigation;
+
+namespace SaySuomi.Screens
 {
     public class ExampleScreen : AppScreen { }
 }
 ```
 
 Unity adds `SaySuomi` to new scripts through **Project Settings > Editor**. The remainder, such as
-`.Navigation`, is added by hand.
+`.Screens`, is added by hand.
+
+Unity stores the full type name of each Inspector `OnClick` target in the scene, so moving a class to
+another namespace also means updating its `m_TargetAssemblyTypeName` entries.
 
 ## Naming
 
@@ -166,4 +183,5 @@ int taskId = index + 1;
 - [C# coding conventions](https://learn.microsoft.com/dotnet/csharp/fundamentals/coding-style/coding-conventions)
 - [CSharpier](https://csharpier.com)
 - [Prettier](https://prettier.io)
+- [Ruff](https://docs.astral.sh/ruff/formatter/)
 - [Mermaid](https://mermaid.js.org)

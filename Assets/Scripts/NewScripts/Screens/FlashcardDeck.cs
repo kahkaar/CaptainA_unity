@@ -2,7 +2,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Screens
 {
     /// <summary>Marks an object on FlashcardsScreen as a deck, and says which one.</summary>
     public sealed class FlashcardDeck : MonoBehaviour

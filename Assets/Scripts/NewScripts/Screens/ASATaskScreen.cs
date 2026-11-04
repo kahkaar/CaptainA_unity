@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Linq;
 using System.Runtime.Serialization.Formatters;
+using SaySuomi.Managers;
+using SaySuomi.Modals;
+using SaySuomi.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Screens
 {
     public class ASATaskScreen : AppScreen
     {

@@ -2,12 +2,14 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using SaySuomi.Managers;
+using SaySuomi.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Localization;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Screens
 {
     public class ASAProfileScreen : AppScreen
     {

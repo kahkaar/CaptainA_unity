@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using SaySuomi.Modals;
+using SaySuomi.Navigation;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Screens
 {
     /// <summary>
     /// This class is used to manage the Card Deck Panel

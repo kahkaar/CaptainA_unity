@@ -1,9 +1,11 @@
+using SaySuomi.Modals;
+using SaySuomi.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Screens
 {
     public class PhonemeScreen : AppScreen
     {

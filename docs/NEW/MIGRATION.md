@@ -3,8 +3,8 @@
 How the app moves from the old panels to the new navigation system.
 
 > **Status: ready for final checks.** Stages 1 to 5 have passed in Unity, with server paths
-> tested against the fake server only. `MainScene` and the original scripts stay untouched until
-> cutover.
+> tested against the fake server only. `MainScene` and the original scripts have only had their
+> namespaces changed, and otherwise stay untouched until cutover.
 
 | Stage                                          | Code                 | Scene work | Play mode check                 |
 | ---------------------------------------------- | -------------------- | ---------- | ------------------------------- |
@@ -34,9 +34,15 @@ hand.
 These apply on top of the [Coding Standards](CODING_STANDARDS.md), until cutover:
 
 - **Location:** new and changed scripts go in `Assets/Scripts/NewScripts/`.
-- **Namespace:** all of them use `SaySuomi.Navigation`. A single namespace matters while old classes
-  exist: a file-level `using` loses to a global class of the same name, so the old `NetworkManager`
-  would be picked silently.
+- **Namespace:** each folder has its own namespace, listed in the
+  [Coding Standards](CODING_STANDARDS.md#namespaces). The old scripts are in `SaySuomi.Legacy`, so a
+  new script cannot pick up an old class such as `NetworkManager` by accident. Do not import
+  `SaySuomi.Legacy` in a new script, because the names it shares with `SaySuomi.Managers` would
+  become ambiguous.
+- **Old classes that stay global:** the classes the new scripts still use, such as `Const`, `SaveData`
+  and `Secret`, are not in `SaySuomi.Legacy`. Moving them would mean importing it in the new scripts.
+- **User behaviour events:** these scripts are in `SaySuomi.UserBehaviour`, and their JSON writer is
+  in `SaySuomi.Utils`, not `SaySuomi.Legacy`, because the new screens will use them.
 - **Formatting:** run CSharpier from `Assets/Scripts/NewScripts/`, not the repository root, so the
   original scripts stay untouched. Run Prettier from `docs/NEW/`, so the existing documents do too.
 
@@ -168,7 +174,7 @@ what the real one sends:
 These scripts all move together because they depend on each other. For example, the old
 `NetworkManager` holds fields typed to four panels, and several panels call
 `NetworkManager.GetManager()`. `AudioManager` and `FeedbackAutoSend` move because their
-code calls `NetworkManager`, which would otherwise resolve to the old class.
+code calls `NetworkManager`, and the copies must call the new one.
 
 ## NetworkManager UI removal
 
@@ -246,7 +252,9 @@ This happens only on explicit go-ahead:
    [backend checks](#checks-waiting-on-the-backend) against the real server, and test on an Android
    device, including back, recording, transitions and exiting the app.
 2. Make `TESTING_SCENE` the build scene.
-3. Delete the old scripts and move the contents of `NewScripts` as needed. Remove
+3. Delete the scripts in `SaySuomi.Legacy` and move the contents of `NewScripts` as needed. Keep the
+   old classes that stayed global, because the new scripts use them, and the scripts in
+   `SaySuomi.UserBehaviour` and `SaySuomi.Utils`. Remove
    `Const.FLASH_CARD_DICT` at the same time, because only `CardDeckPanel` still uses it.
 4. Merge `docs/NEW/` with `docs/`, including replacing `docs/USER_BEHAVIOUR.md` with its
    updated copy.

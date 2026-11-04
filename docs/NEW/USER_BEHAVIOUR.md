@@ -4,7 +4,8 @@ How the Unity client records what learners do in the Automatic Speaking Assessme
 and sends it to the server. Server contract: dta-server `docs/USER_EVENTS.md` and
 `app/models/events.py`.
 
-Status: first draft. The system is in `Assets/Scripts/UserBehaviour/` but is not yet
+Status: first draft. The system is in `Assets/Scripts/UserBehaviour/`, in the
+`SaySuomi.UserBehaviour` namespace, but is not yet
 called from the ASA screens (see [Wiring](#wiring)). This copy describes the wiring for the
 new [navigation system](NAVIGATION.md), and replaces `docs/USER_BEHAVIOUR.md` at cutover.
 

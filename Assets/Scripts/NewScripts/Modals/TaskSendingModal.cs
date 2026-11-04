@@ -1,4 +1,4 @@
-namespace SaySuomi.Navigation
+namespace SaySuomi.Modals
 {
     /// <summary>
     /// The popup shown while a recorded task is sent and scored. It has its own class so that

@@ -1,4 +1,4 @@
-namespace SaySuomi.Navigation
+namespace SaySuomi.Managers
 {
     /// <summary>
     /// What a failed DTA request reported, for a screen to turn into a message.

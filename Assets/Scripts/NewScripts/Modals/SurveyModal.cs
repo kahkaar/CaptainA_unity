@@ -1,7 +1,8 @@
+using SaySuomi.Navigation;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Modals
 {
     public class SurveyModal : ModalScreen
     {

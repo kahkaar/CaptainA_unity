@@ -1,6 +1,7 @@
+using SaySuomi.Navigation;
 using UnityEngine;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Modals
 {
     /// <summary>
     /// A popup waiting on the server, with a spinning icon. The spin lives here because the

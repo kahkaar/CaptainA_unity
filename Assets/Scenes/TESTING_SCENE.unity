@@ -1574,7 +1574,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2096764790}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.SecretModal, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Modals.SecretModal, Assembly-CSharp
         m_MethodName: OnNoButtonClick
         m_Mode: 1
         m_Arguments:
@@ -1707,7 +1707,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1990495848}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.SurveyModal, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Modals.SurveyModal, Assembly-CSharp
         m_MethodName: OnYesButtonClick
         m_Mode: 1
         m_Arguments:
@@ -3895,7 +3895,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnSubmitButtonClick
         m_Mode: 3
         m_Arguments:
@@ -10165,7 +10165,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -10639,7 +10639,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1769915102}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.ScoreDetailScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.ScoreDetailScreen, Assembly-CSharp
         m_MethodName: ClosePanel
         m_Mode: 1
         m_Arguments:
@@ -13016,7 +13016,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -14121,7 +14121,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2127582246}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.PhonemeScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.PhonemeScreen, Assembly-CSharp
         m_MethodName: ClosePanel
         m_Mode: 1
         m_Arguments:
@@ -14420,7 +14420,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2127582246}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.PhonemeScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.PhonemeScreen, Assembly-CSharp
         m_MethodName: OnVideoButtonClick
         m_Mode: 1
         m_Arguments:
@@ -14850,7 +14850,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 455336493}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.InfoScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.InfoScreen, Assembly-CSharp
         m_MethodName: ClosePanel
         m_Mode: 1
         m_Arguments:
@@ -15637,7 +15637,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -18014,7 +18014,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1164813428}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: LinkButtonPressed
         m_Mode: 1
         m_Arguments:
@@ -21828,7 +21828,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -22866,7 +22866,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -23742,7 +23742,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1990495848}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.SurveyModal, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Modals.SurveyModal, Assembly-CSharp
         m_MethodName: OnLaterButtonClick
         m_Mode: 1
         m_Arguments:
@@ -25804,7 +25804,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 699251b54d6d8a24f8ffafdc2cc86818, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Navigation.TaskSendingModal
+  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Modals.TaskSendingModal
   icon: {fileID: 663327820}
 --- !u!1 &939675223
 GameObject:
@@ -28312,7 +28312,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnSubmitButtonClick
         m_Mode: 3
         m_Arguments:
@@ -29562,7 +29562,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -31101,7 +31101,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1769915102}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.ScoreDetailScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.ScoreDetailScreen, Assembly-CSharp
         m_MethodName: OnDetailScoreScroll
         m_Mode: 0
         m_Arguments:
@@ -33373,7 +33373,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnRecordButtonClick
         m_Mode: 1
         m_Arguments:
@@ -33787,7 +33787,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 19683659}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.ProgressScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.ProgressScreen, Assembly-CSharp
         m_MethodName: OnInfoButtonClick
         m_Mode: 1
         m_Arguments:
@@ -34705,7 +34705,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 2096764790}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.SecretModal, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Modals.SecretModal, Assembly-CSharp
         m_MethodName: OnYesButtonClick
         m_Mode: 1
         m_Arguments:
@@ -36545,7 +36545,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -37310,7 +37310,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1769915102}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.ScoreDetailScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.ScoreDetailScreen, Assembly-CSharp
         m_MethodName: ClosePanel
         m_Mode: 1
         m_Arguments:
@@ -37407,7 +37407,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4dcdbd998a1bbed41b1ade7f1baff675, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Navigation.InstructionModal
+  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Modals.InstructionModal
   messageText: {fileID: 277549721}
   okButton: {fileID: 93669115}
 --- !u!1 &1346811224
@@ -39651,7 +39651,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnSubmitButtonClick
         m_Mode: 3
         m_Arguments:
@@ -41980,7 +41980,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: DisplayAnswer
         m_Mode: 1
         m_Arguments:
@@ -43593,7 +43593,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 455336493}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.InfoScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.InfoScreen, Assembly-CSharp
         m_MethodName: SecretButton
         m_Mode: 1
         m_Arguments:
@@ -45712,7 +45712,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnHideFinnishToggle
         m_Mode: 0
         m_Arguments:
@@ -50265,7 +50265,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnAutoPlayToggle
         m_Mode: 0
         m_Arguments:
@@ -50584,7 +50584,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -50700,7 +50700,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 67f23a3cf9efa0040b313934ea5bede9, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Navigation.LoadingModal
+  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Modals.LoadingModal
   icon: {fileID: 1760811887}
 --- !u!1 &1838987043
 GameObject:
@@ -51041,7 +51041,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 255255db9854869488df2aa6d71cd388, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Navigation.FlashcardDeck
+  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Screens.FlashcardDeck
   deckName: FI-FI_HA_Hagaga
   isSecret: 1
   progressBar: {fileID: 432927820}
@@ -51462,7 +51462,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1805948029}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.FreestyleScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.FreestyleScreen, Assembly-CSharp
         m_MethodName: OnRecordButtonClick
         m_Mode: 1
         m_Arguments:
@@ -53512,7 +53512,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -53936,7 +53936,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 255255db9854869488df2aa6d71cd388, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Navigation.FlashcardDeck
+  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Screens.FlashcardDeck
   deckName: EN-FI_OmaSuomi_1_CaptainA
   isSecret: 0
   progressBar: {fileID: 956861911}
@@ -54028,7 +54028,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 31298b07cbaf19842b3285fcadc6e283, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::TaskPanel
+  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Legacy.TaskPanel
   taskButtons:
   - {fileID: 910402350742702827}
   - {fileID: 6232026139205486963}
@@ -54579,7 +54579,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -56297,7 +56297,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1970130711}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.FlashcardSessionScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.FlashcardSessionScreen, Assembly-CSharp
         m_MethodName: OnSubmitButtonClick
         m_Mode: 3
         m_Arguments:
@@ -56430,7 +56430,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1769915102}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.ScoreDetailScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.ScoreDetailScreen, Assembly-CSharp
         m_MethodName: ClosePanel
         m_Mode: 1
         m_Arguments:
@@ -59689,7 +59689,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -62178,7 +62178,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -64240,7 +64240,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -65144,7 +65144,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -65354,7 +65354,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -66603,7 +66603,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 1c31de6297c54274791b52513352c4fc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FeedbackPanel
+  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Legacy.FeedbackPanel
   proficiencyScore: {fileID: 4206508330918945279}
   pronunciationScore: {fileID: 6726074530307879023}
   rangeScore: {fileID: 3611965833788379237}
@@ -67367,7 +67367,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -68259,7 +68259,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -70032,7 +70032,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -70600,7 +70600,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:
@@ -71364,7 +71364,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 255255db9854869488df2aa6d71cd388, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Navigation.FlashcardDeck
+  m_EditorClassIdentifier: Assembly-CSharp::SaySuomi.Screens.FlashcardDeck
   deckName: FI-EN_OmaSuomi_1_CaptainA
   isSecret: 0
   progressBar: {fileID: 493110637}
@@ -72637,7 +72637,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: SaySuomi.Navigation.AdvancedScreen, Assembly-CSharp
+        m_TargetAssemblyTypeName: SaySuomi.Screens.AdvancedScreen, Assembly-CSharp
         m_MethodName: feedbackWhileLoading
         m_Mode: 1
         m_Arguments:

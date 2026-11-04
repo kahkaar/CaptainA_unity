@@ -1,10 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
+using SaySuomi.Managers;
+using SaySuomi.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Screens
 {
     public class ScoreDetailScreen : AppScreen
     {

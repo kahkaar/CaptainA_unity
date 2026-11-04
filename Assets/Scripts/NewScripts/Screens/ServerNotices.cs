@@ -1,7 +1,8 @@
 using System;
+using SaySuomi.Managers;
 using UnityEngine.Localization;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Screens
 {
     /// <summary>
     /// Localized text for server requests, from the "ASAPanel Labels" table.

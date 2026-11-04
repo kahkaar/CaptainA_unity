@@ -1,8 +1,9 @@
+using SaySuomi.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Modals
 {
     /// <summary>
     /// The first-time instruction and what's-new popup. Only OK marks it as seen: leaving any

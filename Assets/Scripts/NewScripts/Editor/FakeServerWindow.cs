@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using UnityEditor;
 using UnityEngine;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.EditorTools
 {
     /// <summary>
     /// Starts, stops and configures FakeServer/fake_server.py. See docs/NEW/FAKE_SERVER.md.

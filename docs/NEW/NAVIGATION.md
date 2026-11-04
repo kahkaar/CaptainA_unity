@@ -10,7 +10,8 @@ Related: [Screens](SCREENS.md), [Transitions](TRANSITIONS.md), [Wiring](WIRING.m
 One class, `Navigator`, owns all navigation. Screens never switch each other on or off:
 they ask `Navigator` to open a screen by type, and it handles history, back, visibility
 and animation. Code lives under `Assets/Scripts/NewScripts/` in the `Navigation`, `Screens`,
-`Modals` and `Managers` folders, all in the `SaySuomi.Navigation` namespace.
+`Modals` and `Managers` folders, each with [its own namespace](CODING_STANDARDS.md#namespaces). The
+classes below are in `SaySuomi.Navigation`, apart from `LoadingModal`, which is in `SaySuomi.Modals`.
 
 | Class               | Role                                                                  |
 | ------------------- | --------------------------------------------------------------------- |
@@ -59,16 +60,33 @@ In this example, `FlashcardsScreen` is hidden because a `Screen` layer entry cov
 ## API
 
 ```csharp
-T Push<T>() where T : AppScreen;   // returns the screen so the caller can give it data
-T Open<T>() where T : ModalScreen;
-void Open(ModalScreen modal);      // for popups with no class of their own
-void Back();                       // the only Escape handler in the app
-void PopTo<T>() where T : AppScreen;
-void PopToRoot();
-void SelectTab(AppScreen tabRoot); // clears the stack; no-op when already on that tab's root
-bool IsOpen(AppScreen screen);
-T Get<T>() where T : AppScreen;
-event Action<AppScreen> TabChanged;
+public event Action<AppScreen> TabChanged;
+
+// Returns the screen so the caller can give it data.
+public T Push<T>()
+    where T : AppScreen;
+
+public T Open<T>()
+    where T : ModalScreen;
+
+// For modals with no class of their own.
+public void Open(ModalScreen modal);
+
+// The only Escape handler in the app.
+public void Back();
+
+public void PopTo<T>()
+    where T : AppScreen;
+
+public void PopToRoot();
+
+// Clears the stack. Does nothing when already on the root of that tab.
+public void SelectTab(AppScreen tabRoot);
+
+public bool IsOpen(AppScreen screen);
+
+public T Get<T>()
+    where T : AppScreen;
 ```
 
 Data passes through typed methods on the returned screen, so there is no generic

@@ -3,7 +3,7 @@ using System.IO;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Managers
 {
     public class NetworkManager : MonoBehaviour
     {

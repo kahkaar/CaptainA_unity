@@ -1,13 +1,15 @@
 using System;
 using System.Collections;
 using System.IO;
+using SaySuomi.Managers;
+using SaySuomi.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Diagnostics;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Screens
 {
     public class NumberGameScreen : AppScreen
     {

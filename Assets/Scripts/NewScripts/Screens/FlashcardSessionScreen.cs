@@ -1,11 +1,14 @@
 using System;
 using System.Collections;
+using SaySuomi.Managers;
+using SaySuomi.Modals;
+using SaySuomi.Navigation;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-namespace SaySuomi.Navigation
+namespace SaySuomi.Screens
 {
     /// <summary>
     /// The default state of the Panel is disabled, and it will be enabled when the user clicks the FlashCard button in the main menu.
