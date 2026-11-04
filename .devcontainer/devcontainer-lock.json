@@ -1,0 +1,9 @@
+{
+  "features": {
+    "ghcr.io/nikiforovall/devcontainer-features/dotnet-csharpier:2": {
+      "version": "2.0.0",
+      "resolved": "ghcr.io/nikiforovall/devcontainer-features/dotnet-csharpier@sha256:f88bc343ef8b7dd7e00b72f4e5c0b5a98d292ca7b67f3575ccae48dd1fe8f0ec",
+      "integrity": "sha256:f88bc343ef8b7dd7e00b72f4e5c0b5a98d292ca7b67f3575ccae48dd1fe8f0ec"
+    }
+  }
+}

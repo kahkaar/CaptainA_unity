@@ -1,0 +1,24 @@
+// For Windows with WSL. For format details, see https://aka.ms/devcontainer.json. For config
+// options, see the README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
+{
+  "name": "C# (.NET) on WSL",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:2-9.0",
+  "features": {
+    "ghcr.io/nikiforovall/devcontainer-features/dotnet-csharpier:2": {}
+  },
+  "mounts": [
+    // Where Unity Editors are usually installed on the host Windows machine.
+    "source=/mnt/c/Program Files/Unity/Hub/Editor,target=/unity,type=bind"
+  ],
+  "postStartCommand": "python3 .devcontainer/fix-unity-paths.py",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "visualstudiotoolsforunity.vstuc",
+        "csharpier.csharpier-vscode"
+      ]
+    }
+  },
+  "remoteUser": "vscode"
+}
