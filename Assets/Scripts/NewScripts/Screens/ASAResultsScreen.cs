@@ -228,16 +228,12 @@ namespace SaySuomi.Screens
             infoModal = ModalScreen.Attach(infoPopupGO);
             feedbackModal = ModalScreen.Attach(feedbackPopUpGO);
 
-            // Reset feedback form and go back
             feedbackModal.OnBack = () =>
             {
-                accuracyRatingOptions.SetAllTogglesOff();
-                accuracyFeedbackTextGO.text = "";
-                understandingRatingOptions.SetAllTogglesOff();
-                understandingFeedbackTextGO.text = "";
                 ErrorBanner.Hide(errorPopupGO);
                 return false;
             };
+            feedbackModal.OnDiscard = ResetFeedbackForm;
 
             // Both emoji rows now post the moment one is tapped, so a learner who answers and
             // then closes the popup without pressing Send is still counted. Send keeps working
@@ -266,6 +262,9 @@ namespace SaySuomi.Screens
             // was warned on one task would be warned again on the next however well they did.
             // Passing null means "no result yet", which resolves to hidden.
             ShowRelevanceWarning(null);
+
+            // A tap on the dim can keep a comment, which belongs to the result it was typed for.
+            ResetFeedbackForm();
 
             // Reset all title animations at enable
             ResetTextSizeInTitleAnimation();
@@ -498,8 +497,16 @@ namespace SaySuomi.Screens
                 );
             }
 
-            // OnBack resets the form.
+            // OnDiscard resets the form.
             Navigator.GetManager().Back();
+        }
+
+        private void ResetFeedbackForm()
+        {
+            accuracyRatingOptions.SetAllTogglesOff();
+            accuracyFeedbackTextGO.text = "";
+            understandingRatingOptions.SetAllTogglesOff();
+            understandingFeedbackTextGO.text = "";
         }
 
         private void ResetTextSizeInTitleAnimation()

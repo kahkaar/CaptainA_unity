@@ -11,6 +11,8 @@ namespace SaySuomi.Navigation
         private ModalDim dim;
         private TransitionRunner transition;
 
+        public bool IsAnimating => transition.IsRunning;
+
         private void Awake()
         {
             transition = new TransitionRunner(this);

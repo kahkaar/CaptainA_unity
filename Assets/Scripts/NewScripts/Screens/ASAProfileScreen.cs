@@ -270,10 +270,13 @@ namespace SaySuomi.Screens
 
             feedbackModal.OnBack = () =>
             {
-                comparisonRatingOptions.SetAllTogglesOff();
-                comparisonFeedbackTextGO.text = "";
                 ErrorBanner.Hide(errorPopupGO);
                 return false;
+            };
+            feedbackModal.OnDiscard = () =>
+            {
+                comparisonRatingOptions.SetAllTogglesOff();
+                comparisonFeedbackTextGO.text = "";
             };
         }
 
@@ -629,7 +632,7 @@ namespace SaySuomi.Screens
                     )
             );
 
-            // OnBack resets the form.
+            // OnDiscard resets the form.
             Navigator.GetManager().Back();
         }
 

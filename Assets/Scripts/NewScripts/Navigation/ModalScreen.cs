@@ -1,4 +1,5 @@
 using System;
+using TMPro;
 using UnityEngine;
 
 namespace SaySuomi.Navigation
@@ -19,6 +20,28 @@ namespace SaySuomi.Navigation
         /// it calls Navigator.Back. Return true to keep the popup from closing.
         /// </summary>
         public Func<bool> OnBack { get; set; }
+
+        /// <summary>
+        /// Clears what the popup holds when back closes it. A tap on the dim skips this while text
+        /// is typed, so that tapping outside the keyboard does not lose it.
+        /// </summary>
+        public Action OnDiscard { get; set; }
+
+        internal bool HasTypedText
+        {
+            get
+            {
+                foreach (TMP_InputField field in GetComponentsInChildren<TMP_InputField>(true))
+                {
+                    if (field.text.Length > 0)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
 
         /// <summary>Makes a script-less popup openable, without needing any scene changes.</summary>
         public static ModalScreen Attach(GameObject popup, bool dismissible = true)

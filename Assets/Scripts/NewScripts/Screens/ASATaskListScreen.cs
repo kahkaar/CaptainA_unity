@@ -85,11 +85,14 @@ namespace SaySuomi.Screens
             // hide the window and write nothing, so every return to the task list
             // reopened it and the only ways out were sending feedback or completing
             // another task.
-            overallFeedbackModal.OnBack = () =>
+            overallFeedbackModal.OnDiscard = () =>
             {
                 MarkOverallFeedbackAsked();
                 overallRatingOptions.SetAllTogglesOff();
                 overallFeedbackTextGO.text = "";
+            };
+            overallFeedbackModal.OnBack = () =>
+            {
                 ErrorBanner.Hide(errorPopupGO);
                 return false;
             };
@@ -199,7 +202,7 @@ namespace SaySuomi.Screens
                     )
             );
 
-            // OnBack resets the form and records that the learner was asked.
+            // OnDiscard resets the form and records that the learner was asked.
             Navigator.GetManager().Back();
         }
 

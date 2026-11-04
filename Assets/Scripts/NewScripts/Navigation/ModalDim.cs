@@ -1,19 +1,26 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace SaySuomi.Navigation
 {
     /// <summary>
     /// The one dim shared by all modals. Its Image sets how it looks when fully shown, and needs
-    /// Raycast Target on, so that it blocks taps on everything below, including the tab bar.
+    /// Raycast Target on, so that it blocks taps on everything below, including the tab bar, and
+    /// a tap on it goes back.
     /// </summary>
     [RequireComponent(typeof(Image))]
-    public sealed class ModalDim : MonoBehaviour
+    public sealed class ModalDim : MonoBehaviour, IPointerClickHandler
     {
         private Image image;
         private Color fullColor;
 
         internal bool IsShowing => gameObject.activeSelf;
+
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            Navigator.GetManager().BackFromDim();
+        }
 
         /// <summary>
         /// Shows the dim directly below the modal, in the modal's own parent, because sibling

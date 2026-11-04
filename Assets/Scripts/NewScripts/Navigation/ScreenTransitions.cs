@@ -76,6 +76,8 @@ namespace SaySuomi.Navigation
             this.host = host;
         }
 
+        public bool IsRunning => running != null;
+
         public void Play(float seconds, Action<float> apply, Action onFinish)
         {
             Snap();

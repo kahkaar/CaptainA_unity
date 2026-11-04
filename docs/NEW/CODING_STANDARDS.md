@@ -18,13 +18,14 @@ ruff format .                     # Python
 The root namespace is `SaySuomi`. Each script belongs to it or to a namespace below it, named after
 the relevant area of the application:
 
-| Folder       | Namespace              | Contains                                      |
-| ------------ | ---------------------- | --------------------------------------------- |
-| `Navigation` | `SaySuomi.Navigation`  | `Navigator`, the base screens and the tab bar |
-| `Screens`    | `SaySuomi.Screens`     | Screens and the classes that support them     |
-| `Modals`     | `SaySuomi.Modals`      | Modals                                        |
-| `Managers`   | `SaySuomi.Managers`    | Audio, the server and their data classes      |
-| `Editor`     | `SaySuomi.EditorTools` | Tools that run only in the Unity Editor       |
+| Folder                    | Namespace                          | Contains                                      |
+| ------------------------- | ---------------------------------- | --------------------------------------------- |
+| `Navigation`              | `SaySuomi.Navigation`              | `Navigator`, the base screens and the tab bar |
+| `Navigation/Experimental` | `SaySuomi.Navigation.Experimental` | Trial replacements for navigation classes     |
+| `Screens`                 | `SaySuomi.Screens`                 | Screens and the classes that support them     |
+| `Modals`                  | `SaySuomi.Modals`                  | Modals                                        |
+| `Managers`                | `SaySuomi.Managers`                | Audio, the server and their data classes      |
+| `Editor`                  | `SaySuomi.EditorTools`             | Tools that run only in the Unity Editor       |
 
 `SaySuomi.Editor` is avoided because that namespace would hide
 [`UnityEditor.Editor`](https://docs.unity3d.com/6000.5/Documentation/ScriptReference/Editor.html).

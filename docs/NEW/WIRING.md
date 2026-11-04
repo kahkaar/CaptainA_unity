@@ -19,7 +19,7 @@ For naming, member order and Inspector layout, see [Coding Standards](CODING_STA
 | Value carried by an object  | A component holding the value, such as `OptionValue` or `FlashcardDeck`. Never read it from the object's name. |
 | Popup with no logic         | `ModalScreen.Attach(popupGO, dismissible)` from the owning screen                                              |
 | Popup waiting on the server | A `LoadingModal` component on the popup, with its `icon` assigned, which it spins                              |
-| Reset on closing a popup    | `modal.OnBack`, so every way out behaves the same                                                              |
+| Reset on closing a popup    | `modal.OnDiscard`, which a tap on the dim skips while text is typed                                            |
 | Drop-down error message     | `ErrorBanner.Show` and `ErrorBanner.Hide`                                                                      |
 | Durations and constants     | Constants in code                                                                                              |
 
@@ -45,7 +45,8 @@ so a migrated button cannot fire twice and its entries do not have to be cleared
 - `FlashcardDeck`: its deck file name, whether it is the secret deck, and its text and
   progress bar
 - `OptionValue`: the value a toggle sends to the server
-- `ModalDim`: its colour and transparency, on its `Image`, which also needs Raycast Target on
+- `ModalDim`: its colour and transparency, on its `Image`, which also needs Raycast Target on, so that
+  it blocks taps below and a tap on it goes back
 - Layout and visual values on UI components
 
 `NetworkManager` needs nothing assigned, because it contains no UI.
@@ -99,6 +100,29 @@ popup. Popups used by one screen start with that screen's name, such as `ASAProf
 | New-feature dot                         | `NewFeatureDot`                                                       |
 | Objects inside a screen or modal        | `[SerializeField]` fields, checked at launch                          |
 | Children of a prefab created at runtime | `transform.Find` on the new instance, because it is not in the scene  |
+
+## Experimental tab button
+
+`SaySuomi.Navigation.Experimental.TabButton` is a trial replacement for `TabButton`. It takes a
+background icon, a label and an icon for the label, instead of an active and an inactive icon. The
+label is a `LocalizedString` or a plain string, and the localized one wins when both are set. It takes its colours from the `Button` on the same object, and tints the background, the label icon
+and the label with them: **Normal Color**, **Selected Color** for the active tab, and **Pressed
+Color** while the tab is pressed or held. Pressed wins, and sliding off the tab while holding it shows
+the colour underneath, because releasing there does not click. Only the Freestyle tab uses it so far.
+
+It follows `TabChanged` itself, because `TabBar` only finds the original `TabButton`, so it needs no
+change to `TabBar`. The new-feature dot stays with `TabBar`.
+
+To try it on a tab:
+
+1. Remove the original `TabButton` from the tab's button. Keep its `Button` and `Image`, because that
+   `Image` becomes the background.
+2. Add a child `Image` for the label icon and a child `TextMeshProUGUI` for the label.
+3. Add the experimental `TabButton` and assign its screen, background icon, label icon, one of the
+   two labels and the two children.
+4. Set the colours on the `Button`. Leave its **Transition** on **Color Tint** so they stay visible in
+   the Inspector. `TabButton` turns the transition off when the app runs and applies the tint itself,
+   because the transition only tints one graphic and has no state for the active tab.
 
 ## Adding a screen
 

@@ -46,12 +46,9 @@ namespace SaySuomi.Navigation
                 tab.ShowSelected(tab.Root == current);
             }
 
-            // After the screen is up: it records itself as seen in its own OnEnable, which has
+            // After the screen is up: it records itself as seen in its own OnEnable,which has
             // already run, so the dot goes in the same frame it was earned.
-            if (newFeatureDot != null)
-            {
-                newFeatureDot.Refresh();
-            }
+            newFeatureDot?.Refresh();
         }
     }
 }

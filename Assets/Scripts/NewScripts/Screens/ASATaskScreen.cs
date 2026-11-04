@@ -149,9 +149,12 @@ namespace SaySuomi.Screens
             loadingModal.OnBack = () =>
             {
                 ErrorBanner.Hide(errorPopupGO);
+                return false;
+            };
+            loadingModal.OnDiscard = () =>
+            {
                 ratingOptions.SetAllTogglesOff();
                 feedbackTextGO.text = "";
-                return false;
             };
 
             // Each emoji now posts the moment it is tapped, so a learner who rates the result
@@ -387,7 +390,7 @@ namespace SaySuomi.Screens
                 return;
             }
 
-            // Reset feedback forms, which OnBack does, and go to feedback panel
+            // Reset feedback forms, which OnDiscard does, and go to feedback panel
             Navigator navigator = Navigator.GetManager();
             loadingModal.Dismissible = true;
             navigator.Back();

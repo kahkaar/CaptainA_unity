@@ -13,18 +13,18 @@ and animation. Code lives under `Assets/Scripts/NewScripts/` in the `Navigation`
 `Modals` and `Managers` folders, each with [its own namespace](CODING_STANDARDS.md#namespaces). The
 classes below are in `SaySuomi.Navigation`, apart from `LoadingModal`, which is in `SaySuomi.Modals`.
 
-| Class               | Role                                                                  |
-| ------------------- | --------------------------------------------------------------------- |
-| `Navigator`         | Owns the stack, the current tab and back handling. Created at launch. |
-| `AppScreen`         | Base class for every screen. Declares its layer and back behaviour.   |
-| `ModalScreen`       | `AppScreen` for popups. Adds `Attach`, `Dismissible` and `OnBack`.    |
-| `LoadingModal`      | `ModalScreen` for popups waiting on the server. Spins `LoadingIcon`.  |
-| `ModalHost`         | Presents modals: the shared dim and the modal animations.             |
-| `ScreenTransitions` | The animation curves and durations, and the runner that plays them.   |
-| `TabBar`            | Tab buttons, icons and the new-feature dot. Follows `TabChanged`.     |
-| `ErrorBanner`       | Shows and hides the drop-down error messages.                         |
-| `ButtonWiring`      | Connects buttons in code and switches off their Inspector entries.    |
-| `ScreenBackButton`  | Adds a back button to screens that have none. See [Back](#back).      |
+| Class               | Role                                                                            |
+| ------------------- | ------------------------------------------------------------------------------- |
+| `Navigator`         | Owns the stack, the current tab and back handling. Created at launch.           |
+| `AppScreen`         | Base class for every screen. Declares its layer and back behaviour.             |
+| `ModalScreen`       | `AppScreen` for popups. Adds `Attach`, `Dismissible`, `OnBack` and `OnDiscard`. |
+| `LoadingModal`      | `ModalScreen` for popups waiting on the server. Spins `LoadingIcon`.            |
+| `ModalHost`         | Presents modals: the shared dim and the modal animations.                       |
+| `ScreenTransitions` | The animation curves and durations, and the runner that plays them.             |
+| `TabBar`            | Tab buttons, icons and the new-feature dot. Follows `TabChanged`.               |
+| `ErrorBanner`       | Shows and hides the drop-down error messages.                                   |
+| `ButtonWiring`      | Connects buttons in code and switches off their Inspector entries.              |
+| `ScreenBackButton`  | Adds a back button to screens that have none. See [Back](#back).                |
 
 ## Layers
 
@@ -168,9 +168,21 @@ presented:
 Every popup lives under `Canvas/Modals`, which draws after the tab bar and everything else. A
 screen that opens one holds a reference to it, so a popup can be used from any screen.
 
+A tap on the dim counts as back, so it follows the same rules: a non-dismissible modal ignores it,
+`OnBack` can keep the modal open, and otherwise the modal closes. The tap is ignored while a modal
+animates, because the dim stays up during the close animation, and a second tap would otherwise go
+back on the screen below, which quits the app on the home tab. A modal's panel needs a Raycast Target
+`Image`, or taps on it pass through to the dim and close the modal.
+
+`ModalScreen.OnDiscard` clears a popup's form when back closes it, and records a decline where the
+popup counts one. A tap on the dim skips it while
+any input field in the popup has text, so what was typed is still there when the popup next opens.
+The popup's own back button and the back key still discard. `ASAResultsScreen` also clears its form
+when it opens, because a comment kept from one result must not be sent with the next.
+
 `ModalScreen.OnBack` runs whenever back closes a popup, including from its own back button if
-that calls `Navigator.Back`. It is the place to reset a form or record a decline, so every way
-out behaves the same. Return true from it to keep the popup open.
+that calls `Navigator.Back`. It is the place for what must happen on every close, such as hiding an
+error message. Return true from it to keep the popup open.
 
 Drop-down error messages go through `ErrorBanner`, which moves them to the top of the Canvas
 so they draw above the popup they belong to.

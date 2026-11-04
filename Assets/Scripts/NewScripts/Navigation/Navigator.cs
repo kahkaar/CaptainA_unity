@@ -214,36 +214,7 @@ namespace SaySuomi.Navigation
         /// <summary>The one route for back, whether from a key press or a button.</summary>
         public void Back()
         {
-            FinishTransition();
-
-            AppScreen top = Top;
-
-            // First, so a popup waiting on the server does not reset its form on a back press.
-            if (top is ModalScreen modal && !modal.Dismissible)
-            {
-                return;
-            }
-
-            if (top.HandleBack())
-            {
-                return;
-            }
-
-            if (stack.Count > 0)
-            {
-                PopTop();
-                return;
-            }
-
-            if (CurrentTab != home)
-            {
-                SelectTab(home);
-                return;
-            }
-
-            // Does nothing in the Editor, so this line is how to tell it was reached there.
-            Debug.Log("Navigator: back on the home tab, quitting.");
-            Application.Quit();
+            GoBack(isFromDim: false);
         }
 
         /// <summary>Returns to a screen on the stack, or to the tab root if T is the current tab.</summary>
@@ -314,6 +285,16 @@ namespace SaySuomi.Navigation
             );
         }
 
+        internal void BackFromDim()
+        {
+            // The dim stays up while a modal closes, when the entry on top is already the screen
+            // below. Going back from there would close that screen, or quit on the home tab.
+            if (!modalHost.IsAnimating)
+            {
+                GoBack(isFromDim: true);
+            }
+        }
+
         // After scene load, so tab bars and screens exist. This runs in every scene, and Awake
         // removes it from any that has no AppScreen.
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
@@ -328,6 +309,46 @@ namespace SaySuomi.Navigation
         {
             screen.ResetVisuals();
             screen.gameObject.SetActive(false);
+        }
+
+        private void GoBack(bool isFromDim)
+        {
+            FinishTransition();
+
+            AppScreen top = Top;
+            ModalScreen modal = top as ModalScreen;
+
+            // First, so a popup waiting on the server does not reset its form on a back press.
+            if (modal != null && !modal.Dismissible)
+            {
+                return;
+            }
+
+            if (top.HandleBack())
+            {
+                return;
+            }
+
+            if (modal != null && !(isFromDim && modal.HasTypedText))
+            {
+                modal.OnDiscard?.Invoke();
+            }
+
+            if (stack.Count > 0)
+            {
+                PopTop();
+                return;
+            }
+
+            if (CurrentTab != home)
+            {
+                SelectTab(home);
+                return;
+            }
+
+            // Does nothing in the Editor, so this line is how to tell it was reached there.
+            Debug.Log("Navigator: back on the home tab, quitting.");
+            Application.Quit();
         }
 
         /// <summary>
