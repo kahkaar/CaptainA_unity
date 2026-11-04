@@ -1,6 +1,6 @@
 """Tests the fake server over real HTTP, sending the same body formats as Unity's WWWForm.
 
-    python -B FakeServer/test_fake_server.py
+python -B FakeServer/test_fake_server.py
 """
 
 import json
@@ -25,7 +25,7 @@ def multipart(fields, filename="answer.wav"):
             f'Content-disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'
         ).encode("utf-8")
     out += (
-        f'--{BOUNDARY}\r\nContent-Type: audio/wav\r\n'
+        f"--{BOUNDARY}\r\nContent-Type: audio/wav\r\n"
         f'Content-disposition: form-data; name="file"; filename="{filename}"\r\n\r\n'
     ).encode("utf-8")
     out += b"RIFF\r\n--not-a-boundary\x00\xff" + f"\r\n--{BOUNDARY}--\r\n".encode("utf-8")
@@ -171,7 +171,7 @@ class FakeServerTest(unittest.TestCase):
         self.assertEqual(self.form("POST", f"{API}/onboarding", {"guid": "g"})[0], 200)
 
     def test_events(self):
-        path = f"{API}/analytics/events"
+        path = f"{API}/events"
         event = {"event_id": "e", "occurred_at": "t", "name": "n", "properties": {}}
         batch = {"guid": "g", "asa_session_id": "s", "app_version": "1", "events": [event]}
         status, data = self.request("POST", path, json.dumps(batch).encode(), "application/json")
@@ -223,7 +223,7 @@ class FakeServerTest(unittest.TestCase):
 
     def test_every_route_is_in_secret_lines(self):
         lines = secret_lines("http://x", "k")
-        for (_, path) in ROUTES:
+        for _, path in ROUTES:
             self.assertIn(f'"http://x{path}"', lines)
 
 

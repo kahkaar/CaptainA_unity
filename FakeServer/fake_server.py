@@ -24,7 +24,7 @@ ROUTES = {
     ("POST", f"{API}/feedback"): "feedback",
     ("POST", f"{API}/analytics/comparison"): "profile",
     ("PATCH", f"{API}/users/level"): "level",
-    ("POST", f"{API}/analytics/events"): "events",
+    ("POST", f"{API}/events"): "events",
     ("DELETE", f"{API}/users"): "delete",
     ("POST", "/asr_unity"): "mdd",
     ("POST", "/asr_number"): "number",
@@ -238,9 +238,7 @@ def handle_assess(state, fields, files):
         "task_id": task_id,
         "cefr_label": coarse_label(base),
         "cefr_label_fine": fine_label(base),
-        "dimension_labels": {
-            name: label(scores[name]) for name in ("accuracy", "fluency", "pronunciation", "range")
-        },
+        "dimension_labels": {name: label(scores[name]) for name in ("accuracy", "fluency", "pronunciation", "range")},
         "clipped": False,
     }
     if state.relevance != "none":
@@ -375,10 +373,10 @@ def pronunciation_result(state, text):
         else:
             score.append(0.95)
 
-    substitute = "a" if text[middle:middle + 1] != "a" else "e"
+    substitute = "a" if text[middle : middle + 1] != "a" else "e"
     return {
         "levenshtein": [{"ops": "replace", "tran_index": middle, "pred_index": middle}] if text else [],
-        "prediction": text[:middle] + substitute + text[middle + 1:] if text else "",
+        "prediction": text[:middle] + substitute + text[middle + 1 :] if text else "",
         "score": score,
         "warning": state.warning,
     }
@@ -512,7 +510,7 @@ def secret_lines(base_url, delete_key):
         "USER_ASA_FEEDBACK_URL": f"{API}/feedback",
         "ASA_PROFILE_URL": f"{API}/analytics/comparison",
         "ASA_SET_LEVEL_URL": f"{API}/users/level",
-        "ASA_EVENTS_URL": f"{API}/analytics/events",
+        "ASA_EVENTS_URL": f"{API}/events",
         "DATA_DEL_REQUEST_URL": f"{API}/users",
         "AUDIO_URL": "/asr_unity",
         "NUMBER_AUDIO_URL": "/asr_number",

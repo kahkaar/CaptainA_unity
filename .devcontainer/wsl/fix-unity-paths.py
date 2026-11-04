@@ -3,7 +3,7 @@
 import re
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 CONTAINER_UNITY_PATH = "/unity/"
 

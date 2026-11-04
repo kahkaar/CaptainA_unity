@@ -4,14 +4,17 @@
   "name": "C# (.NET)",
   "image": "mcr.microsoft.com/devcontainers/dotnet:2-9.0",
   "features": {
-    "ghcr.io/nikiforovall/devcontainer-features/dotnet-csharpier:2": {}
+    "ghcr.io/devcontainers/features/node:2": {},
+    "ghcr.io/devcontainers/features/python:1": { "toolsToInstall": "ruff" }
   },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
   "customizations": {
     "vscode": {
       "extensions": [
         "esbenp.prettier-vscode",
         "visualstudiotoolsforunity.vstuc",
-        "csharpier.csharpier-vscode"
+        "csharpier.csharpier-vscode",
+        "charliermarsh.ruff"
       ]
     }
   },
